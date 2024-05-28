@@ -3,7 +3,8 @@
 import re
 import ast
 
-
+# Third party library
+import numpy as np
 from typing import Union
 
 def read_in_file(path_to_file: str) -> dict[str, Union[float, int, list[int]]]:
@@ -23,7 +24,7 @@ def read_in_file(path_to_file: str) -> dict[str, Union[float, int, list[int]]]:
     algo_config = {}
     # String operations on each line
     for line in lines:
-        algo_config[line.split(sep=':')[0]] = line.split(sep=':')[1].replace(r'\n', '').strip()
+        algo_config[line.split(sep=':')[0]] = line.split(sep=':')[1]#.replace(r'\n', '').strip()
 
     # Converting the values of the .in file into int, float and list
     for key, value in algo_config.items():
@@ -31,8 +32,36 @@ def read_in_file(path_to_file: str) -> dict[str, Union[float, int, list[int]]]:
             algo_config[key] = int(value.split('/')[0]) / int(value.split('/')[1])
         elif re.search(pattern=r'\[.*\]', string=value):
             # https://stackoverflow.com/a/1894296, accessed 28.05.2024
-            algo_config[key] = ast.literal_eval(node_or_string=value)
+            algo_config[key] = np.array(ast.literal_eval(node_or_string=value))
         else:
             algo_config[key] = int(value)
 
     return algo_config
+
+
+
+def print_solution(runtime: float, solution: np.array = None) -> None:
+    """
+    Prints the solution as wanted.
+
+    Args:
+        runtime (float): CPU-Runtime (in seconds)
+        solution (list): contains the current best solution 
+            index of list: 
+                idx // 3 => week
+                idx %  3 => M/F/S (0/1/2)
+            value (list): [home, away, profit]
+    """
+    if solution:
+        objective_value = np.sum(solution, axis=0)[-1]
+        print("### RESULT: Feasible")
+        print(f"### OBJECTIVE: {objective_value}")
+
+        for idx, game in enumerate(solution):
+            days = {0: 'M', 1: 'F', 2: 'S'}
+            print(f"### Game <{idx//3}>-{days[idx%3]}: <{game[0]}> <{game[1]}>")
+
+        print(f"### CPU-TIME: {runtime}")
+
+    else:
+        print("### RESULT: TIMEOUT")
