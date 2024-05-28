@@ -11,6 +11,8 @@ parser.add_argument("path_to_instance")
 
 def test2() -> None:
     pass 
+def test1():
+    print('Helloooooo, maybe this will result in a conflict')
 
 if __name__ == '__main__':
     # Extract command line arguments
