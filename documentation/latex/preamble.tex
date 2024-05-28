@@ -1,0 +1,83 @@
+% Adapted from https://www.overleaf.com/latex/templates/template-for-theoretische-informatik-uni-tubingen/xwsycshfkjtf
+\usepackage[utf8]{inputenc}
+
+\usepackage[titletoc,title,page]{appendix}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{mathrsfs}
+\usepackage{mathtools}
+\usepackage{subfiles}
+\usepackage{booktabs}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\usepackage{pdfpages}
+\usepackage{makecell}
+\usepackage{rotating}
+\usepackage{pdflscape}
+\usepackage[autostyle,german=quotes]{csquotes}
+\usetikzlibrary{matrix}
+\usepackage[backend=bibtex]{biblatex}
+
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[section]
+\newtheorem{theorem}{Satz}[section]
+\newtheorem{lemma}{Lemma}[section]
+\newtheorem{corollary}{Korollar}[section]
+
+\renewcommand\qedsymbol{$\blacksquare$}
+
+\usepackage{listings}
+
+\usepackage{fancyhdr}
+\usepackage{color}
+\usepackage{graphicx}
+\usepackage{float}
+
+\usepackage{geometry}
+
+\usepackage[]{todonotes}
+\usepackage{hyperref}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=black,
+    filecolor=black,
+    urlcolor=black,
+    citecolor=black
+}
+
+\geometry{a4paper,left=2.5cm, right=2.5cm, top=3cm, bottom=2cm}
+\pagestyle{fancy}
+\renewcommand{\sectionmark}[1]{\markboth{#1}{}}
+\fancyhf{}
+\fancyhead[R]{ }
+
+% \fancyhead[L]{\NAME}
+% \fancyhead[C]{\TITLE}
+% \fancyhead[R]{\COURSE}
+
+\fancyfoot[L]{}
+\fancyfoot[C]{\thepage}
+
+\DeclareMathOperator{\diag}{diag}
+
+\usepackage[skip=0.5\baselineskip]{caption}
+
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\Zn}{\mathbb{Z}_n}
+
+\renewcommand{\appendixpagename}{\appendixname}
+\renewcommand{\appendixtocname}{\appendixname}
+\renewcommand{\headrulewidth}{0pt}
+
+\setcounter{topnumber}{3}
+\setcounter{bottomnumber}{3}
+\setcounter{totalnumber}{3}
+
+\newcommand{\norm}{\|}
