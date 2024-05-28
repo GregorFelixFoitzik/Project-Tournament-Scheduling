@@ -9,6 +9,9 @@ parser = argparse.ArgumentParser(description="Input for algorithms")
 parser.add_argument("timeout")
 parser.add_argument("path_to_instance")
 
+def test2() -> None:
+    pass 
+
 if __name__ == '__main__':
     # Extract command line arguments
     args = parser.parse_args()
