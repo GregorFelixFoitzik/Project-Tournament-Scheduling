@@ -6,8 +6,9 @@ from src.helper import read_in_file
 
 # Copied from https://docs.python.org/3/library/argparse.html, accessed 28.05.2024
 parser = argparse.ArgumentParser(description="Input for algorithms")
-parser.add_argument("timeout")
-parser.add_argument("path_to_instance")
+# TODO: @Jonas Ginster Remove default and replace --ARG with ARG
+parser.add_argument("-t", "--timeout", default=30)
+parser.add_argument("-p", "--path_to_instance", default="data/example.in")
 
 if __name__ == '__main__':
     # Extract command line arguments
