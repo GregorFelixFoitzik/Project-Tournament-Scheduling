@@ -1,11 +1,14 @@
 """File contains the validation of the results"""
 
+# Standard library
+import itertools
+
 # Third party libraries
 import numpy as np
 
 
 def validate(
-    sol: np.ndarray,
+    sol: list[list[list[str]]],
     num_teams: int,
     weeks_between: int,
     profits: list[float],
@@ -16,30 +19,23 @@ def validate(
 
     feasible_uniqueness = uniqueness(sol=sol, num_teams=num_teams, weeks=weeks)
     feasible_check_matches = check_matches(sol=sol, num_teams=num_teams)
+    feasible_each_team_monday = each_team_on_monday(sol=sol, num_teams=num_teams)
 
-    return feasible_uniqueness and feasible_check_matches
+    return feasible_uniqueness and feasible_check_matches and feasible_each_team_monday
 
 
-def uniqueness(sol: np.ndarray, num_teams: int, weeks: int) -> bool:
-    """Check for uniqueness.
-
-    This function checks, if the values within the solution `sol` are unique.
-
-    Args:
-        sol (np.ndarray): Solution as numpy array.
-        num_teams (int): How many teams are in the DOT-Liga?
-        weeks (int): How many weeks?
-
-    Returns:
-        bool: Whether the solution is feasible or not.
-    """
-    matches = np.unique(sol)
-    print(f"Uniqueness: {np.shape(a=matches)[0] - 1 == ((num_teams/2)*weeks)}")
+def uniqueness(sol: list[list[list[str]]], num_teams: int, weeks: int) -> bool:
+    # Source: https://www.pythonpool.com/flatten-list-python/, accessed 29.05.2023
+    matches = np.unique(ar=list(itertools.chain(*list(itertools.chain(*sol)))))
+    print(
+        f"Uniqueness ({np.shape(a=matches)[0] - 1} and {int((num_teams/2)*weeks)}):"
+        f"{np.shape(a=matches)[0] - 1 == ((num_teams/2)*weeks)}"
+    )
 
     return np.shape(a=matches)[0] == num_teams
 
 
-def check_matches(sol: np.ndarray, num_teams: int) -> bool:
+def check_matches(sol: list[list[list[str]]], num_teams: int) -> bool:
     matches_required = np.array(
         object=list(
             set(
@@ -54,7 +50,8 @@ def check_matches(sol: np.ndarray, num_teams: int) -> bool:
     matches_required = matches_required[matches_required != "-"]
     matches_required = np.sort(a=matches_required)
 
-    sol_flattend = sol.reshape(1, -1)[0]
+    # Source: https://www.pythonpool.com/flatten-list-python/, accessed 29.05.2023
+    sol_flattend = np.array(object=list(itertools.chain(*list(itertools.chain(*sol)))))
     sol_flattend = sol[sol != "-"]
     sol_flattend = np.sort(a=matches_required)
 
@@ -62,6 +59,21 @@ def check_matches(sol: np.ndarray, num_teams: int) -> bool:
 
     return np.unique(matches_required == sol_flattend)[0]
 
+
+def each_team_on_monday(sol: list[list[list[str]]], num_teams: int) -> bool:
+    teams = [str(team) for team in range(1, num_teams + 1)]
+    teams_on_monday = []
+    for matches_monday in sol:
+        for match in matches_monday[0]:
+            if match != "-":
+                teams_on_monday += match.split("vs")
+
+    print(
+        "Each team plays at least once "
+        f"on monday: {teams == np.sort(np.unique(teams_on_monday)).tolist()}"
+    )
+
+    return teams == np.sort(np.unique(teams_on_monday)).tolist()
 
 if __name__ == "__main__":
     num_teams = 6
@@ -180,20 +192,18 @@ if __name__ == "__main__":
     t = 2 / 3
     s = 2
 
-    sol = np.array(
-        object=[
-            ["5vs1", "3vs6", "2vs4", "-", "-"],
-            ["6vs2", "1vs4", "3vs5", "-", "-"],
-            ["5vs4", "1vs6", "-", "3vs2", "-"],
-            ["6vs4", "1vs3", "-", "5vs2", "-"],
-            ["1vs2", "3vs4", "5vs6", "-", "-"],
-            ["6vs3", "4vs1", "-", "2vs5", "-"],
-            ["3vs1", "4vs2", "-", "6vs5", "-"],
-            ["1vs5", "-", "-", "4vs3", "2vs6"],
-            ["4vs5", "2vs3", "-", "6vs1", "-"],
-            ["4vs6", "5vs3", "2vs1", "-", "-"],
-        ]
-    )
+    sol = [
+        [["5vs1"], ["3vs6"], ["2vs4"], ["-"], ["-"]],
+        [["6vs2"], ["1vs4"], ["3vs5"], ["-"], ["-"]],
+        [["5vs4"], ["1vs6"], ["-"], ["3vs2"], ["-"]],
+        [["6vs4"], ["1vs3"], ["-"], ["5vs2"], ["-"]],
+        [["1vs2"], ["3vs4"], ["5vs6"], ["-"], ["-"]],
+        [["6vs3"], ["4vs1"], ["-"], ["2vs5"], ["-"]],
+        [["3vs1"], ["4vs2"], ["-"], ["6vs5"], ["-"]],
+        [["1vs5"], ["-"], ["-"], ["4vs3"], ["2vs6"]],
+        [["4vs5"], ["2vs3"], ["-"], ["6vs1"], ["-"]],
+        [["4vs6"], ["5vs3"], ["2vs1"], ["-"], ["-"]],
+    ]
 
     validate(
         sol=sol,
