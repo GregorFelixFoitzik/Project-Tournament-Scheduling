@@ -41,8 +41,3 @@ class GeneticAlgorithm():
         runtime = timedelta(seconds=time.perf_counter() - start)
 
         print_solution(runtime, solution_set)
-
-
-
-
-

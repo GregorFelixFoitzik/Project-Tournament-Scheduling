@@ -1,11 +1,10 @@
-# python main.py 30 data/example.in
-
 # Standard library
 import argparse
 
 # Project specific library
 from src.helper import read_in_file
 from src.genetic_algorithms import GeneticAlgorithm
+from src.greedy_heuristic import GreedyHeuristic
 
 # Copied from https://docs.python.org/3/library/argparse.html, accessed 28.05.2024
 parser = argparse.ArgumentParser(description="Input for algorithms")
@@ -20,10 +19,6 @@ if __name__ == '__main__':
     timeout = args.timeout
 
     algo_config = read_in_file(path_to_file=path_to_file)
-    
-    # return 3 matrices with shape NxN
-    n = algo_config['n']
-    matrix = algo_config['p'].reshape(3,n,n)
-    
-    agent = GeneticAlgorithm(algo_config)
+       
+    agent = GreedyHeuristic(algo_config)
     agent.execute_cmd()
