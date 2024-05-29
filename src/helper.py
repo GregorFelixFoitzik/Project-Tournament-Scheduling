@@ -6,6 +6,7 @@ import ast
 # Third party library
 import numpy as np
 from typing import Union
+from itertools import permutations
 
 def read_in_file(path_to_file: str) -> dict[str, Union[float, int, list[int]]]:
     """Read the .in file which contains the configuration.
@@ -40,7 +41,7 @@ def read_in_file(path_to_file: str) -> dict[str, Union[float, int, list[int]]]:
 
 
 
-def print_solution(runtime: float, solution: np.array = None) -> None:
+def print_solution(self, runtime: float, solution: np.array = None) -> None:
     """
     Prints the solution as wanted.
 
@@ -48,8 +49,8 @@ def print_solution(runtime: float, solution: np.array = None) -> None:
         runtime (float): CPU-Runtime (in seconds)
         solution (list): contains the current best solution 
             index of list: 
-                idx // 3 => week
-                idx %  3 => M/F/S (0/1/2)
+            #     idx // (self.n/2) => week
+            #     idx %  3 => M/F/S (0/1/2)
             value (list): [home, away, profit]
     """
     if solution:
@@ -57,9 +58,9 @@ def print_solution(runtime: float, solution: np.array = None) -> None:
         print("### RESULT: Feasible")
         print(f"### OBJECTIVE: {objective_value}")
 
-        for idx, game in enumerate(solution):
+        for idx, match in enumerate(solution):
             days = {0: 'M', 1: 'F', 2: 'S'}
-            print(f"### Game <{idx//3}>-{days[idx%3]}: <{game[0]}> <{game[1]}>")
+            print(f"### match <{idx//(self.n/2)+1}>-{days[idx%3]}: <{match[0]}> <{match[1]}>")
 
         print(f"### CPU-TIME: {runtime}")
 
