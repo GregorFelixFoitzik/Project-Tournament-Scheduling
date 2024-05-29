@@ -9,9 +9,9 @@ from src.genetic_algorithms import GeneticAlgorithm
 
 # Copied from https://docs.python.org/3/library/argparse.html, accessed 28.05.2024
 parser = argparse.ArgumentParser(description="Input for algorithms")
-# TODO: @Jonas Ginster Remove default and replace --ARG with ARG
-parser.add_argument("-t", "--timeout", default=30)
-parser.add_argument("-p", "--path_to_instance", default="data/example.in")
+# ChatGPT fixed the issues that default values were not used. => python main.py works now
+parser.add_argument("-t", "--timeout", type=int, default=30, help="Timeout duration in seconds")
+parser.add_argument("-p", "--path_to_instance", type=str, default="data/example.in", help="Path to the input file")
 
 if __name__ == '__main__':
     # Extract command line arguments
