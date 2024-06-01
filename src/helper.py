@@ -41,7 +41,7 @@ def read_in_file(path_to_file: str) -> dict[str, Union[float, int, list[int]]]:
 
 
 
-def print_solution(self, runtime: float, solution: np.array = None) -> None:
+def print_solution(runtime: float, solution: np.array = None) -> None:
     """
     Prints the solution as wanted.
 
