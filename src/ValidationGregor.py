@@ -2,7 +2,7 @@ from itertools import permutations, product
 from collections import Counter
 import numpy as np
 
-class Validation():
+class Validation:
     def validate(self, sol, n, r, p, t, s):
         w = 2*(n-1)
         # self.team_plays_twice_home_aways(n, sol)
@@ -31,13 +31,14 @@ class Validation():
         for idx, teams_week in enumerate(sol_teams_week):
             assert all_teams.issubset(teams_week), f"At least one team does not play in week {idx + 1}"
         
-    def input_p_is_correct(self, p) -> None:
+    def input_p_is_correct(self, p) -> bool:
         matrix = np.array(p).reshape(3,6,6)
         for sm in matrix:
             for i in range(sm.shape[0]):
                 for j in range(sm.shape[1]):
                     assert not ((i != j) and (sm[i,j] < 0)), "The profit of a match is negative"
                     assert not ((i == j) and (sm[i,j] != -1)), "Matches against yourself must have a profit of -1"
+        return True
 
     def only_one_match_on_monday(self, n, solution):
         ### This will be implemented within the calculation of the solution

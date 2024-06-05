@@ -1,5 +1,6 @@
 # Standard library
 import argparse
+import numpy as np
 
 # Project specific library
 from src.helper import read_in_file
@@ -19,6 +20,8 @@ if __name__ == '__main__':
     timeout = args.timeout
 
     algo_config = read_in_file(path_to_file=path_to_file)
-       
+    print(
+        algo_config['p'].reshape(3,6,6)
+    )
     agent = GreedyHeuristic(algo_config)
     agent.execute_cmd()
