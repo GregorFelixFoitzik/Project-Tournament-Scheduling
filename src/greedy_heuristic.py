@@ -3,14 +3,14 @@ import time
 
 # Third party library
 import numpy as np
-import copy
+from copy import deepcopy
 # from collections import deque
 
 # Project specific library
 from src.helper import print_solution
-from src.ValidationGregor import Validation
+from src.ValidationGregor import SolutionValidation, StepValidation, permutations
 
-class GreedyHeuristic(Validation):
+class GreedyHeuristic(SolutionValidation, StepValidation):
     def __init__(self, algo_config) -> None:
         self.n = algo_config['n'] # int
         self.t = algo_config['t'] # float
@@ -22,7 +22,8 @@ class GreedyHeuristic(Validation):
         # self.matrix = algo_config['p'].reshape(3,self.n,self.n)
         self.mpw = self.n * self.n
         # https://stackoverflow.com/a/1704853 
-        self.solution = np.empty( (3, 2*(self.n - 1), self.n//2), dtype=str) # day - week - matchOfDay
+
+        self.solution = np.zeros( (3, 2*(self.n - 1), self.n//2, 2), dtype=np.int8) # day - week - matchOfDay - teamsMatch
         
     def run(self) -> np.array:
         """
@@ -34,12 +35,10 @@ class GreedyHeuristic(Validation):
         Returns:
             None
         """
-        mat = copy.deepcopy(self.p)
-        vv_max = np.max(mat)
-        ii_max = np.where(mat == vv_max)[0][0] # np.random.choice(np.where(mat == vv_max)[0])
-        self.NaivGreedyHeuristic(0, self.p)
 
-    def NaivGreedyHeuristic(self, wd:int, profits:np.array) -> str:
+        self.NaivGreedy()
+
+    def NaivGreedy(self) -> str:
         """
         Selects the match with the highest profit over every day.
 
@@ -53,7 +52,7 @@ class GreedyHeuristic(Validation):
         Returns:
             str : contains the match
         """
-        weekdays = {0: 'M', 1:'F', 2:'S'}
+        allMatches = set(map(lambda match: (int(match[0]), int(match[1])), permutations(set(range(1, self.n + 1)), 2)))
         HelperProfitStart =  {
             0: 0
             ,1: self.n**2
@@ -64,16 +63,39 @@ class GreedyHeuristic(Validation):
             ,1: 2 * self.n**2
             ,2: 3 * self.n**2
         }
-        idxMaxMatch = np.argmax(
-            profits[
-                HelperProfitStart[wd]:
-                HelperProfitEnd[wd]            
-            ]
-        )
-        print(profits)
-        teams = np.unravel_index(idxMaxMatch, (3,self.n,self.n))
-        S
 
+        profits = deepcopy(self.p)
+
+        while len(allMatches) != 0:
+
+            profitMaxMatch = np.max(profits)
+            idxMaxMatches = np.where( profitMaxMatch == profits )[0]
+            #     HelperProfitStart[0]:
+            #     HelperProfitEnd[0]            
+            # ])[0]
+
+            for idxMaxMatch in idxMaxMatches:
+                weekday, t1, t2 = np.unravel_index(idxMaxMatch, (3,self.n,self.n))
+                t1, t2 = t1+1, t2+1
+
+                if weekday == 0:                    
+                    possWeeks = [ii for ii, tt in enumerate(self.solution[weekday][:, 0]) if all(tt == [0,0])]
+                    
+                else:
+                    possWeeks = [ii for ii, tt in enumerate(self.solution[weekday][:, :]) if all(tt == [0,0])]
+
+            print(possWeeks)
+
+            self.solution[weekday][possWeeks[0], 0] = [t1, t2]
+            print(allMatches)
+            allMatches.remove((t1,t2))
+            profits[idxMaxMatch] = -1
+            print(allMatches)
+
+            print_solution(0, self.solution)
+
+            # break
+            
 
     def check_solution(self):
         """

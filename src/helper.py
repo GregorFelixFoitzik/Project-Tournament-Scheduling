@@ -7,6 +7,8 @@ import ast
 import numpy as np
 from typing import Union
 from itertools import permutations
+from tabulate import tabulate
+
 
 def read_in_file(path_to_file: str) -> dict[str, Union[float, int, list[int]]]:
     """Read the .in file which contains the configuration.
@@ -53,16 +55,21 @@ def print_solution(runtime: float, solution: np.array = None) -> None:
             #     idx %  3 => M/F/S (0/1/2)
             value (list): [home, away, profit]
     """
-    if solution:
-        objective_value = np.sum(solution, axis=0)[-1]
-        print("### RESULT: Feasible")
-        print(f"### OBJECTIVE: {objective_value}")
+    if solution is not None:
+        formatted_blocks = []
+        for block in solution:
+            formatted_block = [[' - '.join(map(str, pair)).replace('0', '') for pair in row] for row in block]
+            formatted_blocks.append(formatted_block)
 
-        for idx, match in enumerate(solution):
-            days = {0: 'M', 1: 'F', 2: 'S'}
-            print(f"### match <{idx//(self.n/2)+1}>-{days[idx%3]}: <{match[0]}> <{match[1]}>")
+        # Convert the formatted blocks into numpy arrays
+        formatted_blocks = [np.array(block) for block in formatted_blocks]
 
-        print(f"### CPU-TIME: {runtime}")
+        # Concatenate the blocks horizontally
+        concatenated_array = np.hstack(formatted_blocks)
+
+        # Print the concatenated array using tabulate
+        headers=['Mon','Mon','Mon', 'Fri','Fri','Fri', 'Sat','Sat','Sat']
+        print(tabulate(concatenated_array, tablefmt="grid", headers=headers))  
 
     else:
-        print("### RESULT: TIMEOUT")
+        print("The solution is None and cannot be processed.")
