@@ -1,5 +1,6 @@
 """File contains helper functions which might be useful"""
 # Standard library
+from math import inf
 import re
 import ast
 
@@ -73,3 +74,31 @@ def print_solution(runtime: float, solution: np.array = None) -> None:
 
     else:
         print("The solution is None and cannot be processed.")
+
+def compute_profit(sol: np.ndarray, profit: np.ndarray) -> float:
+    overall_profit = 0
+    prev_profit = 0
+    for week in sol:
+        for i, matches in enumerate(week):
+            if i == 0 and np.unique(matches, axis=0).shape[0] == 2:
+                match = matches[np.logical_not(np.isnan(matches))]
+                prev_profit = overall_profit
+                overall_profit += profit[0][int(match[0])-1][int(match[1])-1]
+                continue
+            if i == 0 and np.unique(matches, axis=0).shape[1].shape[1] > 2:
+                matches = matches[np.logical_not(np.isnan(matches))]
+                min_profit = float(inf)
+
+                for match in matches:
+                     if profit[0][int(match[0])-1][int(match[1])-1] < min_profit:
+                          min_profit = profit[0][int(match[0])-1][int(match[1])-1]
+                prev_profit = overall_profit
+                overall_profit += min_profit
+                continue
+            
+            for match in matches:
+                if False in np.isnan(match):
+                    prev_profit = overall_profit
+                    overall_profit+= profit[i][int(match[0])-1][int(match[1])-1]
+    
+    return overall_profit
