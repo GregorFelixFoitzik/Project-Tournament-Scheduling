@@ -85,9 +85,10 @@ class ALNS:
             matches = sol[week_to_destroy].copy()
             sol[week_to_destroy] = np.full(matches.shape, np.nan)
             weeks_changed = [week_to_destroy]
+            matches = np.array([matches])
         elif destroy_operator == 1:
             # Destroy the 10$-worst solutions
-            num_solutions_to_destroy = int(sol.shape[0] * 0.1)
+            num_solutions_to_destroy = int(sol.shape[0] * 0.8)
             week_profits = get_profits_per_week(sol, self.p)
 
             worst_weeks = np.argsort(week_profits)[:num_solutions_to_destroy]
@@ -109,10 +110,12 @@ class ALNS:
         repair_operator = random.choices(repair_operators, weights=weights)[0]
 
         repair_operator = 1
+        
 
         if repair_operator == 0:
             # Random fill
             for i, week_changed in enumerate(weeks_changed):
+                matches = matches[i]
                 new_order = np.full(sol.shape[1:], np.nan)
 
                 teams_not_on_monday = np.setdiff1d(
@@ -203,15 +206,13 @@ class ALNS:
             teams_on_monday = np.unique(sol[:, 0])[:-1]
             teams_forced_on_monday = np.setdiff1d(teams, teams_on_monday)
 
-            # 1. Find matches, which are forced to play on monday
-            # 2. Which games are useful to play in which week?
-            # 3. If all matches are allowed:
-            #   3.1. Apply exact solution
-            # In general: Try to apply an exact solver here to find the next best solution
-            
+            # 1. Matches forced on monday: Insert them first
+            # 2. Find matches, that can only played in one week: Insert game, where profit is maximized
+            # 3. Remaining games: Find maximum and fill up to t%
+
+            # Add teams forced on monday
 
             games_forces_monday = []
-            print('ads')
 
 
         return sol
@@ -236,114 +237,114 @@ class ALNS:
 if __name__ == "__main__":
     num_teams = 6
 
-    sol = np.array(
-        [
-            [
-                [[5, 1], [np.nan, np.nan]],
-                [[3, 6], [2, 4]],
-                [[np.nan, np.nan], [np.nan, np.nan]],
-            ],
-            [
-                [[6, 2], [np.nan, np.nan]],
-                [[1, 4], [3, 5]],
-                [[np.nan, np.nan], [np.nan, np.nan]],
-            ],
-            [
-                [[5, 4], [np.nan, np.nan]],
-                [[1, 6], [np.nan, np.nan]],
-                [[3, 2], [np.nan, np.nan]],
-            ],
-            [
-                [[6, 4], [np.nan, np.nan]],
-                [[1, 3], [np.nan, np.nan]],
-                [[5, 2], [np.nan, np.nan]],
-            ],
-            [
-                [[1, 2], [np.nan, np.nan]],
-                [[3, 4], [5, 6]],
-                [[np.nan, np.nan], [np.nan, np.nan]],
-            ],
-            [
-                [[6, 3], [np.nan, np.nan]],
-                [[4, 1], [np.nan, np.nan]],
-                [[2, 5], [np.nan, np.nan]],
-            ],
-            [
-                [[3, 1], [np.nan, np.nan]],
-                [[4, 2], [np.nan, np.nan]],
-                [[6, 5], [np.nan, np.nan]],
-            ],
-            [
-                [[1, 5], [np.nan, np.nan]],
-                [[4, 3], [2, 6]],
-                [[np.nan, np.nan], [np.nan, np.nan]],
-            ],
-            [
-                [[4, 5], [np.nan, np.nan]],
-                [[2, 3], [np.nan, np.nan]],
-                [[6, 1], [np.nan, np.nan]],
-            ],
-            [
-                [[4, 6], [np.nan, np.nan]],
-                [[5, 3], [2, 1]],
-                [[np.nan, np.nan], [np.nan, np.nan]],
-            ],
-        ]
-    )
     # sol = np.array(
     #     [
     #         [
     #             [[5, 1], [np.nan, np.nan]],
-    #             [[3, 2], [np.nan, np.nan]],
-    #             [[6, 4], [np.nan, np.nan]],
+    #             [[3, 6], [2, 4]],
+    #             [[np.nan, np.nan], [np.nan, np.nan]],
     #         ],
     #         [
     #             [[6, 2], [np.nan, np.nan]],
-    #             [[1, 4], [np.nan, np.nan]],
-    #             [[3, 5], [np.nan, np.nan]],
+    #             [[1, 4], [3, 5]],
+    #             [[np.nan, np.nan], [np.nan, np.nan]],
     #         ],
     #         [
+    #             [[5, 4], [np.nan, np.nan]],
     #             [[1, 6], [np.nan, np.nan]],
-    #             [[2, 4], [np.nan, np.nan]],
-    #             [[5, 3], [np.nan, np.nan]],
+    #             [[3, 2], [np.nan, np.nan]],
     #         ],
     #         [
+    #             [[6, 4], [np.nan, np.nan]],
     #             [[1, 3], [np.nan, np.nan]],
     #             [[5, 2], [np.nan, np.nan]],
-    #             [[4, 6], [np.nan, np.nan]],
     #         ],
     #         [
     #             [[1, 2], [np.nan, np.nan]],
-    #             [[3, 4], [np.nan, np.nan]],
-    #             [[5, 6], [np.nan, np.nan]],
+    #             [[3, 4], [5, 6]],
+    #             [[np.nan, np.nan], [np.nan, np.nan]],
     #         ],
     #         [
+    #             [[6, 3], [np.nan, np.nan]],
     #             [[4, 1], [np.nan, np.nan]],
     #             [[2, 5], [np.nan, np.nan]],
-    #             [[6, 3], [np.nan, np.nan]],
-    #         ],
-    #         [
-    #             [[1, 5], [np.nan, np.nan]],
-    #             [[4, 2], [np.nan, np.nan]],
-    #             [[3, 6], [np.nan, np.nan]],
     #         ],
     #         [
     #             [[3, 1], [np.nan, np.nan]],
-    #             [[2, 6], [np.nan, np.nan]],
-    #             [[4, 5], [np.nan, np.nan]],
-    #         ],
-    #         [
-    #             [[6, 1], [np.nan, np.nan]],
-    #             [[2, 3], [np.nan, np.nan]],
-    #             [[5, 4], [np.nan, np.nan]],
-    #         ],
-    #         [
-    #             [[2, 1], [np.nan, np.nan]],
-    #             [[4, 3], [np.nan, np.nan]],
+    #             [[4, 2], [np.nan, np.nan]],
     #             [[6, 5], [np.nan, np.nan]],
+    #         ],
+    #         [
+    #             [[1, 5], [np.nan, np.nan]],
+    #             [[4, 3], [2, 6]],
+    #             [[np.nan, np.nan], [np.nan, np.nan]],
+    #         ],
+    #         [
+    #             [[4, 5], [np.nan, np.nan]],
+    #             [[2, 3], [np.nan, np.nan]],
+    #             [[6, 1], [np.nan, np.nan]],
+    #         ],
+    #         [
+    #             [[4, 6], [np.nan, np.nan]],
+    #             [[5, 3], [2, 1]],
+    #             [[np.nan, np.nan], [np.nan, np.nan]],
     #         ],
     #     ]
     # )
+    sol = np.array(
+        [
+            [
+                [[5, 1], [np.nan, np.nan]],
+                [[3, 2], [np.nan, np.nan]],
+                [[6, 4], [np.nan, np.nan]],
+            ],
+            [
+                [[6, 2], [np.nan, np.nan]],
+                [[1, 4], [np.nan, np.nan]],
+                [[3, 5], [np.nan, np.nan]],
+            ],
+            [
+                [[1, 6], [np.nan, np.nan]],
+                [[2, 4], [np.nan, np.nan]],
+                [[5, 3], [np.nan, np.nan]],
+            ],
+            [
+                [[1, 3], [np.nan, np.nan]],
+                [[5, 2], [np.nan, np.nan]],
+                [[4, 6], [np.nan, np.nan]],
+            ],
+            [
+                [[1, 2], [np.nan, np.nan]],
+                [[3, 4], [np.nan, np.nan]],
+                [[5, 6], [np.nan, np.nan]],
+            ],
+            [
+                [[4, 1], [np.nan, np.nan]],
+                [[2, 5], [np.nan, np.nan]],
+                [[6, 3], [np.nan, np.nan]],
+            ],
+            [
+                [[1, 5], [np.nan, np.nan]],
+                [[4, 2], [np.nan, np.nan]],
+                [[3, 6], [np.nan, np.nan]],
+            ],
+            [
+                [[3, 1], [np.nan, np.nan]],
+                [[2, 6], [np.nan, np.nan]],
+                [[4, 5], [np.nan, np.nan]],
+            ],
+            [
+                [[6, 1], [np.nan, np.nan]],
+                [[2, 3], [np.nan, np.nan]],
+                [[5, 4], [np.nan, np.nan]],
+            ],
+            [
+                [[2, 1], [np.nan, np.nan]],
+                [[4, 3], [np.nan, np.nan]],
+                [[6, 5], [np.nan, np.nan]],
+            ],
+        ]
+    )
 
 
 
