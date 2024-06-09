@@ -94,7 +94,7 @@ class ALNS:
             matches = sol[worst_weeks].copy()
             
             sol[worst_weeks] = np.full(matches.shape, np.nan)
-            weeks_changed = [worst_weeks]
+            weeks_changed = worst_weeks
         else:
             matches = np.array([])
             weeks_changed = np.array([])
@@ -103,12 +103,12 @@ class ALNS:
 
     def repair(self, sol: np.ndarray, matches: np.ndarray, weeks_changed: list[int]):
         # Randomly choose a repai parameter
-        num_destroy_operators = 1
-        repair_operators = list(range(num_destroy_operators))
-        weights = [100] * num_destroy_operators
+        num_repair_operators = 2
+        repair_operators = list(range(num_repair_operators))
+        weights = [100] * num_repair_operators
         repair_operator = random.choices(repair_operators, weights=weights)[0]
 
-        repair_operator == 1
+        repair_operator = 1
 
         if repair_operator == 0:
             # Random fill
@@ -180,6 +180,38 @@ class ALNS:
                 sol[week_changed] = new_order
         elif repair_operator == 1:
             # Using worst weeks to generate a better solution
+            matches_unique = np.unique(matches, axis=1)
+            matches_unique = matches_unique[
+                np.logical_not(np.isnan(matches_unique))
+            ]
+            matches_unique = matches_unique.reshape(
+                int(matches_unique.shape[0] / 2), 2
+            )
+
+            # Get possible games for each of the empty weeks
+            teams = np.unique(matches_unique)
+            possible_weeks_per_team = []
+            for team in teams:
+                occurences = np.where(team == sol)[0]
+                possible_weeks = []
+                for destroyed_week in weeks_changed:
+                    intersections = np.intersect1d(range(max(0, destroyed_week -self.r+1), min(destroyed_week +self.r, sol.shape[0])), occurences)
+                    if intersections.size == 0:
+                        possible_weeks.append(destroyed_week)
+                possible_weeks_per_team.append(possible_weeks)
+            
+            teams_on_monday = np.unique(sol[:, 0])[:-1]
+            teams_forced_on_monday = np.setdiff1d(teams, teams_on_monday)
+
+            # 1. Find matches, which are forced to play on monday
+            # 2. Which games are useful to play in which week?
+            # 3. If all matches are allowed:
+            #   3.1. Apply exact solution
+            # In general: Try to apply an exact solver here to find the next best solution
+            
+
+            games_forces_monday = []
+            print('ads')
 
 
         return sol
@@ -319,7 +351,7 @@ if __name__ == "__main__":
         "n": num_teams,
         "t": 2 / 3,
         "s": 2,
-        "r": 3,
+        "r": 1,
         "p": np.array(
             [
                 -1.0,
