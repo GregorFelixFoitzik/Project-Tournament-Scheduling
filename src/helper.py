@@ -76,14 +76,17 @@ def print_solution(runtime: float, solution: np.array = None) -> None:
         print("The solution is None and cannot be processed.")
 
 def compute_profit(sol: np.ndarray, profit: np.ndarray) -> float:
-    overall_profit = 0
-    prev_profit = 0
+    return np.sum(get_profits_per_week(sol, profit))
+
+
+def get_profits_per_week(sol: np.ndarray, profit: np.ndarray):
+    week_profits = []
     for week in sol:
+        sum_week = 0
         for i, matches in enumerate(week):
             if i == 0 and np.unique(matches, axis=0).shape[0] == 2:
                 match = matches[np.logical_not(np.isnan(matches))]
-                prev_profit = overall_profit
-                overall_profit += profit[0][int(match[0])-1][int(match[1])-1]
+                sum_week += profit[0][int(match[0])-1][int(match[1])-1]
                 continue
             if i == 0 and np.unique(matches, axis=0).shape[1].shape[1] > 2:
                 matches = matches[np.logical_not(np.isnan(matches))]
@@ -92,13 +95,13 @@ def compute_profit(sol: np.ndarray, profit: np.ndarray) -> float:
                 for match in matches:
                      if profit[0][int(match[0])-1][int(match[1])-1] < min_profit:
                           min_profit = profit[0][int(match[0])-1][int(match[1])-1]
-                prev_profit = overall_profit
-                overall_profit += min_profit
+                sum_week += min_profit
                 continue
             
             for match in matches:
                 if False in np.isnan(match):
-                    prev_profit = overall_profit
-                    overall_profit+= profit[i][int(match[0])-1][int(match[1])-1]
+                    sum_week+= profit[i][int(match[0])-1][int(match[1])-1]
+        week_profits.append(sum_week)
+
+    return week_profits
     
-    return overall_profit

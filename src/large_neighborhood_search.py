@@ -15,7 +15,7 @@ from tabulate import tabulate
 
 # Project specific library
 from validation import each_team_on_monday, validate
-from helper import compute_profit, print_solution
+from helper import compute_profit, get_profits_per_week, print_solution
 
 
 class ALNS:
@@ -70,12 +70,14 @@ class ALNS:
 
     def destroy(self, sol: np.ndarray) -> tuple[np.ndarray, np.ndarray, list[int]]:
         # Randomly choose a destroy parameter
-        num_destroy_operators = 1
+        num_destroy_operators = 2
         destroy_operators = list(range(num_destroy_operators))
         weights = [100] * num_destroy_operators
         destroy_operator = random.choices(destroy_operators, weights=weights)[0]
 
         weeks_changed = []
+
+        destroy_operator=1
 
         if destroy_operator == 0:
             # Destroy one week randomly
@@ -83,8 +85,19 @@ class ALNS:
             matches = sol[week_to_destroy].copy()
             sol[week_to_destroy] = np.full(matches.shape, np.nan)
             weeks_changed = [week_to_destroy]
+        elif destroy_operator == 1:
+            # Destroy the 10$-worst solutions
+            num_solutions_to_destroy = int(sol.shape[0] * 0.1)
+            week_profits = get_profits_per_week(sol, self.p)
+
+            worst_weeks = np.argsort(week_profits)[:num_solutions_to_destroy]
+            matches = sol[worst_weeks].copy()
+            
+            sol[worst_weeks] = np.full(matches.shape, np.nan)
+            weeks_changed = [worst_weeks]
         else:
             matches = np.array([])
+            weeks_changed = np.array([])
 
         return sol, matches, weeks_changed
 
@@ -94,6 +107,8 @@ class ALNS:
         repair_operators = list(range(num_destroy_operators))
         weights = [100] * num_destroy_operators
         repair_operator = random.choices(repair_operators, weights=weights)[0]
+
+        repair_operator == 1
 
         if repair_operator == 0:
             # Random fill
@@ -163,6 +178,9 @@ class ALNS:
                 new_order[2] = saturday
 
                 sol[week_changed] = new_order
+        elif repair_operator == 1:
+            # Using worst weeks to generate a better solution
+
 
         return sol
 
