@@ -188,12 +188,31 @@ class ALNS:
             ]
             games = games.reshape(
                 int(games.shape[0] / 2), 2
-            )
+            ).astype(int)
             teams = np.unique(games)
+            
+            # For each game extract the profit and sort it in descending order
+            max_profits_per_game = np.zeros((games.shape[0], 3))
+            max_profits_per_game_days = np.zeros((games.shape[0], 3))
+            for i, game in enumerate(games):
+                max_profits_per_game[i] = np.sort((self.p[:, game[0]-1, game[1]-1]))[::-1]
+                max_profits_per_game_days[i] = np.argsort((self.p[:, game[0]-1, game[1]-1]))[::-1]
 
-            # Set the constraints for each game
+            games_added = np.zeros(games.shape)
+
+            # Extract games, which should be played on monday
             teams_on_monday = np.unique(sol[:, 0])[:-1]
             teams_forced_on_monday = np.setdiff1d(teams, teams_on_monday)
+
+            
+            for team_forced_on_monday in teams_forced_on_monday:
+                pos = np.argmax(max_profits_per_game[np.where(True == np.isin(games, team_forced_on_monday))[0]][:,0])
+
+                print('asd')
+
+
+
+
             games_monday = np.zeros(games.shape[0])
             games_monday[np.where(True == np.isin(games, teams_forced_on_monday))[0]] = 1
 
@@ -213,88 +232,8 @@ class ALNS:
             # Start with game that gives maximum profit and add it to the solution
             # If game cannot be added: Use other day
 
+
             print('asd')
-
-
-
-            # Get possible games for each of the empty weeks
-            possible_weeks_per_game = []
-            for game in games:
-                occurences_home = np.where(game[0] == sol)[0]
-                occurences_away = np.where(game[1] == sol)[0]
-
-                possible_weeks = np.full(sol.shape[0], np.nan)
-                for i, destroyed_week in enumerate(weeks_changed):
-                    intersections_home = np.intersect1d(range(max(0, destroyed_week -self.r+1), min(destroyed_week +self.r, sol.shape[0])), occurences_home)
-                    intersections_away = np.intersect1d(range(max(0, destroyed_week -self.r+1), min(destroyed_week +self.r, sol.shape[0])), occurences_away)
-                    if intersections_home.size == 0 and intersections_away.size == 0:
-                        possible_weeks[i] = destroyed_week
-                possible_weeks_per_game.append(possible_weeks)
-
-            possible_weeks_per_game =np.array(possible_weeks_per_game)
-
-            sub_array_sizes_possible_weeks_per_game = []
-            for week in possible_weeks_per_game:
-                sub_array_sizes_possible_weeks_per_game.append(np.unique(week).shape[0]-1)
-
-            games_sorted_idx = np.argsort(sub_array_sizes_possible_weeks_per_game)
-            monday_games_sorted_possible_weeks = games_sorted_idx[np.isin(games_sorted_idx, np.where(games_monday == 1)[0])]
-            monday_games_weeks = possible_weeks_per_game[monday_games_sorted_possible_weeks]
-
-            for game in monday_games_sorted_possible_weeks:
-                monday_games_sorted_possible_weeks
-                print('asd')
-
-
-            # Set monday games
-            possible_weeks_monday = possible_weeks_per_game[games_monday == 1]
-
-
-            possible_weeks_per_team = []
-            for team in teams:
-                occurences = np.where(team == sol)[0]
-
-
-
-
-            print('ads')
-
-
-
-
-
-
-            # Using worst weeks to generate a better solution
-            games_unique = np.unique(games, axis=1)
-            games_unique = games_unique[
-                np.logical_not(np.isnan(games_unique))
-            ]
-            games_unique = games_unique.reshape(
-                int(games_unique.shape[0] / 2), 2
-            )
-
-            # Get possible games for each of the empty weeks
-            teams = np.unique(games_unique)
-            possible_weeks_per_team = []
-            for team in teams:
-                occurences = np.where(team == sol)[0]
-                possible_weeks = []
-                for destroyed_week in weeks_changed:
-                    intersections = np.intersect1d(range(max(0, destroyed_week -self.r+1), min(destroyed_week +self.r, sol.shape[0])), occurences)
-                    if intersections.size == 0:
-                        possible_weeks.append(destroyed_week)
-                possible_weeks_per_team.append(possible_weeks)
-            
-            teams_on_monday = np.unique(sol[:, 0])[:-1]
-            teams_forced_on_monday = np.setdiff1d(teams, teams_on_monday)
-
-            # 1. games forced on monday: Insert them first
-            # 2. Find games, that can only played in one week: Insert game, where profit is maximized
-            # 3. Remaining games: Find maximum and fill up to t%
-
-            # Add teams forced on monday
-
-            games_forces_monday = []
 
 
         return sol
