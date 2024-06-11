@@ -15,7 +15,7 @@ from tabulate import tabulate
 
 
 # Project specific library
-from validation import each_team_on_monday, validate
+from validation import every_team_every_week, validate
 from helper import compute_profit, get_profits_per_week, print_solution
 
 
@@ -222,7 +222,10 @@ class ALNS:
 
                 for game in games_equal_profit[game_idx]:
                     for week in weeks_changed:
-                        if np.unique(sol[week][0]).size > 1 and (game[0] in sol[week] or game[1] in sol[week]):
+                        if np.unique(sol[week][0]).size > 1:
+                            continue
+
+                        if game[0] in sol[week] or game[1] in sol[week]:
                             continue
 
                         sol_equal_game = np.where(np.isin(sol, [game[1], game[0]]))[:-1]
@@ -241,7 +244,6 @@ class ALNS:
                         profit_used_idx.append(i)
                         break
 
-                    print()
                 # TODO: Is there a free monday? Yes: Find out which one delivers max profit condisering reducing the profit 
                 # TODO: Is there a free monday? No: What combination maximizes the overall profit
 
@@ -293,15 +295,14 @@ class ALNS:
                         if day_equal_profit == 0 and np.unique(sol[week][day_equal_profit]).size > 1:
                             continue
 
-                        if game[0] == 1 and game[1] == 4:
-                            print('asd')
-
                         sol[week][day_equal_profit][index_to_add[0]] = game
 
                         games_idx_added.append(np.where((games[:, 0] == game[0]) & (games[:, 1] == game[1]))[0][0])
                         profit_used_idx.append(i)
                         games_added.append(game.tolist())
                         break
+                    
+
         games = games[np.setdiff1d(range(games.shape[0]), games_idx_added)]
         return sol
 

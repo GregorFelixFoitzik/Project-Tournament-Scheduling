@@ -19,8 +19,8 @@ def validate(
 
     feasible_uniqueness = uniqueness(sol=sol, num_teams=num_teams, weeks=weeks)
     feasible_check_games = check_games(sol=sol, num_teams=num_teams)
-    feasible_each_team_monday = each_team_on_monday(sol=sol, num_teams=num_teams)
-    feasible_every_team_every_week = each_team_every_week(sol=sol, num_teams=num_teams)
+    feasible_each_team_monday = every_team_on_monday(sol=sol, num_teams=num_teams)
+    feasible_every_team_every_week = every_team_every_week(sol=sol, num_teams=num_teams)
 
     return feasible_uniqueness and feasible_check_games and feasible_each_team_monday and feasible_every_team_every_week
 
@@ -85,7 +85,7 @@ def check_games(sol: np.ndarray, num_teams: int) -> bool:
     return games_required.shape[0] == games_in_sol
 
 
-def each_team_on_monday(sol: np.ndarray, num_teams: int) -> bool:
+def every_team_on_monday(sol: np.ndarray, num_teams: int) -> bool:
     teams = [team for team in range(1, num_teams + 1)]
     
     monday_games = sol[:, 0]
@@ -94,7 +94,7 @@ def each_team_on_monday(sol: np.ndarray, num_teams: int) -> bool:
 
     unique_values_monday_games = np.unique(monday_games)
     print(
-        "Each team plays at least once "
+        "Every team plays at least once "
         f"on monday: {np.logical_not(False in (unique_values_monday_games == teams))}"
     )
 
@@ -102,192 +102,192 @@ def each_team_on_monday(sol: np.ndarray, num_teams: int) -> bool:
 
     return np.logical_not(False in (unique_values_monday_games == teams))
 
-def each_team_every_week(sol: np.ndarray, num_teams: int) -> bool:
+def every_team_every_week(sol: np.ndarray, num_teams: int) -> bool:
     for i, week in enumerate(sol):
         assert np.all(np.unique(week)[:-1] == list(range(1, num_teams + 1))), f"In week {i} not all teams play!"
 
     return True
 
 
-if __name__ == "__main__":
-    num_teams = 6
-    weeks_between = 1
-    profits = [
-        -1.0,
-        15.0,
-        20.0,
-        16.0,
-        28.0,
-        9.0,
-        13.0,
-        -1.0,
-        8.0,
-        12.0,
-        10.0,
-        12.0,
-        19.0,
-        10.0,
-        -1.0,
-        14.0,
-        15.0,
-        13.0,
-        18.0,
-        14.0,
-        12.0,
-        -1.0,
-        13.0,
-        16.0,
-        25.0,
-        15.0,
-        13.0,
-        17.0,
-        -1.0,
-        11.0,
-        10.0,
-        14.0,
-        23.0,
-        21.0,
-        10.0,
-        -1.0,
-        -1.0,
-        8.0,
-        10.0,
-        9.0,
-        5.0,
-        9.0,
-        6.0,
-        -1.0,
-        5.0,
-        11.0,
-        7.0,
-        4.0,
-        8.0,
-        4.0,
-        -1.0,
-        12.0,
-        8.0,
-        6.0,
-        10.0,
-        7.0,
-        4.0,
-        -1.0,
-        4.0,
-        2.0,
-        10.0,
-        7.0,
-        5.0,
-        3.0,
-        -1.0,
-        10.0,
-        4.0,
-        8.0,
-        2.0,
-        7.0,
-        1.0,
-        -1.0,
-        -1.0,
-        2.0,
-        3.0,
-        5.0,
-        3.0,
-        5.0,
-        1.0,
-        -1.0,
-        3.0,
-        2.0,
-        9.0,
-        10.0,
-        7.0,
-        8.0,
-        -1.0,
-        4.0,
-        5.0,
-        2.0,
-        6.0,
-        7.0,
-        5.0,
-        -1.0,
-        2.0,
-        1.0,
-        6.0,
-        8.0,
-        5.0,
-        4.0,
-        -1.0,
-        7.0,
-        8.0,
-        3.0,
-        2.0,
-        7.0,
-        4.0,
-        -1.0,
-    ]
+# if __name__ == "__main__":
+#     num_teams = 6
+#     weeks_between = 1
+#     profits = [
+#         -1.0,
+#         15.0,
+#         20.0,
+#         16.0,
+#         28.0,
+#         9.0,
+#         13.0,
+#         -1.0,
+#         8.0,
+#         12.0,
+#         10.0,
+#         12.0,
+#         19.0,
+#         10.0,
+#         -1.0,
+#         14.0,
+#         15.0,
+#         13.0,
+#         18.0,
+#         14.0,
+#         12.0,
+#         -1.0,
+#         13.0,
+#         16.0,
+#         25.0,
+#         15.0,
+#         13.0,
+#         17.0,
+#         -1.0,
+#         11.0,
+#         10.0,
+#         14.0,
+#         23.0,
+#         21.0,
+#         10.0,
+#         -1.0,
+#         -1.0,
+#         8.0,
+#         10.0,
+#         9.0,
+#         5.0,
+#         9.0,
+#         6.0,
+#         -1.0,
+#         5.0,
+#         11.0,
+#         7.0,
+#         4.0,
+#         8.0,
+#         4.0,
+#         -1.0,
+#         12.0,
+#         8.0,
+#         6.0,
+#         10.0,
+#         7.0,
+#         4.0,
+#         -1.0,
+#         4.0,
+#         2.0,
+#         10.0,
+#         7.0,
+#         5.0,
+#         3.0,
+#         -1.0,
+#         10.0,
+#         4.0,
+#         8.0,
+#         2.0,
+#         7.0,
+#         1.0,
+#         -1.0,
+#         -1.0,
+#         2.0,
+#         3.0,
+#         5.0,
+#         3.0,
+#         5.0,
+#         1.0,
+#         -1.0,
+#         3.0,
+#         2.0,
+#         9.0,
+#         10.0,
+#         7.0,
+#         8.0,
+#         -1.0,
+#         4.0,
+#         5.0,
+#         2.0,
+#         6.0,
+#         7.0,
+#         5.0,
+#         -1.0,
+#         2.0,
+#         1.0,
+#         6.0,
+#         8.0,
+#         5.0,
+#         4.0,
+#         -1.0,
+#         7.0,
+#         8.0,
+#         3.0,
+#         2.0,
+#         7.0,
+#         4.0,
+#         -1.0,
+#     ]
 
-    t = 2 / 3
-    s = 2
+#     t = 2 / 3
+#     s = 2
 
-    # Monday, Friday, Saturday
-    sol = np.array(
-        [
-            [
-                [[5, 1], [np.nan, np.nan]],
-                [[3, 6], [2, 4]],
-                [[np.nan, np.nan], [np.nan, np.nan]],
-            ],
-            [
-                [[6, 2], [np.nan, np.nan]],
-                [[1, 4], [3, 5]],
-                [[np.nan, np.nan], [np.nan, np.nan]],
-            ],
-            [
-                [[5, 4], [np.nan, np.nan]],
-                [[1, 6], [np.nan, np.nan]],
-                [[3, 2], [np.nan, np.nan]],
-            ],
-            [
-                [[6, 4], [np.nan, np.nan]],
-                [[1, 3], [np.nan, np.nan]],
-                [[5, 2], [np.nan, np.nan]],
-            ],
-            [
-                [[1, 2], [np.nan, np.nan]],
-                [[3, 4], [5, 6]],
-                [[np.nan, np.nan], [np.nan, np.nan]],
-            ],
-            [
-                [[6, 3], [np.nan, np.nan]],
-                [[4, 1], [np.nan, np.nan]],
-                [[2, 5], [np.nan, np.nan]],
-            ],
-            [
-                [[3, 1], [np.nan, np.nan]],
-                [[4, 2], [np.nan, np.nan]],
-                [[6, 5], [np.nan, np.nan]],
-            ],
-            [
-                [[1, 5], [np.nan, np.nan]],
-                [[4, 3], [2, 6]],
-                [[np.nan, np.nan], [np.nan, np.nan]],
-            ],
-            [
-                [[4, 5], [np.nan, np.nan]],
-                [[2, 3], [np.nan, np.nan]],
-                [[6, 1], [np.nan, np.nan]],
-            ],
-            [
-                [[4, 6], [np.nan, np.nan]],
-                [[5, 3], [2, 1]],
-                [[np.nan, np.nan], [np.nan, np.nan]],
-            ],
-        ]
-    )
+#     # Monday, Friday, Saturday
+#     sol = np.array(
+#         [
+#             [
+#                 [[5, 1], [np.nan, np.nan]],
+#                 [[3, 6], [2, 4]],
+#                 [[np.nan, np.nan], [np.nan, np.nan]],
+#             ],
+#             [
+#                 [[6, 2], [np.nan, np.nan]],
+#                 [[1, 4], [3, 5]],
+#                 [[np.nan, np.nan], [np.nan, np.nan]],
+#             ],
+#             [
+#                 [[5, 4], [np.nan, np.nan]],
+#                 [[1, 6], [np.nan, np.nan]],
+#                 [[3, 2], [np.nan, np.nan]],
+#             ],
+#             [
+#                 [[6, 4], [np.nan, np.nan]],
+#                 [[1, 3], [np.nan, np.nan]],
+#                 [[5, 2], [np.nan, np.nan]],
+#             ],
+#             [
+#                 [[1, 2], [np.nan, np.nan]],
+#                 [[3, 4], [5, 6]],
+#                 [[np.nan, np.nan], [np.nan, np.nan]],
+#             ],
+#             [
+#                 [[6, 3], [np.nan, np.nan]],
+#                 [[4, 1], [np.nan, np.nan]],
+#                 [[2, 5], [np.nan, np.nan]],
+#             ],
+#             [
+#                 [[3, 1], [np.nan, np.nan]],
+#                 [[4, 2], [np.nan, np.nan]],
+#                 [[6, 5], [np.nan, np.nan]],
+#             ],
+#             [
+#                 [[1, 5], [np.nan, np.nan]],
+#                 [[4, 3], [2, 6]],
+#                 [[np.nan, np.nan], [np.nan, np.nan]],
+#             ],
+#             [
+#                 [[4, 5], [np.nan, np.nan]],
+#                 [[2, 3], [np.nan, np.nan]],
+#                 [[6, 1], [np.nan, np.nan]],
+#             ],
+#             [
+#                 [[4, 6], [np.nan, np.nan]],
+#                 [[5, 3], [2, 1]],
+#                 [[np.nan, np.nan], [np.nan, np.nan]],
+#             ],
+#         ]
+#     )
 
 
-    validate(
-        sol=sol,
-        num_teams=num_teams,
-        weeks_between=weeks_between,
-        profits=profits,
-        t=t,
-        s=s,
-    )
+#     validate(
+#         sol=sol,
+#         num_teams=num_teams,
+#         weeks_between=weeks_between,
+#         profits=profits,
+#         t=t,
+#         s=s,
+#     )
