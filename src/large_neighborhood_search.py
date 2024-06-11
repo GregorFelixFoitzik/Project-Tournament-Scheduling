@@ -2,6 +2,7 @@
 import copy
 import time
 import random
+import itertools
 
 from datetime import timedelta
 import trace
@@ -183,8 +184,7 @@ class ALNS:
 
                 sol[week_changed] = new_order
         elif repair_operator == 1:
-            weeks_changed = np.sort(weeks_changed)
-
+            games_old = games.copy()
             # Extract all games
             games = games[
                 np.logical_not(np.isnan(games))
@@ -193,10 +193,59 @@ class ALNS:
                 int(games.shape[0] / 2), 2
             ).astype(int)
             teams = np.unique(games)
-            
-            # Extract games, which should be played on monday
-            teams_on_monday = np.unique(sol[:, 0])[:-1]
-            teams_forced_on_monday = np.setdiff1d(teams, teams_on_monday)
+
+            teams_forced_on_monday = np.setdiff1d(self.all_teams, np.unique(sol[:, 0])[:-1])
+            games_encoded = [i for i in range(games.shape[0])]
+
+            # Iterate over the possible combinations extract those, where each 
+            #   team is present
+            possible_combinations = []
+            for num_repetitions in range(int(self.n/2), int(self.n*self.t)):
+                # Source: https://stackoverflow.com/a/5898031, accessed 11th June
+                combinations = itertools.permutations(games_encoded, num_repetitions)
+                possible_combinations_tmp = []
+                possible_combinations_tmp_idx = []
+                for combination_idx in combinations:
+                    combination = games[list(combination_idx)]
+                    # Check if all teams play during that week
+                    if np.unique(ar=combination).size != len(list(self.all_teams)):
+                        continue
+                    if np.all(np.unique(combination) != list(self.all_teams)):
+                        continue
+
+                    # if np.intersect1d(np.array(combination)[0], teams_forced_on_monday).size < 1:
+                        # continue
+
+                    # possible_combinations_tmp.append(np.array(combination))
+                    possible_combinations_tmp_idx.append(combination_idx)
+
+                possible_combinations_tmp = np.array(possible_combinations_tmp)
+
+                possible_weekly_combinations = []
+                # Create all possible weekly combinations
+                weekly_combinations = np.array(list(itertools.permutations(possible_combinations_tmp, weeks_changed.size)))
+                weekly_combinations = weekly_combinations.reshape(weekly_combinations.shape[0], possible_combinations_tmp[0].shape[0]*weeks_changed.size, 2)
+                for weekly_combination in weekly_combinations:
+                    weekly_combination = possible_combinations_tmp[list(weekly_combination)]
+                    weekly_combination_games = weekly_combination.reshape(int(weekly_combination.size/2), 2)
+                    # Drop all duplicate games
+                    if weekly_combination_games.shape != np.unique(weekly_combination_games, axis=0).shape:
+                        continue
+                    
+                    print('asd')
+                # Get profits for each combination
+                # for possible_combination 
+
+
+
+
+
+
+
+            games = games[np.setdiff1d(range(games.shape[0]), games_idx_monday_added)]
+
+            if games.size == 0:
+                return sol
 
             # For each game extract the profit and sort it in descending order
             max_profits_per_game = np.zeros((games.shape[0], 3))
@@ -205,26 +254,22 @@ class ALNS:
                 max_profits_per_game[i] = np.sort((self.p[:, game[0]-1, game[1]-1]))[::-1]
                 max_profits_per_game_days[i] = np.argsort((self.p[:, game[0]-1, game[1]-1]))[::-1]
 
-            all_profits_monday = max_profits_per_game
+            all_profits = np.sort(max_profits_per_game.reshape(1,-1)[0])[::-1]
 
-            games_forced_monday_idx = np.where(True == np.isin(games, teams_forced_on_monday))[0]
-            all_profits_monday = np.sort(max_profits_per_game[:,0][games_forced_monday_idx])[::-1]
+            games_idx_added = []
+            games_added = []
 
-            games_idx_monday_added = []
-            profit_used_idx = []
+            for profit in all_profits:
+                games_idx_equal_profit = np.where(max_profits_per_game == profit)[0]
+                for i, game in enumerate(games[games_idx_equal_profit]):
+                    if game.tolist() in games_added:
+                        continue
+                    day_equal_profit = np.where(max_profits_per_game[games_idx_equal_profit[i]] == profit)[0][0]
 
-            for i, profit in enumerate(all_profits_monday):
-                print(profit)
-                games_equal_profit = games[max_profits_per_game[:,0] == profit]
-                game_idx = np.where(np.isin(games_equal_profit, teams_forced_on_monday))[0]
-                if game_idx.size == 0:
-                    continue
-
-                for game in games_equal_profit[game_idx]:
                     for week in weeks_changed:
-                        if np.unique(sol[week][0]).size > 1:
+                        if True not in np.isnan(np.unique(sol[week][day_equal_profit])):
                             continue
-
+                        
                         if game[0] in sol[week] or game[1] in sol[week]:
                             continue
 
@@ -236,14 +281,27 @@ class ALNS:
 
                         if abs(week - week_other_game)<self.r:
                             continue
-                            
-                        sol[week][0][0] = game
 
-                        teams_forced_on_monday = teams_forced_on_monday[(teams_forced_on_monday != game[0]) & (teams_forced_on_monday != game[1])]
-                        games_idx_monday_added.append(np.where((games[:, 0] == game[0]) & (games[:, 1] == game[1]))[0][0])
+                        index_to_add = np.where(np.isnan(sol[week][day_equal_profit][:, 0])&np.isnan(sol[week][day_equal_profit][:, 1]))[0]
+                        if index_to_add.size == 0:
+                            continue
+
+                        if day_equal_profit == 0 and np.unique(sol[week][day_equal_profit]).size > 1:
+                            continue
+
+                        sol[week][day_equal_profit][index_to_add[0]] = game
+
+                        games_idx_added.append(np.where((games[:, 0] == game[0]) & (games[:, 1] == game[1]))[0][0])
                         profit_used_idx.append(i)
+                        games_added.append(game.tolist())
                         break
 
+
+                # TODO: Is there a free monday? Yes: Find out which one delivers max profit condisering reducing the profit 
+                # TODO: Is there a free monday? No: What combination maximizes the overall profit
+
+
+            
                 # TODO: Is there a free monday? Yes: Find out which one delivers max profit condisering reducing the profit 
                 # TODO: Is there a free monday? No: What combination maximizes the overall profit
 
