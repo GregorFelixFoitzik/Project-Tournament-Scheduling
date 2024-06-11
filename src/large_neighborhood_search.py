@@ -183,6 +183,7 @@ class ALNS:
                 sol[week_changed] = new_order
         elif repair_operator == 1:
             # Extract all games
+            games_added = np.full(games.shape, np.nan)
             games = games[
                 np.logical_not(np.isnan(games))
             ]
@@ -193,45 +194,46 @@ class ALNS:
             
             # For each game extract the profit and sort it in descending order
             max_profits_per_game = np.zeros((games.shape[0], 3))
+            all_profits = np.sort(max_profits_per_game.reshape(1,-1)[0])[::-1]
             max_profits_per_game_days = np.zeros((games.shape[0], 3))
             for i, game in enumerate(games):
                 max_profits_per_game[i] = np.sort((self.p[:, game[0]-1, game[1]-1]))[::-1]
                 max_profits_per_game_days[i] = np.argsort((self.p[:, game[0]-1, game[1]-1]))[::-1]
 
-            games_added = np.zeros(games.shape)
 
             # Extract games, which should be played on monday
             teams_on_monday = np.unique(sol[:, 0])[:-1]
             teams_forced_on_monday = np.setdiff1d(teams, teams_on_monday)
 
-            
-            for team_forced_on_monday in teams_forced_on_monday:
-                pos = np.argmax(max_profits_per_game[np.where(True == np.isin(games, team_forced_on_monday))[0]][:,0])
+            all_profits_monday = max_profits_per_game
 
-                print('asd')
+            games_forced_monday_idx = np.where(True == np.isin(games, teams_forced_on_monday))[0]
+            all_profits_monday = np.sort(max_profits_per_game[:,0][games_forced_monday_idx])[::-1]
 
+            for profit in all_profits_monday:
+                games_with_profit = games[max_profits_per_game[:,0] == profit]
+                game_idx = np.where(np.isin(games_with_profit, teams_forced_on_monday))[0][0]
+                game = games[game_idx]
 
+                home_team_idx = np.where(game[0] == sol)[0]
+                away_team_idx = np.where(game[1] == sol)[0]
 
+                for i, week in enumerate(np.sort(weeks_changed)):
+                    if np.unique(games_added[i][0]).size > 1:
+                        continue
 
-            games_monday = np.zeros(games.shape[0])
-            games_monday[np.where(True == np.isin(games, teams_forced_on_monday))[0]] = 1
+                    intersect_home_team = np.intersect1d(list(range(max(0, week - self.r), min(games.shape[0], week+self.r))), home_team_idx)
+                    intersect_away_team = np.intersect1d(list(range(max(0, week - self.r), min(games.shape[0], week+self.r))), away_team_idx)
 
-            games_monday_home_away = games[games_monday == 1]
-            max_profits_teams = np.zeros(teams.shape)
-            max_profits_teams_game_idx = np.zeros(teams.shape)
-            # Get games with max profit on monday for each team
-            for i, game in enumerate(games_monday_home_away):
-                relevant_team = int(teams_forced_on_monday[np.isin(teams_forced_on_monday, game)][0])
-                if self.p[0][int(game[0]-1)][int(game[1]-1)] > max_profits_teams[relevant_team-1]:
-                    max_profits_teams[relevant_team-1] = self.p[0][int(game[0]-1)][int(game[1]-1)]
-                    max_profits_teams_game_idx[relevant_team-1] = i
+                    if intersect_home_team.size > 0 or intersect_away_team.size > 0:
+                        continue
 
-            # Insert the extracted games into the solution based on the constraints
-            # Remove those games from the games array
-            # For each of the remaining games: Find day with biggest profit
-            # Start with game that gives maximum profit and add it to the solution
-            # If game cannot be added: Use other day
+                    if np.intersect1d(away_team_idx, home_team_idx).size == 0:
+                        continue
 
+                    games_added[i][0][0] = game
+
+                    teams_forced_on_monday = teams_forced_on_monday[(teams_forced_on_monday != game[0]) & (teams_forced_on_monday != game[1])]
 
             print('asd')
 
