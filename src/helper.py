@@ -105,3 +105,5 @@ def get_profits_per_week(sol: np.ndarray, profit: np.ndarray):
 
     return week_profits
     
+def get_profit_games_earlier(profit: float, q: np.ndarray)->np.ndarray:
+    return profit / (1+q^2)
