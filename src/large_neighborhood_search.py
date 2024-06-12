@@ -89,11 +89,9 @@ class ALNS:
             weeks_changed = [week_to_destroy]
             games = np.array([games])
         elif destroy_operator == 1:
-            # Destroy the 10$-worst solutions
-            num_solutions_to_destroy = int(sol.shape[0] * 0.6)
             week_profits = get_profits_per_week(sol, self.p)
 
-            worst_weeks = np.argsort(week_profits)[:num_solutions_to_destroy]
+            worst_weeks = np.argsort(week_profits)[:2]
             games = sol[worst_weeks].copy()
             
             sol[worst_weeks] = np.full(games.shape, np.nan)
@@ -223,145 +221,23 @@ class ALNS:
 
                 possible_weekly_combinations = []
                 # Create all possible weekly combinations
-                weekly_combinations = np.array(list(itertools.permutations(possible_combinations_tmp, weeks_changed.size)))
-                weekly_combinations = weekly_combinations.reshape(weekly_combinations.shape[0], possible_combinations_tmp[0].shape[0]*weeks_changed.size, 2)
-                for weekly_combination in weekly_combinations:
-                    weekly_combination = possible_combinations_tmp[list(weekly_combination)]
+                weekly_combinations = np.array(list(itertools.permutations(possible_combinations_tmp_idx, weeks_changed.size)))
+                for weekly_combination_idx in weekly_combinations:
+                    weekly_combination = games[weekly_combination_idx]
                     weekly_combination_games = weekly_combination.reshape(int(weekly_combination.size/2), 2)
                     # Drop all duplicate games
                     if weekly_combination_games.shape != np.unique(weekly_combination_games, axis=0).shape:
                         continue
-                    
+                    possible_weekly_combinations.append(weekly_combination)
+                
+                # Get max profit when inserted in solution for each combination
+                max_profit = 0
+                possible_combinations_idx = []
+                for weekly_combination in possible_weekly_combinations:
                     print('asd')
-                # Get profits for each combination
-                # for possible_combination 
-
-
-
-
-
-
-
-            games = games[np.setdiff1d(range(games.shape[0]), games_idx_monday_added)]
-
-            if games.size == 0:
-                return sol
-
-            # For each game extract the profit and sort it in descending order
-            max_profits_per_game = np.zeros((games.shape[0], 3))
-            max_profits_per_game_days = np.zeros((games.shape[0], 3))
-            for i, game in enumerate(games):
-                max_profits_per_game[i] = np.sort((self.p[:, game[0]-1, game[1]-1]))[::-1]
-                max_profits_per_game_days[i] = np.argsort((self.p[:, game[0]-1, game[1]-1]))[::-1]
-
-            all_profits = np.sort(max_profits_per_game.reshape(1,-1)[0])[::-1]
-
-            games_idx_added = []
-            games_added = []
-
-            for profit in all_profits:
-                games_idx_equal_profit = np.where(max_profits_per_game == profit)[0]
-                for i, game in enumerate(games[games_idx_equal_profit]):
-                    if game.tolist() in games_added:
-                        continue
-                    day_equal_profit = np.where(max_profits_per_game[games_idx_equal_profit[i]] == profit)[0][0]
-
-                    for week in weeks_changed:
-                        if True not in np.isnan(np.unique(sol[week][day_equal_profit])):
-                            continue
-                        
-                        if game[0] in sol[week] or game[1] in sol[week]:
-                            continue
-
-                        sol_equal_game = np.where(np.isin(sol, [game[1], game[0]]))[:-1]
-                        week_other_game = -1
-                        for j in range(sol_equal_game[0].size):
-                            if np.array_equal(sol[sol_equal_game[0][j]][sol_equal_game[1][j]][sol_equal_game[2][j]], [game[1], game[0]]):
-                                week_other_game = sol_equal_game[0][j]
-
-                        if abs(week - week_other_game)<self.r:
-                            continue
-
-                        index_to_add = np.where(np.isnan(sol[week][day_equal_profit][:, 0])&np.isnan(sol[week][day_equal_profit][:, 1]))[0]
-                        if index_to_add.size == 0:
-                            continue
-
-                        if day_equal_profit == 0 and np.unique(sol[week][day_equal_profit]).size > 1:
-                            continue
-
-                        sol[week][day_equal_profit][index_to_add[0]] = game
-
-                        games_idx_added.append(np.where((games[:, 0] == game[0]) & (games[:, 1] == game[1]))[0][0])
-                        profit_used_idx.append(i)
-                        games_added.append(game.tolist())
-                        break
-
-
-                # TODO: Is there a free monday? Yes: Find out which one delivers max profit condisering reducing the profit 
-                # TODO: Is there a free monday? No: What combination maximizes the overall profit
 
 
             
-                # TODO: Is there a free monday? Yes: Find out which one delivers max profit condisering reducing the profit 
-                # TODO: Is there a free monday? No: What combination maximizes the overall profit
-
-
-            games = games[np.setdiff1d(range(games.shape[0]), games_idx_monday_added)]
-
-            if games.size == 0:
-                return sol
-
-            # For each game extract the profit and sort it in descending order
-            max_profits_per_game = np.zeros((games.shape[0], 3))
-            max_profits_per_game_days = np.zeros((games.shape[0], 3))
-            for i, game in enumerate(games):
-                max_profits_per_game[i] = np.sort((self.p[:, game[0]-1, game[1]-1]))[::-1]
-                max_profits_per_game_days[i] = np.argsort((self.p[:, game[0]-1, game[1]-1]))[::-1]
-
-            all_profits = np.sort(max_profits_per_game.reshape(1,-1)[0])[::-1]
-
-            games_idx_added = []
-            games_added = []
-
-            for profit in all_profits:
-                games_idx_equal_profit = np.where(max_profits_per_game == profit)[0]
-                for i, game in enumerate(games[games_idx_equal_profit]):
-                    if game.tolist() in games_added:
-                        continue
-                    day_equal_profit = np.where(max_profits_per_game[games_idx_equal_profit[i]] == profit)[0][0]
-
-                    for week in weeks_changed:
-                        if True not in np.isnan(np.unique(sol[week][day_equal_profit])):
-                            continue
-                        
-                        if game[0] in sol[week] or game[1] in sol[week]:
-                            continue
-
-                        sol_equal_game = np.where(np.isin(sol, [game[1], game[0]]))[:-1]
-                        week_other_game = -1
-                        for j in range(sol_equal_game[0].size):
-                            if np.array_equal(sol[sol_equal_game[0][j]][sol_equal_game[1][j]][sol_equal_game[2][j]], [game[1], game[0]]):
-                                week_other_game = sol_equal_game[0][j]
-
-                        if abs(week - week_other_game)<self.r:
-                            continue
-
-                        index_to_add = np.where(np.isnan(sol[week][day_equal_profit][:, 0])&np.isnan(sol[week][day_equal_profit][:, 1]))[0]
-                        if index_to_add.size == 0:
-                            continue
-
-                        if day_equal_profit == 0 and np.unique(sol[week][day_equal_profit]).size > 1:
-                            continue
-
-                        sol[week][day_equal_profit][index_to_add[0]] = game
-
-                        games_idx_added.append(np.where((games[:, 0] == game[0]) & (games[:, 1] == game[1]))[0][0])
-                        profit_used_idx.append(i)
-                        games_added.append(game.tolist())
-                        break
-                    
-
-        games = games[np.setdiff1d(range(games.shape[0]), games_idx_added)]
         return sol
 
     def check_solution(self):
