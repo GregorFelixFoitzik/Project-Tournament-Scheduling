@@ -10,10 +10,6 @@ import numpy as np
 def validate(
     sol: np.ndarray,
     num_teams: int,
-    weeks_between: int,
-    profits: list[float],
-    t: float,
-    s: int,
 ) -> bool:
     weeks = 2 * (num_teams - 1)
 
@@ -31,20 +27,19 @@ def uniqueness(sol: np.ndarray, num_teams: int, weeks: int) -> bool:
         int(sol[np.logical_not(np.isnan(sol))].shape[0] / 2), 2
     )
     games_unique = np.unique(games, axis=0)
-    print(
-        f"No duplicates ({games.shape[0]} and {games_unique.shape[0]}): "
-        f"{games.shape[0] == games_unique.shape[0]}"
-    )
+    # print(
+        # f"No duplicates ({games.shape[0]} and {games_unique.shape[0]}): "
+        # f"{games.shape[0] == games_unique.shape[0]}"
+    # )
 
-    # Source: https://stackoverflow.com/a/22225030, accessed 29.05.2023
-    print(
-        f"Number of games ({games.shape[0]} and {int((num_teams/2)*weeks)}):"
-        f"{games.shape[0] == ((num_teams/2)*weeks)}"
-    )
+    # print(
+        # f"Number of games ({games.shape[0]} and {int((num_teams/2)*weeks)}):"
+        # f"{games.shape[0] == ((num_teams/2)*weeks)}"
+    # )
 
     assert games.shape[0] == games_unique.shape[0] and (
         games_unique.shape[0] == ((num_teams / 2) * weeks)
-    )
+    ), "uniqueness"
 
     return games.shape[0] == games_unique.shape[0] and (
         games_unique.shape[0] == ((num_teams / 2) * weeks)
@@ -78,9 +73,9 @@ def check_games(sol: np.ndarray, num_teams: int) -> bool:
         if game in sol:
             games_in_sol += 1
 
-    print(f"XvsY and YvsX: {games_required.shape[0] == games_in_sol}")
+    # print(f"XvsY and YvsX: {games_required.shape[0] == games_in_sol}")
 
-    assert games_required.shape[0] == games_in_sol
+    assert games_required.shape[0] == games_in_sol, "XvsY and YvsX"
 
     return games_required.shape[0] == games_in_sol
 
@@ -93,12 +88,12 @@ def every_team_on_monday(sol: np.ndarray, num_teams: int) -> bool:
     monday_games = monday_games.reshape(int(monday_games.shape[0]/2), 2)
 
     unique_values_monday_games = np.unique(monday_games)
-    print(
-        "Every team plays at least once "
-        f"on monday: {np.logical_not(False in (unique_values_monday_games == teams))}"
-    )
+    # print(
+        # "Every team plays at least once "
+        # f"on monday: {np.logical_not(False in (unique_values_monday_games == teams))}"
+    # )
 
-    assert np.logical_not(False in (unique_values_monday_games == teams))
+    assert np.logical_not(False in (unique_values_monday_games == teams)), "Every team on monday"
 
     return np.logical_not(False in (unique_values_monday_games == teams))
 

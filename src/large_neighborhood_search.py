@@ -232,11 +232,26 @@ class ALNS:
                 
                 # Get max profit when inserted in solution for each combination
                 max_profit = 0
-                possible_combinations_idx = []
+                max_sol = sol.copy()
                 for weekly_combination in possible_weekly_combinations:
-                    print('asd')
+                    sol_new = sol.copy()
+                    for i, week in enumerate(weekly_combination):
+                        week_new = np.full(games_old[0].shape, np.nan)
+                        week_new[0][0] = week[0]
+                        for game in week[1:]:
+                            games_position = np.argmax(self.p[1:, game[0]-1, game[1]-1]) + 1
+                            week_new[games_position][np.where(np.isnan(week_new[games_position]))[0][0]] = game
+                        sol_new[weeks_changed[i]] = week_new
 
+                    try:
+                        validate(sol_new, self.n)
+                    except AssertionError:
+                        continue
 
+                    if compute_profit(sol_new, self.p) > max_profit:
+                        max_profit = compute_profit(sol_new, self.p)
+                        max_sol = sol_new.copy()
+                sol = max_sol.copy()
             
         return sol
 
@@ -245,7 +260,7 @@ class ALNS:
         not feasible returns none
         is feasible returns np.array
         """
-        validation = validate(self.sol, self.n, self.r, self.p, self.t, self.s)
+        validation = validate(self.sol, self.n)
         assert validation == True
 
     def execute_cmd(self):
