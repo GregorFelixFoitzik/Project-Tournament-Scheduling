@@ -149,7 +149,7 @@ def compute_profit_game(
             continue
 
         # game is in current week: Does they play earlier than expected
-        if 1 <= current_week - week <= weeks_between:
+        if 1 <= current_week - week < weeks_between:
             return profit_game / (1 + (current_week - week)**2)
         else:
             return profit_game
