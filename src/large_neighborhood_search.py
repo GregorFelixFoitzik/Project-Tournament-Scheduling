@@ -64,13 +64,11 @@ class ALNS:
                 best_solution = new_sol.copy()
                 profit_best_solution = profit_new_sol
 
-        print(f"Took: {time.time() - t0} {self.time_out}")
-
         self.best_solution = best_solution
 
         return best_solution
 
-    def destroy(self, sol: np.ndarray) -> tuple[np.ndarray, np.ndarray, list[int]]:
+    def destroy(self, sol: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         # Randomly choose a destroy parameter
         num_destroy_operators = 2
         destroy_operators = list(range(num_destroy_operators))
@@ -79,16 +77,15 @@ class ALNS:
 
         weeks_changed = []
 
-        destroy_operator = 1
-
         if destroy_operator == 0:
             # Destroy one week randomly
             week_to_destroy = np.random.choice(list(range(sol.shape[0])))
             games = sol[week_to_destroy].copy()
             sol[week_to_destroy] = np.full(games.shape, np.nan)
-            weeks_changed = [week_to_destroy]
+            weeks_changed = np.array([week_to_destroy])
             games = np.array([games])
         elif destroy_operator == 1:
+            # Destry the two worst weeks
             week_profits = get_profits_per_week(sol, self.p)
 
             worst_weeks = np.argsort(week_profits)[:2]
@@ -102,59 +99,58 @@ class ALNS:
 
         return sol, games, weeks_changed
 
-    def repair(self, sol: np.ndarray, games: np.ndarray, weeks_changed: list[int]):
+    def repair(self, sol: np.ndarray, games: np.ndarray, weeks_changed: np.ndarray):
         # Randomly choose a repai parameter
         num_repair_operators = 2
         repair_operators = list(range(num_repair_operators))
         weights = [100] * num_repair_operators
         repair_operator = random.choices(repair_operators, weights=weights)[0]
 
-        repair_operator = 1
-        
-        
-
-
-
         if repair_operator == 0:
             # Random fill
             for i, week_changed in enumerate(weeks_changed):
-                games = games[i]
+                games_week = games[i]
                 new_order = np.full(sol.shape[1:], np.nan)
 
+                # Get all teams, that should play on monday
                 teams_not_on_monday = np.setdiff1d(
                     self.all_teams,
                     np.sort(np.unique(sol[:, 0])[:-1].astype(int))[:-1],
                 )
 
-                games_unique = np.unique(games, axis=1)
+                games_unique = np.unique(games_week, axis=1)
                 games_unique = games_unique[np.logical_not(np.isnan(games_unique))]
                 games_unique = games_unique.reshape(int(games_unique.shape[0] / 2), 2)
+                # If one teams does not play on monday, assign the game with that team 
+                #   to the monday slot
                 if teams_not_on_monday.size != 0:
                     # Source: https://stackoverflow.com/a/38974252. accessed 8.6.2024
                     monday_idx = np.array(
-                        np.where(np.isin(games, teams_not_on_monday[0]))
+                        np.where(np.isin(games_week, teams_not_on_monday[0]))
                     ).reshape(1, -1)[0][:2]
-                    monday_game = games[monday_idx[0]][monday_idx[1]]
+                    monday_game = games_week[monday_idx[0]][monday_idx[1]]
                 else:
                     monday_game = random.choice(games_unique)
                 new_order[0][0] = monday_game
 
+                # Get all remaining games (remove the monday game)
                 games_unique = games_unique[
                     np.logical_not(np.isin(games_unique, monday_game))
                 ]
                 games_unique = games_unique.reshape(int(games_unique.shape[0] / 2), 2)
-
                 games_unique = games_unique[games_unique != monday_game]
 
                 possible_games = np.append(games_unique, [np.nan, np.nan]).reshape(
                     int((games_unique.shape[0] + 2) / 2), 2
                 )
+                # Get the game(s) for friday
                 friday_idx = range(possible_games.shape[0])
                 friday_games = np.random.choice(
                     friday_idx, (new_order.shape[1],), replace=False
                 )
                 friday = possible_games[friday_games]
 
+                # Get the game(s) for saturday
                 saturday_idx = np.setdiff1d(friday_idx, friday_games)
                 if saturday_idx.shape[0] < new_order.shape[1]:
                     saturday = possible_games[saturday_idx]
@@ -185,9 +181,6 @@ class ALNS:
             games = games.reshape(int(games.shape[0] / 2), 2).astype(int)
             teams = np.unique(games)
 
-            teams_forced_on_monday = np.setdiff1d(
-                self.all_teams, np.unique(sol[:, 0])[:-1]
-            )
             games_encoded = [i for i in range(games.shape[0])]
 
             # Iterate over the possible combinations extract those, where each
@@ -198,6 +191,7 @@ class ALNS:
                 combinations = itertools.permutations(games_encoded, num_repetitions)
                 possible_combinations_tmp = []
                 possible_combinations_tmp_idx = []
+                # Iterate over each game combination and check some of th constraints
                 for combination_idx in combinations:
                     combination = games[list(combination_idx)]
                     # Check if all teams play during that week
@@ -205,9 +199,6 @@ class ALNS:
                         continue
                     if np.all(np.unique(combination) != list(self.all_teams)):
                         continue
-
-                    # if np.intersect1d(np.array(combination)[0], teams_forced_on_monday).size < 1:
-                    # continue
 
                     # possible_combinations_tmp.append(np.array(combination))
                     possible_combinations_tmp_idx.append(combination_idx)
@@ -223,6 +214,7 @@ class ALNS:
                         )
                     )
                 )
+                # Go over the weekly-combinations and drop all duplicate games
                 for weekly_combination_idx in weekly_combinations:
                     weekly_combination = games[weekly_combination_idx]
                     weekly_combination_games = weekly_combination.reshape(
@@ -241,6 +233,7 @@ class ALNS:
                 max_sol = sol.copy()
                 for weekly_combination in possible_weekly_combinations:
                     sol_new = sol.copy()
+                    # Insert each weekly-combination into the solution
                     for i, week in enumerate(weekly_combination):
                         week_new = np.full(games_old[0].shape, np.nan)
                         week_new[0][0] = week[0]
@@ -253,16 +246,20 @@ class ALNS:
                             ] = game
                         sol_new[weeks_changed[i]] = week_new
 
+                    # Check if the solution is valid or not
                     try:
                         validate(sol_new, self.n)
                     except AssertionError:
                         continue
 
+                    # If the solution is valid: Does the solution give a higher profit?
                     if compute_profit(sol_new, self.p) > max_profit:
                         max_profit = compute_profit(sol_new, self.p)
                         max_sol = sol_new.copy()
                 sol = max_sol.copy()
+                validate(sol, self.n)
 
+        self.sol = sol
         return sol
 
     def check_solution(self):
