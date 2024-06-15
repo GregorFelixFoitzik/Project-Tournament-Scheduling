@@ -60,7 +60,9 @@ class ALNS:
         while num_iterations_no_change <= 100 and time.time() - t0 < self.time_out:
             sol_destroyed, games, weeks_changed = self.destroy(best_solution.copy())
             new_sol = self.repair(sol_destroyed, games, weeks_changed)
-            profit_new_sol = compute_profit(new_sol, np.array(self.p), self.r)
+            profit_new_sol = compute_profit(
+                sol=new_sol, profit=np.array(object=self.p), weeks_between=self.r
+            )
 
             if profit_new_sol > profit_best_solution:
                 best_solution = new_sol.copy()
@@ -84,7 +86,9 @@ class ALNS:
 
         if destroy_operator == 0:
             # Destroy 2 weeks randomly
-            weeks_changed = np.random.choice(list(range(sol.shape[0])), size=2, replace=False)
+            weeks_changed = np.random.choice(
+                list(range(sol.shape[0])), size=2, replace=False
+            )
             games = sol[weeks_changed].copy()
             sol[weeks_changed] = np.full(games.shape, np.nan)
         elif destroy_operator == 1:
@@ -124,7 +128,7 @@ class ALNS:
                 games_unique = np.unique(games_week, axis=1)
                 games_unique = games_unique[np.logical_not(np.isnan(games_unique))]
                 games_unique = games_unique.reshape(int(games_unique.shape[0] / 2), 2)
-                # If one teams does not play on monday, assign the game with that team 
+                # If one teams does not play on monday, assign the game with that team
                 #   to the monday slot
                 if teams_not_on_monday.size != 0:
                     # Source: https://stackoverflow.com/a/38974252. accessed 8.6.2024
@@ -263,7 +267,7 @@ class ALNS:
                 try:
                     validate(sol, self.n)
                 except Exception:
-                    print('asd')
+                    print("asd")
         self.sol = sol
         return sol
 
