@@ -52,13 +52,13 @@ class ALNS:
         """
         start_solution = self.sol.copy()
         best_solution = start_solution
-        profit_best_solution = compute_profit(best_solution, self.p)
+        profit_best_solution = compute_profit(best_solution, self.p, self.r)
 
         t0 = time.time()
         while time.time() - t0 < self.time_out:
             sol_destroyed, games, weeks_changed = self.destroy(best_solution.copy())
             new_sol = self.repair(sol_destroyed, games, weeks_changed)
-            profit_new_sol = compute_profit(new_sol, np.array(self.p))
+            profit_new_sol = compute_profit(new_sol, np.array(self.p), self.r)
 
             if profit_new_sol > profit_best_solution:
                 best_solution = new_sol.copy()
@@ -86,7 +86,7 @@ class ALNS:
             games = np.array([games])
         elif destroy_operator == 1:
             # Destry the two worst weeks
-            week_profits = get_profits_per_week(sol, self.p)
+            week_profits = get_profits_per_week(sol, self.p, self.r)
 
             worst_weeks = np.argsort(week_profits)[:2]
             games = sol[worst_weeks].copy()
@@ -253,8 +253,8 @@ class ALNS:
                         continue
 
                     # If the solution is valid: Does the solution give a higher profit?
-                    if compute_profit(sol_new, self.p) > max_profit:
-                        max_profit = compute_profit(sol_new, self.p)
+                    if compute_profit(sol_new, self.p, self.r) > max_profit:
+                        max_profit = compute_profit(sol_new, self.p, self.r)
                         max_sol = sol_new.copy()
                 sol = max_sol.copy()
                 validate(sol, self.n)
@@ -395,7 +395,7 @@ if __name__ == "__main__":
         "n": num_teams,
         "t": 2 / 3,
         "s": 2,
-        "r": 1,
+        "r": 3,
         "p": np.array(
             [
                 -1.0,
@@ -527,11 +527,11 @@ if __name__ == "__main__":
     print(tabulate(sol_str, tablefmt="grid", headers=headers))
 
     lns = ALNS(algo_config=algo_config, time_out=5, start_solution=sol)
-    print(f"Original solution: {compute_profit(sol, lns.p)}")
+    print(f"Original solution: {compute_profit(sol, lns.p, algo_config['r'])}")
     lns.check_solution()
     new_sol = lns.run()
     lns.check_solution()
-    print(f"LNS solution: {compute_profit(new_sol, lns.p)}")
+    print(f"LNS solution: {compute_profit(new_sol, lns.p, algo_config['r'])}")
 
     sol_str = []
     for week in new_sol:
