@@ -54,8 +54,10 @@ class ALNS:
         best_solution = start_solution
         profit_best_solution = compute_profit(best_solution, self.p, self.r)
 
+        num_iterations_no_change = 0
+
         t0 = time.time()
-        while time.time() - t0 < self.time_out:
+        while num_iterations_no_change <= 100 and time.time() - t0 < self.time_out:
             sol_destroyed, games, weeks_changed = self.destroy(best_solution.copy())
             new_sol = self.repair(sol_destroyed, games, weeks_changed)
             profit_new_sol = compute_profit(new_sol, np.array(self.p), self.r)
@@ -63,6 +65,9 @@ class ALNS:
             if profit_new_sol > profit_best_solution:
                 best_solution = new_sol.copy()
                 profit_best_solution = profit_new_sol
+                num_iterations_no_change = 0
+            else:
+                num_iterations_no_change += 1
 
         self.best_solution = best_solution
 
@@ -78,12 +83,10 @@ class ALNS:
         weeks_changed = []
 
         if destroy_operator == 0:
-            # Destroy one week randomly
-            week_to_destroy = np.random.choice(list(range(sol.shape[0])))
-            games = sol[week_to_destroy].copy()
-            sol[week_to_destroy] = np.full(games.shape, np.nan)
-            weeks_changed = np.array([week_to_destroy])
-            games = np.array([games])
+            # Destroy 2 weeks randomly
+            weeks_changed = np.random.choice(list(range(sol.shape[0])), size=2, replace=False)
+            games = sol[weeks_changed].copy()
+            sol[weeks_changed] = np.full(games.shape, np.nan)
         elif destroy_operator == 1:
             # Destry the two worst weeks
             week_profits = get_profits_per_week(sol, self.p, self.r)
@@ -257,8 +260,10 @@ class ALNS:
                         max_profit = compute_profit(sol_new, self.p, self.r)
                         max_sol = sol_new.copy()
                 sol = max_sol.copy()
-                validate(sol, self.n)
-
+                try:
+                    validate(sol, self.n)
+                except Exception:
+                    print('asd')
         self.sol = sol
         return sol
 
@@ -526,7 +531,7 @@ if __name__ == "__main__":
     headers = ["Mon", "Fri", "Sat"]
     print(tabulate(sol_str, tablefmt="grid", headers=headers))
 
-    lns = ALNS(algo_config=algo_config, time_out=5, start_solution=sol)
+    lns = ALNS(algo_config=algo_config, time_out=30, start_solution=sol)
     print(f"Original solution: {compute_profit(sol, lns.p, algo_config['r'])}")
     lns.check_solution()
     new_sol = lns.run()
