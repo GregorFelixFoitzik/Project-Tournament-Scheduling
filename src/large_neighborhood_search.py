@@ -79,7 +79,7 @@ class ALNS:
 
         weeks_changed = []
 
-        destroy_operator=1
+        destroy_operator = 1
 
         if destroy_operator == 0:
             # Destroy one week randomly
@@ -93,7 +93,7 @@ class ALNS:
 
             worst_weeks = np.argsort(week_profits)[:2]
             games = sol[worst_weeks].copy()
-            
+
             sol[worst_weeks] = np.full(games.shape, np.nan)
             weeks_changed = worst_weeks
         else:
@@ -111,6 +111,9 @@ class ALNS:
 
         repair_operator = 1
         
+        
+
+
 
         if repair_operator == 0:
             # Random fill
@@ -124,12 +127,8 @@ class ALNS:
                 )
 
                 games_unique = np.unique(games, axis=1)
-                games_unique = games_unique[
-                    np.logical_not(np.isnan(games_unique))
-                ]
-                games_unique = games_unique.reshape(
-                    int(games_unique.shape[0] / 2), 2
-                )
+                games_unique = games_unique[np.logical_not(np.isnan(games_unique))]
+                games_unique = games_unique.reshape(int(games_unique.shape[0] / 2), 2)
                 if teams_not_on_monday.size != 0:
                     # Source: https://stackoverflow.com/a/38974252. accessed 8.6.2024
                     monday_idx = np.array(
@@ -143,9 +142,7 @@ class ALNS:
                 games_unique = games_unique[
                     np.logical_not(np.isin(games_unique, monday_game))
                 ]
-                games_unique = games_unique.reshape(
-                    int(games_unique.shape[0] / 2), 2
-                )
+                games_unique = games_unique.reshape(int(games_unique.shape[0] / 2), 2)
 
                 games_unique = games_unique[games_unique != monday_game]
 
@@ -184,21 +181,19 @@ class ALNS:
         elif repair_operator == 1:
             games_old = games.copy()
             # Extract all games
-            games = games[
-                np.logical_not(np.isnan(games))
-            ]
-            games = games.reshape(
-                int(games.shape[0] / 2), 2
-            ).astype(int)
+            games = games[np.logical_not(np.isnan(games))]
+            games = games.reshape(int(games.shape[0] / 2), 2).astype(int)
             teams = np.unique(games)
 
-            teams_forced_on_monday = np.setdiff1d(self.all_teams, np.unique(sol[:, 0])[:-1])
+            teams_forced_on_monday = np.setdiff1d(
+                self.all_teams, np.unique(sol[:, 0])[:-1]
+            )
             games_encoded = [i for i in range(games.shape[0])]
 
-            # Iterate over the possible combinations extract those, where each 
+            # Iterate over the possible combinations extract those, where each
             #   team is present
             possible_combinations = []
-            for num_repetitions in range(int(self.n/2), int(self.n*self.t)):
+            for num_repetitions in range(int(self.n / 2), int(self.n * self.t)):
                 # Source: https://stackoverflow.com/a/5898031, accessed 11th June
                 combinations = itertools.permutations(games_encoded, num_repetitions)
                 possible_combinations_tmp = []
@@ -212,7 +207,7 @@ class ALNS:
                         continue
 
                     # if np.intersect1d(np.array(combination)[0], teams_forced_on_monday).size < 1:
-                        # continue
+                    # continue
 
                     # possible_combinations_tmp.append(np.array(combination))
                     possible_combinations_tmp_idx.append(combination_idx)
@@ -221,15 +216,26 @@ class ALNS:
 
                 possible_weekly_combinations = []
                 # Create all possible weekly combinations
-                weekly_combinations = np.array(list(itertools.permutations(possible_combinations_tmp_idx, weeks_changed.size)))
+                weekly_combinations = np.array(
+                    list(
+                        itertools.permutations(
+                            possible_combinations_tmp_idx, weeks_changed.size
+                        )
+                    )
+                )
                 for weekly_combination_idx in weekly_combinations:
                     weekly_combination = games[weekly_combination_idx]
-                    weekly_combination_games = weekly_combination.reshape(int(weekly_combination.size/2), 2)
+                    weekly_combination_games = weekly_combination.reshape(
+                        int(weekly_combination.size / 2), 2
+                    )
                     # Drop all duplicate games
-                    if weekly_combination_games.shape != np.unique(weekly_combination_games, axis=0).shape:
+                    if (
+                        weekly_combination_games.shape
+                        != np.unique(weekly_combination_games, axis=0).shape
+                    ):
                         continue
                     possible_weekly_combinations.append(weekly_combination)
-                
+
                 # Get max profit when inserted in solution for each combination
                 max_profit = 0
                 max_sol = sol.copy()
@@ -239,8 +245,12 @@ class ALNS:
                         week_new = np.full(games_old[0].shape, np.nan)
                         week_new[0][0] = week[0]
                         for game in week[1:]:
-                            games_position = np.argmax(self.p[1:, game[0]-1, game[1]-1]) + 1
-                            week_new[games_position][np.where(np.isnan(week_new[games_position]))[0][0]] = game
+                            games_position = (
+                                np.argmax(self.p[1:, game[0] - 1, game[1] - 1]) + 1
+                            )
+                            week_new[games_position][
+                                np.where(np.isnan(week_new[games_position]))[0][0]
+                            ] = game
                         sol_new[weeks_changed[i]] = week_new
 
                     try:
@@ -252,7 +262,7 @@ class ALNS:
                         max_profit = compute_profit(sol_new, self.p)
                         max_sol = sol_new.copy()
                 sol = max_sol.copy()
-            
+
         return sol
 
     def check_solution(self):
@@ -383,8 +393,6 @@ if __name__ == "__main__":
             ],
         ]
     )
-
-
 
     algo_config = {
         "n": num_teams,
