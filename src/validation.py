@@ -93,7 +93,7 @@ def every_team_on_monday(sol: np.ndarray, num_teams: int) -> bool:
         # f"on monday: {np.logical_not(False in (unique_values_monday_games == teams))}"
     # )
 
-    assert np.logical_not(False in (unique_values_monday_games == teams)), "Every team on monday"
+    assert unique_values_monday_games.shape[0] == len(teams) and np.logical_not(False in (unique_values_monday_games == teams)), "Every team on monday"
 
     return np.logical_not(False in (unique_values_monday_games == teams))
 
