@@ -7,8 +7,8 @@ import itertools
 import numpy as np
 
 # Project specific library
-from validation import validate
-from helper import (
+from src.validation import validate
+from src.helper import (
     generate_possible_game_combinations_per_week,
     generate_possible_weekly_combinations,
     get_profits_per_week,
