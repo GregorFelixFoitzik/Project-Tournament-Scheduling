@@ -16,9 +16,19 @@ from tabulate import tabulate
 
 
 # Project specific library
-from neighborhoods import insert_games_random_week, select_random_weeks
+from neighborhoods import (
+    insert_games_max_profit_per_week,
+    insert_games_random_week,
+    select_n_worst_weeks,
+    select_random_weeks,
+)
 from validation import every_team_every_week, validate
-from helper import compute_profit, get_profits_per_week, print_solution
+from helper import (
+    compute_profit,
+    generate_possible_game_combinations_per_week,
+    get_profits_per_week,
+    print_solution,
+)
 
 
 class ALNS:
@@ -72,6 +82,8 @@ class ALNS:
             else:
                 num_iterations_no_change += 1
 
+        print(f"Took {time.time() - t0}")
+
         self.best_solution = best_solution
 
         return best_solution
@@ -91,10 +103,9 @@ class ALNS:
             sol[weeks_changed] = np.full(games.shape, np.nan)
         elif destroy_operator == 1:
             # Destry the two worst weeks
-            week_profits = get_profits_per_week(sol, self.p, self.r)
-
-            worst_weeks = np.argsort(week_profits)[:2]
-            games = sol[worst_weeks].copy()
+            worst_weeks, games = select_n_worst_weeks(
+                sol=sol, n=2, profits=self.p, weeks_between=self.r
+            )
 
             sol[worst_weeks] = np.full(games.shape, np.nan)
             weeks_changed = worst_weeks
@@ -126,88 +137,31 @@ class ALNS:
             # Extract all games
             games = games[np.logical_not(np.isnan(games))]
             games = games.reshape(int(games.shape[0] / 2), 2).astype(int)
-            teams = np.unique(games)
 
             games_encoded = [i for i in range(games.shape[0])]
 
             # Iterate over the possible combinations extract those, where each
             #   team is present
-            possible_combinations = []
             for num_repetitions in range(int(self.n / 2), int(self.n * self.t)):
-                # Source: https://stackoverflow.com/a/5898031, accessed 11th June
-                combinations = itertools.permutations(games_encoded, num_repetitions)
-                possible_combinations_tmp = []
-                possible_combinations_tmp_idx = []
-                # Iterate over each game combination and check some of th constraints
-                for combination_idx in combinations:
-                    combination = games[list(combination_idx)]
-                    # Check if all teams play during that week
-                    if np.unique(ar=combination).size != len(list(self.all_teams)):
-                        continue
-                    if np.all(np.unique(combination) != list(self.all_teams)):
-                        continue
-
-                    # possible_combinations_tmp.append(np.array(combination))
-                    possible_combinations_tmp_idx.append(combination_idx)
-
-                possible_combinations_tmp = np.array(possible_combinations_tmp)
-
-                possible_weekly_combinations = []
-                # Create all possible weekly combinations
-                weekly_combinations = np.array(
-                    list(
-                        itertools.permutations(
-                            possible_combinations_tmp_idx, weeks_changed.size
-                        )
-                    )
+                max_sol = insert_games_max_profit_per_week(
+                    sol=sol,
+                    games_old=games_old,
+                    games_encoded=games_encoded,
+                    num_repetitions=num_repetitions,
+                    games=games,
+                    all_teams=list(self.all_teams),
+                    weeks_changed=weeks_changed,
+                    profits=self.p,
+                    num_teams=num_teams,
+                    weeks_between=self.r,
                 )
-                # Go over the weekly-combinations and drop all duplicate games
-                for weekly_combination_idx in weekly_combinations:
-                    weekly_combination = games[weekly_combination_idx]
-                    weekly_combination_games = weekly_combination.reshape(
-                        int(weekly_combination.size / 2), 2
-                    )
-                    # Drop all duplicate games
-                    if (
-                        weekly_combination_games.shape
-                        != np.unique(weekly_combination_games, axis=0).shape
-                    ):
-                        continue
-                    possible_weekly_combinations.append(weekly_combination)
-
-                # Get max profit when inserted in solution for each combination
-                max_profit = 0
-                max_sol = sol.copy()
-                for weekly_combination in possible_weekly_combinations:
-                    sol_new = sol.copy()
-                    # Insert each weekly-combination into the solution
-                    for i, week in enumerate(weekly_combination):
-                        week_new = np.full(games_old[0].shape, np.nan)
-                        week_new[0][0] = week[0]
-                        for game in week[1:]:
-                            games_position = (
-                                np.argmax(self.p[1:, game[0] - 1, game[1] - 1]) + 1
-                            )
-                            week_new[games_position][
-                                np.where(np.isnan(week_new[games_position]))[0][0]
-                            ] = game
-                        sol_new[weeks_changed[i]] = week_new
-
-                    # Check if the solution is valid or not
-                    try:
-                        validate(sol_new, self.n)
-                    except AssertionError:
-                        continue
-
-                    # If the solution is valid: Does the solution give a higher profit?
-                    if compute_profit(sol_new, self.p, self.r) > max_profit:
-                        max_profit = compute_profit(sol_new, self.p, self.r)
-                        max_sol = sol_new.copy()
                 sol = max_sol.copy()
                 try:
                     validate(sol, self.n)
                 except Exception:
                     print("asd")
+                    
+
         self.sol = sol
         return sol
 

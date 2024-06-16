@@ -1,9 +1,11 @@
 """File contains helper functions which might be useful"""
 
 # Standard library
-from math import inf
 import re
 import ast
+import itertools
+
+from math import inf
 
 # Third party library
 import numpy as np
@@ -150,13 +152,68 @@ def compute_profit_game(
 
         # game is in current week: Does they play earlier than expected
         if 1 <= current_week - week < weeks_between:
-            return profit_game / (1 + (current_week - week)**2)
+            return profit_game / (1 + (current_week - week) ** 2)
         else:
             return profit_game
-        
+
     # If a new game is added
     return profit_game
 
 
 def get_profit_games_earlier(profit: float, q: np.ndarray) -> np.ndarray:
     return profit / (1 + q ^ 2)
+
+
+def generate_possible_game_combinations_per_week(
+    games_encoded: list[int],
+    num_repetitions: int,
+    games: np.ndarray,
+    all_teams: list[int],
+) -> list[int]:
+    # Source: https://stackoverflow.com/a/5898031, accessed 11th June
+    combinations = itertools.permutations(iterable=games_encoded, r=num_repetitions)
+    possible_combinations_tmp_idx = []
+    # Iterate over each game combination and check some of th constraints
+    for combination_idx in combinations:
+        combination = games[list(combination_idx)]
+        # Check if all teams play during that week
+        if np.unique(ar=combination).size != len(all_teams):
+            continue
+        if np.all(np.unique(combination) != all_teams):
+            continue
+
+        # possible_combinations_tmp.append(np.array(combination))
+        possible_combinations_tmp_idx.append(combination_idx)
+
+    return possible_combinations_tmp_idx
+
+
+def generate_possible_weekly_combinations(
+    possible_combinations_tmp_idx: list[int],
+    weeks_changed: np.ndarray,
+    games: np.ndarray,
+) -> list[np.ndarray]:
+    possible_weekly_combinations = []
+    # Create all possible weekly combinations
+    weekly_combinations = np.array(
+        list(
+            itertools.permutations(
+                iterable=possible_combinations_tmp_idx, r=weeks_changed.size
+            )
+        )
+    )
+    # Go over the weekly-combinations and drop all duplicate games
+    for weekly_combination_idx in weekly_combinations:
+        weekly_combination = games[weekly_combination_idx]
+        weekly_combination_games = weekly_combination.reshape(
+            int(weekly_combination.size / 2), 2
+        )
+        # Drop all duplicate games
+        if (
+            weekly_combination_games.shape
+            != np.unique(ar=weekly_combination_games, axis=0).shape
+        ):
+            continue
+        possible_weekly_combinations.append(weekly_combination)
+
+    return possible_weekly_combinations
