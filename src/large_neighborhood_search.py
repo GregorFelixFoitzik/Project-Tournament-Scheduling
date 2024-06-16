@@ -117,70 +117,32 @@ class ALNS:
             # Random fill
             for i, week_changed in enumerate(weeks_changed):
                 games_week = games[i]
-                new_order = np.full(sol.shape[1:], np.nan)
-
-                # Get all teams, that should play on monday
-                teams_not_on_monday = np.setdiff1d(
-                    self.all_teams,
-                    np.sort(np.unique(sol[:, 0])[:-1].astype(int))[:-1],
-                )
-
                 games_unique = np.unique(games_week, axis=1)
                 games_unique = games_unique[np.logical_not(np.isnan(games_unique))]
                 games_unique = games_unique.reshape(int(games_unique.shape[0] / 2), 2)
-                # If one teams does not play on monday, assign the game with that team
-                #   to the monday slot
-                if teams_not_on_monday.size != 0:
-                    # Source: https://stackoverflow.com/a/38974252. accessed 8.6.2024
-                    monday_idx = np.array(
-                        np.where(np.isin(games_week, teams_not_on_monday[0]))
-                    ).reshape(1, -1)[0][:2]
-                    monday_game = games_week[monday_idx[0]][monday_idx[1]]
+
+                # Which teams have to play on monday and how does the new week look like?
+                teams_play_on_monday = np.unique(sol[:, 0])[:-1]
+                week_new = np.full(games_week.shape, np.nan)
+
+                # Set the monday game
+                if np.setdiff1d(range(1, self.n+1), teams_play_on_monday).size == 0:
+                    monday_game_idx = np.random.choice(games_unique.shape[0])
+                    week_new[0][0] = games_unique[monday_game_idx]
                 else:
-                    monday_game = random.choice(games_unique)
-                new_order[0][0] = monday_game
+                    monday_game_idx = np.where(games_unique == np.setdiff1d(range(1, self.n+1), teams_play_on_monday))[0]
+                    week_new[0][0] = games_unique[monday_game_idx]
+                
+                # Randomly distribute the remaiing games
+                remaining_games = games_unique[games_unique != games_unique[monday_game_idx]]
+                remaining_games = remaining_games.reshape(int(remaining_games.shape[0] / 2), 2)
 
-                # Get all remaining games (remove the monday game)
-                games_unique = games_unique[
-                    np.logical_not(np.isin(games_unique, monday_game))
-                ]
-                games_unique = games_unique.reshape(int(games_unique.shape[0] / 2), 2)
-                games_unique = games_unique[games_unique != monday_game]
+                random_choice = np.random.choice([1, 2], size=remaining_games.shape[0])
 
-                possible_games = np.append(games_unique, [np.nan, np.nan]).reshape(
-                    int((games_unique.shape[0] + 2) / 2), 2
-                )
-                # Get the game(s) for friday
-                friday_idx = range(possible_games.shape[0])
-                friday_games = np.random.choice(
-                    friday_idx, (new_order.shape[1],), replace=False
-                )
-                friday = possible_games[friday_games]
+                for game_idx, day_choice in enumerate(random_choice):
+                    week_new[day_choice][np.where(np.isnan(week_new[day_choice]))[0][0]] = remaining_games[game_idx]
 
-                # Get the game(s) for saturday
-                saturday_idx = np.setdiff1d(friday_idx, friday_games)
-                if saturday_idx.shape[0] < new_order.shape[1]:
-                    saturday = possible_games[saturday_idx]
-                    saturday = np.append(
-                        saturday,
-                        np.full(
-                            (new_order.shape[1] - saturday_idx.shape[0], 2), np.nan
-                        ),
-                        axis=0,
-                    )
-                else:
-                    saturday = np.sort(
-                        np.random.choice(
-                            np.setdiff1d(possible_games, friday),
-                            (new_order.shape[1],),
-                            replace=False,
-                        )
-                    )
-
-                new_order[1] = friday
-                new_order[2] = saturday
-
-                sol[week_changed] = new_order
+                sol[week_changed] = week_new
         elif repair_operator == 1:
             games_old = games.copy()
             # Extract all games

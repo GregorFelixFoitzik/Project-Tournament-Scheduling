@@ -89,6 +89,7 @@ class SimulatedAnnealing:
         return best_solution
 
     def random_swap_within_week(self, sol: np.ndarray) -> np.ndarray:
+        # Extract one random week
         random_week = np.random.choice(list(range(sol.shape[0])))
         
         games_week = sol[random_week]
@@ -98,10 +99,12 @@ class SimulatedAnnealing:
 
         sol_without_week = sol.copy()
         sol_without_week[random_week] = np.full(games_week.shape, np.nan)
-        teams_play_on_monday = np.unique(sol_without_week[:, 0])[:-1]
 
+        # Which teams have to play on monday and how does the new week look like?
+        teams_play_on_monday = np.unique(sol_without_week[:, 0])[:-1]
         week_new = np.full(games_week.shape, np.nan)
 
+        # Set the monday game
         if np.setdiff1d(range(1, self.n+1), teams_play_on_monday).size == 0:
             monday_game_idx = np.random.choice(games_unique.shape[0])
             week_new[0][0] = games_unique[monday_game_idx]
@@ -109,6 +112,7 @@ class SimulatedAnnealing:
             monday_game_idx = np.where(games_unique == np.setdiff1d(range(1, self.n+1), teams_play_on_monday))[0]
             week_new[0][0] = games_unique[monday_game_idx]
         
+        # Randomly distribute the remaiing games
         remaining_games = games_unique[games_unique != games_unique[monday_game_idx]]
         remaining_games = remaining_games.reshape(int(remaining_games.shape[0] / 2), 2)
 
