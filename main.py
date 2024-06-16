@@ -3,6 +3,8 @@ import argparse
 import numpy as np
 
 # Project specific library
+import yaml
+
 from src.helper import read_in_file
 from src.greedy_heuristic import GreedyHeuristic
 from src.metaheuristics.metaheuristics_controller import main_metaheuristics_controller
@@ -23,6 +25,11 @@ parser.add_argument(
 
 
 def main():
+    with open(file="configs/run_config.yaml", mode="r") as file:
+        run_config = yaml.safe_load(stream=file)
+
+    metaheuristics_to_use = run_config["metaheuristics"]
+
     num_teams = 6
 
     sol = np.array(
@@ -254,7 +261,7 @@ def main():
     }
     main_metaheuristics_controller(
         start_sol=sol,
-        metaheuristics_to_use=['lns', 'simulated_annealing'],
+        metaheuristics_to_use=metaheuristics_to_use,
         algo_config=algo_config,
         time_out=30,
     )

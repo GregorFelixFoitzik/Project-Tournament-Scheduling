@@ -1,4 +1,4 @@
 metaheuristics: [
-  "simualted_annealing",
+  # "simualted_annealing",
   "lns"
 ]
