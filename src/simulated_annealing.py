@@ -1,4 +1,5 @@
 """This file contains the implementation of a Tabu-Search."""
+
 # Standard library
 from select import epoll
 import time
@@ -16,9 +17,15 @@ from tabulate import tabulate
 
 
 # Project specific library
+from neighborhoods import (
+    insert_games_max_profit_per_week,
+    insert_games_random_week,
+    select_n_worst_weeks,
+    select_random_weeks,
+)
+from validation import validate
+from helper import compute_profit, print_solution
 from neighborhoods import insert_games_random_week, select_random_weeks
-from validation import every_team_every_week, validate
-from helper import compute_profit, get_profits_per_week, print_solution
 
 
 class SimulatedAnnealing:
@@ -30,14 +37,14 @@ class SimulatedAnnealing:
         temperatue: float,
         alpha: float,
         epsilon: float,
-        neighborhood: str = 'random_swap_within_week'
+        neighborhood: str,
     ) -> None:
         self.n = algo_config["n"]  # int
         self.t = algo_config["t"]  # float
         self.s = algo_config["s"]  # int
         self.r = algo_config["r"]  # int
         # Has shape (3, n, n), so self.p[0] is the profit for monday
-        self.p = np.array(algo_config["p"]).reshape((3, self.n, self.n))  
+        self.p = np.array(algo_config["p"]).reshape((3, self.n, self.n))
 
         self.time_out = time_out
         self.sol = start_solution
@@ -49,7 +56,8 @@ class SimulatedAnnealing:
         self.alpha = alpha
         self.epsilon = epsilon
         self.neighborhoods = {
-            'random_swap_within_week': self.random_swap_within_week
+            "random_swap_within_week": self.random_swap_within_week,
+            "select_worst_n_weeks": self.select_worst_n_weeks,
         }
 
     def run(self) -> np.ndarray:
@@ -66,7 +74,7 @@ class SimulatedAnnealing:
         best_solution = sol.copy()
 
         profit_best_solution = compute_profit(best_solution, self.p, self.r)
-        
+
         t0 = time.time()
         while self.temperature >= self.epsilon and time.time() - t0 < self.time_out:
             new_sol = self.neighborhoods[self.neighborhood](sol)
@@ -74,9 +82,13 @@ class SimulatedAnnealing:
                 sol=new_sol, profit=np.array(object=self.p), weeks_between=self.r
             )
             profit_sol = compute_profit(
-                sol=sol,  profit=np.array(object=self.p), weeks_between=self.r
+                sol=sol, profit=np.array(object=self.p), weeks_between=self.r
             )
-            if profit_new_sol > profit_sol and np.exp(-(profit_new_sol - profit_sol) / self.temperature) > np.random.uniform():
+            if (
+                profit_new_sol > profit_sol
+                and np.exp(-(profit_new_sol - profit_sol) / self.temperature)
+                > np.random.uniform()
+            ):
                 sol = new_sol
 
             if profit_new_sol > profit_best_solution:
@@ -95,12 +107,53 @@ class SimulatedAnnealing:
         random_week = random_week[0]
         games_week = games_week[0]
 
-        week_new = insert_games_random_week(sol=sol, games_week=games_week, week_changed=random_week, number_of_teams=self.n)
+        week_new = insert_games_random_week(
+            sol=sol,
+            games_week=games_week,
+            week_changed=random_week,
+            number_of_teams=self.n,
+        )
 
         new_sol = sol.copy()
         new_sol[random_week] = week_new
 
         return new_sol
+
+    def select_worst_n_weeks(self, sol: np.ndarray) -> np.ndarray:
+        # Extract the two worst weeks
+        worst_weeks, games = select_n_worst_weeks(
+            sol=sol, n=2, profits=self.p, weeks_between=self.r
+        )
+
+        games_old = games.copy()
+        # Extract all games
+        games = games[np.logical_not(np.isnan(games))]
+        games = games.reshape(int(games.shape[0] / 2), 2).astype(int)
+
+        games_encoded = [i for i in range(games.shape[0])]
+
+        # Iterate over the possible combinations extract those, where each
+        #   team is present
+        for num_repetitions in range(int(self.n / 2), int(self.n * self.t)):
+            max_sol = insert_games_max_profit_per_week(
+                sol=sol,
+                games_old=games_old,
+                games_encoded=games_encoded,
+                num_repetitions=num_repetitions,
+                games=games,
+                all_teams=list(self.all_teams),
+                weeks_changed=worst_weeks,
+                profits=self.p,
+                num_teams=num_teams,
+                weeks_between=self.r,
+            )
+            sol = max_sol.copy()
+            try:
+                validate(sol, self.n)
+            except Exception:
+                print("asd")
+
+        return sol
 
     def check_solution(self):
         """
@@ -366,12 +419,25 @@ if __name__ == "__main__":
     headers = ["Mon", "Fri", "Sat"]
     print(tabulate(sol_str, tablefmt="grid", headers=headers))
 
-    simulated_annealing = SimulatedAnnealing(algo_config=algo_config, time_out=30, start_solution=sol, alpha=0.95, temperatue=10000, epsilon=0.001)
-    print(f"Original solution: {compute_profit(sol, simulated_annealing.p, algo_config['r'])}")
+    simulated_annealing = SimulatedAnnealing(
+        algo_config=algo_config,
+        time_out=30,
+        start_solution=sol,
+        alpha=0.95,
+        temperatue=10000,
+        epsilon=0.001,
+        neighborhood="select_worst_n_weeks",
+    )
+    print(
+        f"Original solution: {compute_profit(sol, simulated_annealing.p, algo_config['r'])}"
+    )
     simulated_annealing.check_solution()
+    t0 = time.time()
     new_sol = simulated_annealing.run()
     simulated_annealing.check_solution()
-    print(f"Simulated annealing solution: {compute_profit(new_sol, simulated_annealing.p, algo_config['r'])}")
+    print(
+        f"Simulated annealing solution ({np.round(time.time()- t0, 5)}): {compute_profit(new_sol, simulated_annealing.p, algo_config['r'])}"
+    )
 
     sol_str = []
     for week in new_sol:

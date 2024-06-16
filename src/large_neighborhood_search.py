@@ -22,13 +22,8 @@ from neighborhoods import (
     select_n_worst_weeks,
     select_random_weeks,
 )
-from validation import every_team_every_week, validate
-from helper import (
-    compute_profit,
-    generate_possible_game_combinations_per_week,
-    get_profits_per_week,
-    print_solution,
-)
+from validation import validate
+from helper import compute_profit, print_solution
 
 
 class ALNS:
@@ -82,8 +77,6 @@ class ALNS:
             else:
                 num_iterations_no_change += 1
 
-        print(f"Took {time.time() - t0}")
-
         self.best_solution = best_solution
 
         return best_solution
@@ -102,7 +95,7 @@ class ALNS:
             weeks_changed, games = select_random_weeks(sol=sol, number_of_weeks=2)
             sol[weeks_changed] = np.full(games.shape, np.nan)
         elif destroy_operator == 1:
-            # Destry the two worst weeks
+            # Destroy the two worst weeks
             worst_weeks, games = select_n_worst_weeks(
                 sol=sol, n=2, profits=self.p, weeks_between=self.r
             )
@@ -160,7 +153,6 @@ class ALNS:
                     validate(sol, self.n)
                 except Exception:
                     print("asd")
-                    
 
         self.sol = sol
         return sol
@@ -432,9 +424,10 @@ if __name__ == "__main__":
     lns = ALNS(algo_config=algo_config, time_out=30, start_solution=sol)
     print(f"Original solution: {compute_profit(sol, lns.p, algo_config['r'])}")
     lns.check_solution()
+    t0 = time.time()
     new_sol = lns.run()
     lns.check_solution()
-    print(f"LNS solution: {compute_profit(new_sol, lns.p, algo_config['r'])}")
+    print(f"LNS solution {np.round(time.time() - t0, 5)}s: {compute_profit(new_sol, lns.p, algo_config['r'])}")
 
     sol_str = []
     for week in new_sol:
