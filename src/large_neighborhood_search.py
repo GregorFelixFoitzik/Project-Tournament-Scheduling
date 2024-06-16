@@ -16,6 +16,7 @@ from tabulate import tabulate
 
 
 # Project specific library
+from neighborhoods import insert_games_random_week, select_random_weeks
 from validation import every_team_every_week, validate
 from helper import compute_profit, get_profits_per_week, print_solution
 
@@ -86,10 +87,7 @@ class ALNS:
 
         if destroy_operator == 0:
             # Destroy 2 weeks randomly
-            weeks_changed = np.random.choice(
-                list(range(sol.shape[0])), size=2, replace=False
-            )
-            games = sol[weeks_changed].copy()
+            weeks_changed, games = select_random_weeks(sol=sol, number_of_weeks=2)
             sol[weeks_changed] = np.full(games.shape, np.nan)
         elif destroy_operator == 1:
             # Destry the two worst weeks
@@ -116,32 +114,12 @@ class ALNS:
         if repair_operator == 0:
             # Random fill
             for i, week_changed in enumerate(weeks_changed):
-                games_week = games[i]
-                games_unique = np.unique(games_week, axis=1)
-                games_unique = games_unique[np.logical_not(np.isnan(games_unique))]
-                games_unique = games_unique.reshape(int(games_unique.shape[0] / 2), 2)
-
-                # Which teams have to play on monday and how does the new week look like?
-                teams_play_on_monday = np.unique(sol[:, 0])[:-1]
-                week_new = np.full(games_week.shape, np.nan)
-
-                # Set the monday game
-                if np.setdiff1d(range(1, self.n+1), teams_play_on_monday).size == 0:
-                    monday_game_idx = np.random.choice(games_unique.shape[0])
-                    week_new[0][0] = games_unique[monday_game_idx]
-                else:
-                    monday_game_idx = np.where(games_unique == np.setdiff1d(range(1, self.n+1), teams_play_on_monday))[0]
-                    week_new[0][0] = games_unique[monday_game_idx]
-                
-                # Randomly distribute the remaiing games
-                remaining_games = games_unique[games_unique != games_unique[monday_game_idx]]
-                remaining_games = remaining_games.reshape(int(remaining_games.shape[0] / 2), 2)
-
-                random_choice = np.random.choice([1, 2], size=remaining_games.shape[0])
-
-                for game_idx, day_choice in enumerate(random_choice):
-                    week_new[day_choice][np.where(np.isnan(week_new[day_choice]))[0][0]] = remaining_games[game_idx]
-
+                week_new = insert_games_random_week(
+                    sol=sol,
+                    games_week=games[i],
+                    week_changed=week_changed,
+                    number_of_teams=self.n,
+                )
                 sol[week_changed] = week_new
         elif repair_operator == 1:
             games_old = games.copy()

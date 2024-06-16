@@ -16,6 +16,7 @@ from tabulate import tabulate
 
 
 # Project specific library
+from neighborhoods import insert_games_random_week, select_random_weeks
 from validation import every_team_every_week, validate
 from helper import compute_profit, get_profits_per_week, print_solution
 
@@ -90,36 +91,11 @@ class SimulatedAnnealing:
 
     def random_swap_within_week(self, sol: np.ndarray) -> np.ndarray:
         # Extract one random week
-        random_week = np.random.choice(list(range(sol.shape[0])))
-        
-        games_week = sol[random_week]
-        games_unique = np.unique(games_week, axis=1)
-        games_unique = games_unique[np.logical_not(np.isnan(games_unique))]
-        games_unique = games_unique.reshape(int(games_unique.shape[0] / 2), 2)
+        random_week, games_week = select_random_weeks(sol=sol, number_of_weeks=1)
+        random_week = random_week[0]
+        games_week = games_week[0]
 
-        sol_without_week = sol.copy()
-        sol_without_week[random_week] = np.full(games_week.shape, np.nan)
-
-        # Which teams have to play on monday and how does the new week look like?
-        teams_play_on_monday = np.unique(sol_without_week[:, 0])[:-1]
-        week_new = np.full(games_week.shape, np.nan)
-
-        # Set the monday game
-        if np.setdiff1d(range(1, self.n+1), teams_play_on_monday).size == 0:
-            monday_game_idx = np.random.choice(games_unique.shape[0])
-            week_new[0][0] = games_unique[monday_game_idx]
-        else:
-            monday_game_idx = np.where(games_unique == np.setdiff1d(range(1, self.n+1), teams_play_on_monday))[0]
-            week_new[0][0] = games_unique[monday_game_idx]
-        
-        # Randomly distribute the remaiing games
-        remaining_games = games_unique[games_unique != games_unique[monday_game_idx]]
-        remaining_games = remaining_games.reshape(int(remaining_games.shape[0] / 2), 2)
-
-        random_choice = np.random.choice([1, 2], size=remaining_games.shape[0])
-
-        for game_idx, day_choice in enumerate(random_choice):
-            week_new[day_choice][np.where(np.isnan(week_new[day_choice]))[0][0]] = remaining_games[game_idx]
+        week_new = insert_games_random_week(sol=sol, games_week=games_week, week_changed=random_week, number_of_teams=self.n)
 
         new_sol = sol.copy()
         new_sol[random_week] = week_new
