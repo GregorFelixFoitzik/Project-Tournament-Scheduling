@@ -25,7 +25,7 @@ from src.validation import validate
 from src.helper import compute_profit, print_solution
 
 
-class ALNS:
+class LNS:
     def __init__(
         self,
         algo_config: dict[str, Union[int, float, np.ndarray]],

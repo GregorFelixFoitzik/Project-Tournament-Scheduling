@@ -10,12 +10,14 @@ import pandas as pd
 
 # Project specific library
 from src.helper import compute_profit, print_solution
-from src.metaheuristics.large_neighborhood_search import ALNS
+from src.metaheuristics.large_neighborhood_search import LNS
 from src.metaheuristics.simulated_annealing import SimulatedAnnealing
-from src.metaheuristics.large_neighborhood_search_simulated_annealing import LNSSimAnnealing
+from src.metaheuristics.large_neighborhood_search_simulated_annealing import (
+    LNSSimAnnealing,
+)
 
 METAHEURISTICS = {
-    "lns": ALNS,
+    "lns": LNS,
     "simulated_annealing": SimulatedAnnealing,
     "large_neighborhood_search_simulated_annealing": LNSSimAnnealing,
 }
@@ -59,7 +61,7 @@ def main_metaheuristics_controller(
 ):
     df_res = pd.DataFrame(columns=["Metaheuristic", "profit", "duration"])
     for metaheuristic_name in metaheuristics_to_use:
-        print(f'Executing {metaheuristic_name}')
+        print(f"Executing {metaheuristic_name}")
         parameters = get_yaml_config(metaheuristic_name=metaheuristic_name)
         results = apply_metaheuristic(
             metaheuristic_name=metaheuristic_name,
