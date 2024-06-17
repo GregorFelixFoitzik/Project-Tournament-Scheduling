@@ -12,10 +12,12 @@ import pandas as pd
 from src.helper import compute_profit, print_solution
 from src.metaheuristics.large_neighborhood_search import ALNS
 from src.metaheuristics.simulated_annealing import SimulatedAnnealing
+from src.metaheuristics.large_neighborhood_search_simulated_annealing import LNSSimAnnealing
 
 METAHEURISTICS = {
     "lns": ALNS,
     "simulated_annealing": SimulatedAnnealing,
+    "large_neighborhood_search_simulated_annealing": LNSSimAnnealing,
 }
 
 

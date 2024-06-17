@@ -1,4 +1,5 @@
 metaheuristics: [
-  # "simualted_annealing",
-  "lns"
+  "simulated_annealing",
+  "lns",
+  "large_neighborhood_search_simulated_annealing"
 ]
