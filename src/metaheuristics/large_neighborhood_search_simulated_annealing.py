@@ -11,9 +11,6 @@ from typing import Union
 # Third party library
 import numpy as np
 
-from tabulate import tabulate
-
-
 # Project specific library
 from src.neighborhoods import (
     insert_games_max_profit_per_week,
@@ -63,7 +60,7 @@ class LNSSimAnnealing:
             None
         """
         sol = self.sol.copy()
-        best_solution = sol
+        best_solution = sol.copy()
         profit_best_solution = compute_profit(best_solution, self.p, self.r)
 
         t0 = time.time()

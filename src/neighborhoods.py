@@ -1,7 +1,6 @@
 """This file contains different neighborhoods for the Metaheuristics"""
 
 # Standard library
-import itertools
 
 # Third party libraries
 import numpy as np

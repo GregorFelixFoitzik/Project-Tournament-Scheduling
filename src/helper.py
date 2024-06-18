@@ -8,6 +8,7 @@ import itertools
 from math import inf
 
 # Third party library
+from attr import validate
 import numpy as np
 from typing import Union
 from itertools import permutations
@@ -173,7 +174,7 @@ def generate_possible_game_combinations_per_week(
     # Source: https://stackoverflow.com/a/5898031, accessed 11th June
     combinations = itertools.permutations(iterable=games_encoded, r=num_repetitions)
     possible_combinations_tmp_idx = []
-    # Iterate over each game combination and check some of th constraints
+    # Iterate over each game combination and check some of the constraints
     for combination_idx in combinations:
         combination = games[list(combination_idx)]
         # Check if all teams play during that week
@@ -217,3 +218,108 @@ def generate_possible_weekly_combinations(
         possible_weekly_combinations.append(weekly_combination)
 
     return possible_weekly_combinations
+
+
+def generate_random_solution(num_teams: int, t: float):
+    from src.neighborhoods import insert_games_random_week
+
+    # Create an empty array of shape: num-weeks x 3 x max num games per day x 2
+    solution = np.full(
+        shape=(
+            2 * (num_teams - 1),
+            3,
+            max(int(num_teams / 2 - int(num_teams / 2 * t)), int(num_teams / 2 * t)),
+            2,
+        ),
+        fill_value=np.nan,
+    )
+    solution_shortened = np.full(
+        shape=(
+            2 * (num_teams - 1),
+            3,
+            2,
+        ),
+        fill_value=np.nan,
+    )
+    games = np.array(list(itertools.combinations(range(1, num_teams + 1), 2)))
+    games_encoded = [i for i in range(games.shape[0])]
+
+    possible_combinations_tmp_idx = generate_possible_game_combinations_per_week(
+        games_encoded=games_encoded,
+        num_repetitions=int(num_teams / 2),
+        games=games,
+        all_teams=list(range(1, num_teams + 1)),
+    )
+
+    partial_solution = np.array([])
+    for starting_week in possible_combinations_tmp_idx:
+        possible_solution = np.full((num_teams - 1, 3, 2), np.nan)
+        possible_solution[0] = games[list(starting_week)]
+        next_week = 1
+
+        weeks_to_ignore = []
+
+        for i, week in enumerate(possible_combinations_tmp_idx):
+            if week == starting_week and i not in weeks_to_ignore:
+                continue
+
+            possible_solution_tmp = possible_solution.copy()
+            possible_solution_tmp[next_week] = games[list(week)]
+
+            games_tmp = possible_solution_tmp[
+                np.logical_not(np.isnan(possible_solution_tmp))
+            ].reshape(
+                int(
+                    possible_solution_tmp[
+                        np.logical_not(np.isnan(possible_solution_tmp))
+                    ].shape[0]
+                    / 2
+                ),
+                2,
+            )
+            games_unique = np.unique(games_tmp, axis=0)
+
+            if games_unique.shape[0] != int(num_teams / 2) * (next_week + 1):
+                weeks_to_ignore.append(i)
+                continue
+
+            possible_solution = possible_solution_tmp.copy()
+            next_week += 1
+
+            if not np.isnan(possible_solution).any():
+                break
+        if not np.isnan(possible_solution).any():
+            partial_solution = possible_solution
+            break
+
+    solution_shortened[: num_teams - 1] = partial_solution
+
+    # Source: https://stackoverflow.com/a/4857981, accessed 18th June 2024
+    partial_solution = partial_solution.reshape((num_teams - 1) * 3, 2)
+    partial_solution[:, [0, 1]] = partial_solution[:, [1, 0]]
+    partial_solution = partial_solution.reshape((num_teams - 1), 3, 2)
+
+    solution_shortened[num_teams - 1 :] = partial_solution
+
+    num_games_monday = len(possible_combinations_tmp_idx[0]) - int(
+        len(possible_combinations_tmp_idx[0]) * t
+    )
+
+    num_games_per_day = solution.shape[2]
+    for i, week in enumerate(iterable=solution_shortened):
+        solution[i][0][:num_games_monday] = week[:num_games_monday]
+
+        remaining_games = week[num_games_monday]
+
+        num_games_friday = int(len(possible_combinations_tmp_idx[0]) * t)
+        solution[i][1] = week[num_games_monday : num_games_monday + num_games_friday]
+
+        if week[num_games_monday:].shape[0] > int(
+            len(possible_combinations_tmp_idx[0]) * t
+        ):
+            solution[i][1] = eek[num_games_monday : num_games_monday + num_games_friday]
+            raise NotImplementedError("Not implemented!!!")
+
+    validate(solution, num_teams)
+
+    return solution

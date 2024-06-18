@@ -9,6 +9,7 @@ import numpy as np
 import pandas as pd
 
 # Project specific library
+from src.metaheuristics.genetic_algorithms import GeneticAlgorithm
 from src.helper import compute_profit, print_solution
 from src.metaheuristics.large_neighborhood_search import LNS
 from src.metaheuristics.simulated_annealing import SimulatedAnnealing
@@ -20,6 +21,7 @@ METAHEURISTICS = {
     "lns": LNS,
     "simulated_annealing": SimulatedAnnealing,
     "large_neighborhood_search_simulated_annealing": LNSSimAnnealing,
+    'genetic_algorithm': GeneticAlgorithm
 }
 
 
@@ -37,12 +39,19 @@ def apply_metaheuristic(
     time_out: int,
     parameters: dict[str, Union[int, float]],
 ) -> list[Union[str, float]]:
-    metaheuristic = METAHEURISTICS[metaheuristic_name](
-        algo_config=algo_config,
-        time_out=time_out,
-        start_solution=start_sol,
-        **parameters,
-    )
+    if metaheuristic_name == 'genetic_algorithm':
+        metaheuristic = METAHEURISTICS[metaheuristic_name](
+            algo_config=algo_config,
+            time_out=time_out,
+            **parameters,
+        )
+    else:
+        metaheuristic = METAHEURISTICS[metaheuristic_name](
+            algo_config=algo_config,
+            time_out=time_out,
+            start_solution=start_sol,
+            **parameters,
+        )
     t0 = time.time()
     new_sol = metaheuristic.run()
     duration = np.round(a=time.time() - t0, decimals=2)
