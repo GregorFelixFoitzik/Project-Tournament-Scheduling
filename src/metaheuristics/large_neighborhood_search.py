@@ -62,7 +62,11 @@ class LNS:
         num_iterations_no_change = 0
 
         t0 = time.time()
-        while num_iterations_no_change <= 100 and time.time() - t0 < self.time_out:
+        elapsed_time = 0
+        num_iterations = 0
+        avg_run_time = 0
+        while num_iterations_no_change <= 100 and (time.time() - t0) + avg_run_time < self.time_out:
+            t0_iteration = time.time()
             sol_destroyed, games, weeks_changed = self.destroy(best_solution.copy())
             new_sol = self.repair(sol_destroyed, games, weeks_changed)
             profit_new_sol = compute_profit(
@@ -75,6 +79,10 @@ class LNS:
                 num_iterations_no_change = 0
             else:
                 num_iterations_no_change += 1
+
+            elapsed_time += (time.time()-t0_iteration)
+            num_iterations += 1
+            avg_run_time = elapsed_time/num_iterations
 
         self.best_solution = best_solution
 

@@ -75,7 +75,12 @@ class SimulatedAnnealing:
         profit_best_solution = compute_profit(best_solution, self.p, self.r)
 
         t0 = time.time()
-        while self.temperature >= self.epsilon and time.time() - t0 < self.time_out:
+
+        elapsed_time = 0
+        num_iterations = 0
+        avg_runtime = 0
+        while self.temperature >= self.epsilon and (time.time() - t0) + avg_runtime < self.time_out:
+            t0_iteration = time.time()
             new_sol = self.neighborhoods[self.neighborhood](sol)
             profit_new_sol = compute_profit(
                 sol=new_sol, profit=np.array(object=self.p), weeks_between=self.r
@@ -96,6 +101,10 @@ class SimulatedAnnealing:
 
             self.temperature *= self.alpha
 
+            elapsed_time += (time.time()-t0_iteration)
+            num_iterations += 1
+            avg_runtime = elapsed_time/num_iterations
+        
         self.best_solution = best_solution
 
         return best_solution

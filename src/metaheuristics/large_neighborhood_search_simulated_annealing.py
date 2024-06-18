@@ -67,7 +67,11 @@ class LNSSimAnnealing:
         profit_best_solution = compute_profit(best_solution, self.p, self.r)
 
         t0 = time.time()
-        while self.temperature >= self.epsilon and time.time() - t0 < self.time_out:
+        elapsed_time = 0
+        num_iterations = 0
+        avg_runtime = 0
+        while self.temperature >= self.epsilon and (time.time() - t0) + avg_runtime < self.time_out:
+            t0_iteration = time.time()
             sol_destroyed, games, weeks_changed = self.destroy(best_solution.copy())
             new_sol = self.repair(sol_destroyed, games, weeks_changed)
             profit_new_sol = compute_profit(
@@ -87,6 +91,10 @@ class LNSSimAnnealing:
             if profit_new_sol > profit_best_solution:
                 best_solution = new_sol.copy()
                 profit_best_solution = profit_new_sol
+
+            elapsed_time += (time.time()-t0_iteration)
+            num_iterations += 1
+            avg_runtime = elapsed_time/num_iterations
 
         self.best_solution = best_solution
 

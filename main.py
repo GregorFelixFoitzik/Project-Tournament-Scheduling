@@ -263,7 +263,7 @@ def main():
         start_sol=sol,
         metaheuristics_to_use=metaheuristics_to_use,
         algo_config=algo_config,
-        time_out=30,
+        time_out=4,
     )
 
 
