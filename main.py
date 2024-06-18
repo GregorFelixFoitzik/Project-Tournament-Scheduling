@@ -269,15 +269,14 @@ def main():
 
 if __name__ == "__main__":
     main()
-    exit(-1)
     # Extract command line arguments
-    args = parser.parse_args()
-    path_to_file = args.path_to_instance
-    timeout = args.timeout
-
-    algo_config = read_in_file(path_to_file=path_to_file)
+    # args = parser.parse_args()
+    # path_to_file = args.path_to_instance
+    # timeout = args.timeout
+# 
+    # algo_config = read_in_file(path_to_file=path_to_file)
     # print(
-    #     algo_config['p'].reshape(3,6,6)
+        # algo_config['p'].reshape(3,6,6)
     # )
-    agent = GreedyHeuristic(algo_config)
-    agent.execute_cmd()
+    # agent = GreedyHeuristic(algo_config)
+    # agent.execute_cmd()

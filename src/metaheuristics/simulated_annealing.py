@@ -120,6 +120,7 @@ class SimulatedAnnealing:
             games_week=games_week,
             week_changed=random_week,
             number_of_teams=self.n,
+            t=self.t
         )
 
         new_sol = sol.copy()

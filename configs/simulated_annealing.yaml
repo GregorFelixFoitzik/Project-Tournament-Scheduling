@@ -2,4 +2,4 @@ parameters:
   alpha: 0.95
   temperature: 10000
   epsilon: 0.001
-  neighborhood: "select_worst_n_weeks"
+  neighborhood: "random_swap_within_week"

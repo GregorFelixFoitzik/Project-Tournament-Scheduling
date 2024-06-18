@@ -43,7 +43,6 @@ def insert_games_random_week(
     # Which teams have to play on monday and how does the new week look like?
     teams_play_on_monday = np.unique(sol_without_week[:, 0])[:-1]
     week_new = np.full(shape=games_week.shape, fill_value=np.nan)
-    all_monday_games_idx = []
     # Set the monday game
     if (
         np.setdiff1d(ar1=range(1, number_of_teams + 1), ar2=teams_play_on_monday).size
@@ -57,16 +56,14 @@ def insert_games_random_week(
 
         games_unique = games_unique[np.setdiff1d(ar1=list(range(games_unique.shape[0])), ar2=monday_games_idx)]
         num_games_monday -= monday_games_idx.shape[0]
-        all_monday_games_idx = monday_games_idx
 
     if num_games_monday > 0:
         monday_games_idx = np.random.choice(a=games_unique.shape[0], size=num_games_monday, replace=False)
         week_new[0][:num_games_monday] = games_unique[monday_games_idx]
-        all_monday_games_idx = np.append(arr=all_monday_games_idx, values=monday_games_idx).astype(dtype=int)
+        games_unique = games_unique[np.setdiff1d(ar1=list(range(games_unique.shape[0])), ar2=monday_games_idx)]
 
     # Randomly distribute the remaiing games
-    remaining_games = games_unique[games_unique != games_unique[all_monday_games_idx]]
-    remaining_games = remaining_games.reshape(int(remaining_games.shape[0] / 2), 2)
+    remaining_games = games_unique
 
     random_choice = np.random.choice([1, 2], size=remaining_games.shape[0])
 
@@ -88,7 +85,6 @@ def select_n_worst_weeks(
     games = sol[worst_weeks].copy()
 
     return worst_weeks, games
-
 
 def insert_games_max_profit_per_week(
     sol: np.ndarray,
@@ -124,8 +120,9 @@ def insert_games_max_profit_per_week(
         # Insert each weekly-combination into the solution
         for i, week in enumerate(iterable=weekly_combination):
             week_new = np.full(shape=games_old[0].shape, fill_value=np.nan)
-            week_new[0][0] = week[0]
-            for game in week[1:]:
+            num_games_monday = week.shape[0] - int(week.shape[0]*t)
+            week_new[0][:num_games_monday] = week[:num_games_monday]
+            for game in week[num_games_monday:]:
                 games_position = np.argmax(profits[1:, game[0] - 1, game[1] - 1]) + 1
                 week_new[games_position][
                     np.where(np.isnan(week_new[games_position]))[0][0]
