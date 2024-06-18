@@ -29,7 +29,7 @@ def select_random_weeks(
 
 
 def insert_games_random_week(
-    sol: np.ndarray, games_week: np.ndarray, week_changed: int, number_of_teams: int
+    sol: np.ndarray, games_week: np.ndarray, week_changed: int, number_of_teams: int, t: float
 ) -> np.ndarray:
     games_unique = np.unique(ar=games_week, axis=1)
     games_unique = games_unique[np.logical_not(np.isnan(games_unique))]
@@ -38,26 +38,34 @@ def insert_games_random_week(
     sol_without_week = sol.copy()
     sol_without_week[week_changed] = np.full(shape=games_week.shape, fill_value=np.nan)
 
+    num_games_monday = games_unique.shape[0] - int(games_unique.shape[0]*t)
+
     # Which teams have to play on monday and how does the new week look like?
     teams_play_on_monday = np.unique(sol_without_week[:, 0])[:-1]
     week_new = np.full(shape=games_week.shape, fill_value=np.nan)
-
+    all_monday_games_idx = []
     # Set the monday game
     if (
         np.setdiff1d(ar1=range(1, number_of_teams + 1), ar2=teams_play_on_monday).size
-        == 0
+        != 0
     ):
-        monday_game_idx = np.random.choice(games_unique.shape[0])
-        week_new[0][0] = games_unique[monday_game_idx]
-    else:
-        monday_game_idx = np.where(
+        monday_games_idx = np.where(
             games_unique
             == np.setdiff1d(ar1=range(1, number_of_teams + 1), ar2=teams_play_on_monday)
         )[0]
-        week_new[0][0] = games_unique[monday_game_idx]
+        week_new[0][:monday_games_idx.shape[0]] = games_unique[monday_games_idx]
+
+        games_unique = games_unique[np.setdiff1d(ar1=list(range(games_unique.shape[0])), ar2=monday_games_idx)]
+        num_games_monday -= monday_games_idx.shape[0]
+        all_monday_games_idx = monday_games_idx
+
+    if num_games_monday > 0:
+        monday_games_idx = np.random.choice(a=games_unique.shape[0], size=num_games_monday, replace=False)
+        week_new[0][:num_games_monday] = games_unique[monday_games_idx]
+        all_monday_games_idx = np.append(arr=all_monday_games_idx, values=monday_games_idx).astype(dtype=int)
 
     # Randomly distribute the remaiing games
-    remaining_games = games_unique[games_unique != games_unique[monday_game_idx]]
+    remaining_games = games_unique[games_unique != games_unique[all_monday_games_idx]]
     remaining_games = remaining_games.reshape(int(remaining_games.shape[0] / 2), 2)
 
     random_choice = np.random.choice([1, 2], size=remaining_games.shape[0])
@@ -93,6 +101,7 @@ def insert_games_max_profit_per_week(
     profits: np.ndarray,
     num_teams: int,
     weeks_between: int,
+    t: float
 ) -> np.ndarray:
     possible_combinations_tmp_idx = generate_possible_game_combinations_per_week(
         games_encoded=games_encoded,

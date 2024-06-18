@@ -154,6 +154,7 @@ class SimulatedAnnealing:
                 profits=self.p,
                 num_teams=self.n,
                 weeks_between=self.r,
+                t=self.t
             )
             sol = max_sol.copy()
             try:

@@ -130,6 +130,7 @@ class LNS:
                     games_week=games[i],
                     week_changed=week_changed,
                     number_of_teams=self.n,
+                    t=self.t
                 )
                 sol[week_changed] = week_new
         elif repair_operator == 1:
@@ -154,6 +155,7 @@ class LNS:
                     profits=self.p,
                     num_teams=self.n,
                     weeks_between=self.r,
+                    t=self.t
                 )
                 sol = max_sol.copy()
                 try:
