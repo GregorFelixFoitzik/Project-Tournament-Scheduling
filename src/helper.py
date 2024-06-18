@@ -43,8 +43,12 @@ def read_in_file(path_to_file: str) -> dict[str, Union[float, int, list[int]]]:
         elif re.search(pattern=r"\[.*\]", string=value):
             # https://stackoverflow.com/a/1894296, accessed 28.05.2024
             algo_config[key] = np.array(ast.literal_eval(node_or_string=value))
+        elif key=='t':
+            algo_config[key] = float(value.strip())
+        elif key == 'p':
+            algo_config[key] = np.array(value.strip().split(' ')).astype(int)
         else:
-            algo_config[key] = int(value)
+            algo_config[key] = int(value.strip())
 
     return algo_config
 
