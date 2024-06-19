@@ -69,7 +69,10 @@ def print_solution(runtime: float, solution: np.array = None) -> None:
         concatenated_array = np.hstack(formatted_blocks)
 
         # Print the concatenated array using tabulate
-        headers=['Mon','Mon','Mon', 'Fri','Fri','Fri', 'Sat','Sat','Sat']
+        days = ['Mon', 'Fri', 'Sat']
+        
+        headers = [day for day in days for _ in range(solution.shape[2])]
+
         print(tabulate(concatenated_array, tablefmt="grid", headers=headers))  
 
     else:

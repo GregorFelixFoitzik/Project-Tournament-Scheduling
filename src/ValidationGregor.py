@@ -73,6 +73,12 @@ class StepValidation:
     def teams_play_in_recovery(self, team:int, weekday:int, week:int):
         pass
 
+    def alg_monday_check(self, n, solution):
+        all_teams = set(range(1, n + 1))
+        # {num: np.any(test == num) for num in teams}
+        dict_teams_covered = {team: np.any(solution == team) for team in all_teams}
+        return dict_teams_covered
+
 
 
 if __name__ == "__main__":
