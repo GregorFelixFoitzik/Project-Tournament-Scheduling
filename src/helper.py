@@ -8,7 +8,6 @@ import itertools
 from math import inf
 
 # Third party library
-from attr import validate
 import numpy as np
 from typing import Union
 from itertools import permutations
@@ -108,7 +107,7 @@ def get_profits_per_week(sol: np.ndarray, profit: np.ndarray, weeks_between: int
                     week_num,
                 )
                 continue
-            if i == 0 and np.unique(games, axis=0).shape[1].shape[1] > 2:
+            if i == 0 and np.unique(games, axis=0).shape[1] > 2:
                 games = games[np.logical_not(np.isnan(games))]
                 min_profit = float(inf)
 
@@ -224,112 +223,71 @@ def generate_possible_weekly_combinations(
     return possible_weekly_combinations
 
 
-def generate_random_solution(num_teams: int, t: float):
-    num_teams = 6
-    from src.neighborhoods import insert_games_random_week
+# Described here: https://en.wikipedia.org/wiki/Round-robin_tournament#Circle_method, 
+#   accessed 19th June
+def generate_solution_round_robin_tournament(num_teams: int, t: float):
+    from src.validation import validate
 
     # Create an empty array of shape: num-weeks x 3 x max num games per day x 2
     solution = np.full(
         shape=(
             2 * (num_teams - 1),
             3,
-            max(int(num_teams / 2 - int(num_teams / 2 * t)), int(num_teams / 2 * t)),
+            max(
+                int(num_teams / 2 - int(np.ceil(num_teams / 2 * t))),
+                int(np.ceil(num_teams / 2 * t)),
+            ),
             2,
         ),
         fill_value=np.nan,
     )
+
     solution_shortened = np.full(
         shape=(
-            2 * (num_teams - 1),
+            num_teams - 1,
             int(num_teams / 2),
             2,
         ),
         fill_value=np.nan,
-    )
-    games = np.array(list(itertools.combinations(range(1, num_teams + 1), 2)))
-    # games_encoded = [i for i in range(games.shape[0])]
+    ).tolist()
 
-    # possible_combinations_tmp_idx = generate_possible_game_combinations_per_week(
-    # games_encoded=games_encoded,
-    # num_repetitions=int(num_teams / 2),
-    # games=games,
-    # all_teams=list(range(1, num_teams + 1)),
-    # )
+    teams = list(range(1, num_teams + 1))
+    teams = np.array(teams).reshape(2, int(num_teams / 2)).tolist()
 
-    partial_solution = []
+    for week in range(num_teams - 1):
+        solution_shortened[week] = [
+            np.array(teams)[:, i].tolist() for i in range(int(num_teams / 2))
+        ]
+        upper_row = [teams[0][0], teams[1][0]] + teams[0][1:-1]
+        lower_row = teams[1][1:] + [teams[0][-1]]
 
-    game_combinations_to_ignore = []
-    games_allowed = np.array([True for _ in range(len(games))])
-    for _ in range(num_teams-1):
-        week_final, games_allowed, game_combinations_to_ignore = create_week(
-            games, int(num_teams / 2), games_allowed, game_combinations_to_ignore
-        )
+        teams = [upper_row, lower_row]
 
-        partial_solution.append(week_final)
+    solution_extended = np.array(solution_shortened + solution_shortened)
 
+    # Invert the second half of the solution
+    for i in range(num_teams - 1, solution_extended.shape[0]):
+        week = solution_extended[i]
+        week[:, [0, 1]] = week[:, [1, 0]]
 
-    solution_shortened[: num_teams - 1] = partial_solution
-
-    # Source: https://stackoverflow.com/a/4857981, accessed 18th June 2024
-    partial_solution = partial_solution.reshape((num_teams - 1) * 3, 2)
-    partial_solution[:, [0, 1]] = partial_solution[:, [1, 0]]
-    partial_solution = partial_solution.reshape((num_teams - 1), 3, 2)
-
-    solution_shortened[num_teams - 1 :] = partial_solution
-
-    num_games_monday = len(possible_combinations_tmp_idx[0]) - int(
-        len(possible_combinations_tmp_idx[0]) * t
+    num_games_monday = max(
+        1, solution_extended.shape[1] - 2 * int(np.ceil(solution_extended.shape[1] * t))
     )
 
-    num_games_per_day = solution.shape[2]
-    for i, week in enumerate(iterable=solution_shortened):
+    for i, week in enumerate(iterable=solution_extended):
         solution[i][0][:num_games_monday] = week[:num_games_monday]
 
-        remaining_games = week[num_games_monday]
+        num_games_friday = int(np.ceil(solution_extended.shape[1] * t))
+        solution[i][1][: num_games_monday + num_games_friday - num_games_monday] = week[
+            num_games_monday : num_games_monday + num_games_friday
+        ]
 
-        num_games_friday = int(len(possible_combinations_tmp_idx[0]) * t)
-        solution[i][1] = week[num_games_monday : num_games_monday + num_games_friday]
-
-        if week[num_games_monday:].shape[0] > int(
-            len(possible_combinations_tmp_idx[0]) * t
-        ):
-            solution[i][1] = eek[num_games_monday : num_games_monday + num_games_friday]
-            raise NotImplementedError("Not implemented!!!")
+        if week[num_games_monday + num_games_friday :].shape[0] > 0:
+            remaining_games = week[
+                num_games_monday + num_games_friday:
+            ]
+            solution[i][2][: remaining_games.shape[0]] = remaining_games
 
     validate(solution, num_teams)
 
     return solution
-
-
-def create_week(
-    games: np.ndarray,
-    num_games: int,
-    games_allowed: np.ndarray,
-    game_combinations_to_ignore: list[list[int]],
-) -> tuple[np.ndarray, np.ndarray, list]:
-    start_indices_games = [0 for _ in range(num_games)]
-    combination_not_found = True
-    week_final = np.array([])
-    while combination_not_found:
-        week = [games[np.where(games_allowed)[0][start_indices_games[0]]]]
-        games_added = [np.where(games_allowed)[0][start_indices_games[0]]]
-        for i in range(1, num_games):
-            for game_in_week in week:
-                games_allowed= games_allowed[games_allowed==((games[:, 0] != game_in_week[0])
-                    & (games[:, 0] != game_in_week[1])
-                    & (games[:, 1] != game_in_week[0])
-                    & (games[:, 1] != game_in_week[1]))]
-
-            games_added.append(np.where(games_allowed)[0][start_indices_games[i]])
-            week.append(games[np.where(games_allowed)[0][start_indices_games[i]]])
-
-        if games_added in game_combinations_to_ignore:
-            start_indices_games[-1] += 1
-        else:
-            week_final = np.array(week)
-            game_combinations_to_ignore.append(games_added)
-            break
-
-    return week_final, games_allowed, game_combinations_to_ignore
-
-

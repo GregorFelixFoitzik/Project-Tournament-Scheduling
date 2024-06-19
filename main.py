@@ -5,7 +5,7 @@ import argparse
 # Project specific library
 import yaml
 
-from src.helper import read_in_file, generate_random_solution
+from src.helper import read_in_file, generate_solution_round_robin_tournament
 from src.greedy_heuristic import GreedyHeuristic
 from src.metaheuristics.metaheuristics_controller import main_metaheuristics_controller
 
@@ -35,7 +35,7 @@ def main():
         algo_config = read_in_file(path_to_file=path_to_file)
 
         metaheuristics_to_use = run_config["metaheuristics"]
-        start_sol = generate_random_solution(algo_config["n"], algo_config["t"])
+        start_sol = generate_solution_round_robin_tournament(algo_config["n"], algo_config["t"])
 
         main_metaheuristics_controller(
             start_sol=start_sol,
@@ -52,6 +52,8 @@ if __name__ == "__main__":
     # path_to_file = args.path_to_instance
     # timeout = args.timeout
 
-    # algo_config = read_in_file(path_to_file=path_to_file)
+    # algo_config = read_in_file(path_to_file='instances/dotl_n10_t0.666_s4_r2_mnunif_1234.in')
     # agent = GreedyHeuristic(algo_config)
     # agent.execute_cmd()
+# 
+    # print('ads')

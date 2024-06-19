@@ -8,7 +8,7 @@ from datetime import timedelta
 import numpy as np
 
 # Project specific library
-from src.helper import generate_random_solution, print_solution
+from src.helper import generate_solution_round_robin_tournament, print_solution
 
 from src.neighborhoods import (
     insert_games_max_profit_per_week,
@@ -61,7 +61,7 @@ class GeneticAlgorithm:
             None
         """
         # TODO: Generate solutions here
-        population = [generate_random_solution(num_teams=self.n, t=self.t) for _ in range(self.max_population_size)]
+        population = [generate_solution_round_robin_tournament(num_teams=self.n, t=self.t) for _ in range(self.max_population_size)]
 
         t0 = time.time()
         num_generations = 0

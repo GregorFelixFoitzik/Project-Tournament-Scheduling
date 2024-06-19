@@ -69,6 +69,11 @@ def main_metaheuristics_controller(
     time_out: int,
 ):
     df_res = pd.DataFrame(columns=["Metaheuristic", "profit", "duration"])
+    profit = compute_profit(
+        sol=start_sol, profit=np.array(algo_config["p"]).reshape((3, algo_config['n'], algo_config['n'])), weeks_between=algo_config["r"]
+    )
+    df_res.loc[len(df_res)] = ['Start sol', profit, 0]
+
     for metaheuristic_name in metaheuristics_to_use:
         print(f"Executing {metaheuristic_name}")
         parameters = get_yaml_config(metaheuristic_name=metaheuristic_name)
