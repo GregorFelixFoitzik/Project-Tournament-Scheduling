@@ -225,7 +225,7 @@ def generate_possible_weekly_combinations(
 
 # Described here: https://en.wikipedia.org/wiki/Round-robin_tournament#Circle_method, 
 #   accessed 19th June
-def generate_solution_round_robin_tournament(num_teams: int, t: float):
+def generate_solution_round_robin_tournament(num_teams: int, t: float, random_team_order: bool):
     from src.validation import validate
 
     # Create an empty array of shape: num-weeks x 3 x max num games per day x 2
@@ -252,6 +252,9 @@ def generate_solution_round_robin_tournament(num_teams: int, t: float):
     ).tolist()
 
     teams = list(range(1, num_teams + 1))
+    if random_team_order:
+        team = np.random.choice(teams, np.array(teams).shape, replace=False).tolist()
+        print('asd')
     teams = np.array(teams).reshape(2, int(num_teams / 2)).tolist()
 
     for week in range(num_teams - 1):

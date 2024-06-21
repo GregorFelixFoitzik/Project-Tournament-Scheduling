@@ -35,7 +35,7 @@ def main():
         algo_config = read_in_file(path_to_file=path_to_file)
 
         metaheuristics_to_use = run_config["metaheuristics"]
-        start_sol = generate_solution_round_robin_tournament(algo_config["n"], algo_config["t"])
+        start_sol = generate_solution_round_robin_tournament(algo_config["n"], algo_config["t"], True)
 
         main_metaheuristics_controller(
             start_sol=start_sol,
