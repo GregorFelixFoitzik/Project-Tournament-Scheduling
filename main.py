@@ -28,14 +28,18 @@ def main():
     with open(file="configs/run_config.yaml", mode="r") as file:
         run_config = yaml.safe_load(stream=file)
 
-    file_names = os.listdir("instances")
+    file_names = os.listdir(path="instances")
     for file_name in file_names:
         path_to_file = f"instances/{file_name}"
 
         algo_config = read_in_file(path_to_file=path_to_file)
 
         metaheuristics_to_use = run_config["metaheuristics"]
-        start_sol = generate_solution_round_robin_tournament(algo_config["n"], algo_config["t"], True)
+        start_sol = generate_solution_round_robin_tournament(
+            num_teams=int(algo_config["n"]),
+            t=float(algo_config["t"]),
+            random_team_order=True,
+        )
 
         main_metaheuristics_controller(
             start_sol=start_sol,
@@ -55,5 +59,5 @@ if __name__ == "__main__":
     # algo_config = read_in_file(path_to_file='instances/dotl_n10_t0.666_s4_r2_mnunif_1234.in')
     # agent = GreedyHeuristic(algo_config)
     # agent.execute_cmd()
-# 
-    # print('ads')
+#
+# print('ads')

@@ -18,7 +18,12 @@ def validate(
     feasible_each_team_monday = every_team_on_monday(sol=sol, num_teams=num_teams)
     feasible_every_team_every_week = every_team_every_week(sol=sol, num_teams=num_teams)
 
-    return feasible_uniqueness and feasible_check_games and feasible_each_team_monday and feasible_every_team_every_week
+    return (
+        feasible_uniqueness
+        and feasible_check_games
+        and feasible_each_team_monday
+        and feasible_every_team_every_week
+    )
 
 
 def uniqueness(sol: np.ndarray, num_teams: int, weeks: int) -> bool:
@@ -28,13 +33,13 @@ def uniqueness(sol: np.ndarray, num_teams: int, weeks: int) -> bool:
     )
     games_unique = np.unique(games, axis=0)
     # print(
-        # f"No duplicates ({games.shape[0]} and {games_unique.shape[0]}): "
-        # f"{games.shape[0] == games_unique.shape[0]}"
+    # f"No duplicates ({games.shape[0]} and {games_unique.shape[0]}): "
+    # f"{games.shape[0] == games_unique.shape[0]}"
     # )
 
     # print(
-        # f"Number of games ({games.shape[0]} and {int((num_teams/2)*weeks)}):"
-        # f"{games.shape[0] == ((num_teams/2)*weeks)}"
+    # f"Number of games ({games.shape[0]} and {int((num_teams/2)*weeks)}):"
+    # f"{games.shape[0] == ((num_teams/2)*weeks)}"
     # )
 
     assert games.shape[0] == games_unique.shape[0] and (
@@ -63,10 +68,10 @@ def check_games(sol: np.ndarray, num_teams: int) -> bool:
         ]
     )
     games_required = games_required[np.logical_not(np.isnan(games_required))]
-    games_required = games_required.reshape(int(games_required.shape[0]/2), 2)
+    games_required = games_required.reshape(int(games_required.shape[0] / 2), 2)
 
     sol = sol[np.logical_not(np.isnan(sol))]
-    sol = sol.reshape(int(sol.shape[0]/2), 2)
+    sol = sol.reshape(int(sol.shape[0] / 2), 2)
 
     games_in_sol = 0
     for game in games_required:
@@ -82,24 +87,29 @@ def check_games(sol: np.ndarray, num_teams: int) -> bool:
 
 def every_team_on_monday(sol: np.ndarray, num_teams: int) -> bool:
     teams = [team for team in range(1, num_teams + 1)]
-    
+
     monday_games = sol[:, 0]
     monday_games = monday_games[np.logical_not(np.isnan(monday_games))]
-    monday_games = monday_games.reshape(int(monday_games.shape[0]/2), 2)
+    monday_games = monday_games.reshape(int(monday_games.shape[0] / 2), 2)
 
     unique_values_monday_games = np.unique(monday_games)
     # print(
-        # "Every team plays at least once "
-        # f"on monday: {np.logical_not(False in (unique_values_monday_games == teams))}"
+    # "Every team plays at least once "
+    # f"on monday: {np.logical_not(False in (unique_values_monday_games == teams))}"
     # )
 
-    assert unique_values_monday_games.shape[0] == len(teams) and np.logical_not(False in (unique_values_monday_games == teams)), "Every team on monday"
+    assert unique_values_monday_games.shape[0] == len(teams) and np.logical_not(
+        False in (unique_values_monday_games == teams)
+    ), "Every team on monday"
 
     return np.logical_not(False in (unique_values_monday_games == teams))
 
+
 def every_team_every_week(sol: np.ndarray, num_teams: int) -> bool:
     for i, week in enumerate(sol):
-        assert np.all(np.unique(week)[:-1] == list(range(1, num_teams + 1))), f"In week {i} not all teams play!"
+        assert np.all(
+            np.unique(week)[:-1] == list(range(1, num_teams + 1))
+        ), f"In week {i} not all teams play!"
 
     return True
 

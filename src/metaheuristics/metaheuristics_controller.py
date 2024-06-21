@@ -21,7 +21,7 @@ METAHEURISTICS = {
     "lns": LNS,
     "simulated_annealing": SimulatedAnnealing,
     "large_neighborhood_search_simulated_annealing": LNSSimAnnealing,
-    'genetic_algorithm': GeneticAlgorithm
+    "genetic_algorithm": GeneticAlgorithm,
 }
 
 
@@ -39,7 +39,7 @@ def apply_metaheuristic(
     time_out: int,
     parameters: dict[str, Union[int, float]],
 ) -> list[Union[str, float]]:
-    if metaheuristic_name == 'genetic_algorithm':
+    if metaheuristic_name == "genetic_algorithm":
         metaheuristic = METAHEURISTICS[metaheuristic_name](
             algo_config=algo_config,
             time_out=time_out,
@@ -56,7 +56,7 @@ def apply_metaheuristic(
     new_sol = metaheuristic.run()
     duration = np.round(a=time.time() - t0, decimals=2)
     profit = compute_profit(
-        sol=new_sol, profit=metaheuristic.p, weeks_between=algo_config["r"]
+        sol=new_sol, profit=metaheuristic.p, weeks_between=int(algo_config["r"])
     )
 
     return [metaheuristic_name, profit, duration]
@@ -65,14 +65,18 @@ def apply_metaheuristic(
 def main_metaheuristics_controller(
     start_sol: np.ndarray,
     metaheuristics_to_use: list[str],
-    algo_config: dict[str, Union[int, float, np.ndarray]],
+    algo_config: dict[str, Union[int, float, list]],
     time_out: int,
 ):
     df_res = pd.DataFrame(columns=["Metaheuristic", "profit", "duration"])
     profit = compute_profit(
-        sol=start_sol, profit=np.array(algo_config["p"]).reshape((3, algo_config['n'], algo_config['n'])), weeks_between=algo_config["r"]
+        sol=start_sol,
+        profit=np.array(object=list(algo_config["p"])).reshape(
+            (3, algo_config["n"], algo_config["n"])
+        ),
+        weeks_between=int(algo_config["r"]),
     )
-    df_res.loc[len(df_res)] = ['Start sol', profit, 0]
+    df_res.loc[len(df_res)] = ["Start sol", profit, 0]
 
     for metaheuristic_name in metaheuristics_to_use:
         print(f"Executing {metaheuristic_name}")

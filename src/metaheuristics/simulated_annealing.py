@@ -1,19 +1,13 @@
 """This file contains the implementation of a Tabu-Search."""
 
 # Standard library
-from select import epoll
 import time
-import random
-import itertools
 
 from typing import Union
 from datetime import timedelta
 
 # Third party library
-from attr import asdict
 import numpy as np
-
-from tabulate import tabulate
 
 # Project specific library
 from src.neighborhoods import (
@@ -38,12 +32,12 @@ class SimulatedAnnealing:
         epsilon: float,
         neighborhood: str,
     ) -> None:
-        self.n = algo_config["n"]  # int
-        self.t = algo_config["t"]  # float
-        self.s = algo_config["s"]  # int
-        self.r = algo_config["r"]  # int
+        self.n = int(algo_config["n"])
+        self.t = float(algo_config["t"])
+        self.s = int(algo_config["s"])
+        self.r = int(algo_config["r"])
         # Has shape (3, n, n), so self.p[0] is the profit for monday
-        self.p = np.array(algo_config["p"]).reshape((3, self.n, self.n))
+        self.p = np.array(object=algo_config["p"]).reshape((3, self.n, self.n))
 
         self.time_out = time_out
         self.sol = start_solution
@@ -72,14 +66,19 @@ class SimulatedAnnealing:
         sol = self.sol.copy()
         best_solution = sol.copy()
 
-        profit_best_solution = compute_profit(best_solution, self.p, self.r)
+        profit_best_solution = compute_profit(
+            sol=best_solution, profit=self.p, weeks_between=self.r
+        )
 
         t0 = time.time()
 
         elapsed_time = 0
         num_iterations = 0
         avg_runtime = 0
-        while self.temperature >= self.epsilon and (time.time() - t0) + avg_runtime < self.time_out:
+        while (
+            self.temperature >= self.epsilon
+            and (time.time() - t0) + avg_runtime < self.time_out
+        ):
             t0_iteration = time.time()
             new_sol = self.neighborhoods[self.neighborhood](sol)
             profit_new_sol = compute_profit(
@@ -101,10 +100,10 @@ class SimulatedAnnealing:
 
             self.temperature *= self.alpha
 
-            elapsed_time += (time.time()-t0_iteration)
+            elapsed_time += time.time() - t0_iteration
             num_iterations += 1
-            avg_runtime = elapsed_time/num_iterations
-        
+            avg_runtime = elapsed_time / num_iterations
+
         self.best_solution = best_solution
 
         return best_solution
@@ -120,7 +119,7 @@ class SimulatedAnnealing:
             games_week=games_week,
             week_changed=random_week,
             number_of_teams=self.n,
-            t=self.t
+            t=self.t,
         )
 
         new_sol = sol.copy()
@@ -155,11 +154,11 @@ class SimulatedAnnealing:
                 profits=self.p,
                 num_teams=self.n,
                 weeks_between=self.r,
-                t=self.t
+                t=self.t,
             )
             sol = max_sol.copy()
             try:
-                validate(sol, self.n)
+                validate(sol=sol, num_teams=self.n)
             except Exception:
                 print("asd")
 
@@ -170,7 +169,7 @@ class SimulatedAnnealing:
         not feasible returns none
         is feasible returns np.array
         """
-        validation = validate(self.sol, self.n)
+        validation = validate(sol=self.sol, num_teams=self.n)
         assert validation == True
 
     def execute_cmd(self):

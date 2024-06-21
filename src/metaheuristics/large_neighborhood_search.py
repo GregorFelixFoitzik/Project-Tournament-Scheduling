@@ -1,18 +1,12 @@
 # Standard library
-import copy
 import time
 import random
-import itertools
 
-from datetime import timedelta
-import trace
 from typing import Union
+from datetime import timedelta
 
 # Third party library
 import numpy as np
-
-from tabulate import tabulate
-
 
 # Project specific library
 from src.neighborhoods import (
@@ -32,12 +26,12 @@ class LNS:
         time_out: int,
         start_solution: np.ndarray,
     ) -> None:
-        self.n = algo_config["n"]  # int
-        self.t = algo_config["t"]  # float
-        self.s = algo_config["s"]  # int
-        self.r = algo_config["r"]  # int    
+        self.n = int(algo_config["n"])
+        self.t = float(algo_config["t"])
+        self.s = int(algo_config["s"])
+        self.r = int(algo_config["r"])
         # Has shape (3, n, n), so self.p[0] is the profit for monday
-        self.p = np.array(algo_config["p"]).reshape((3, self.n, self.n))  # np.array
+        self.p = np.array(object=algo_config["p"]).reshape((3, self.n, self.n))
 
         self.time_out = time_out
         self.sol = start_solution
@@ -57,7 +51,9 @@ class LNS:
         """
         start_solution = self.sol.copy()
         best_solution = start_solution
-        profit_best_solution = compute_profit(best_solution, self.p, self.r)
+        profit_best_solution = compute_profit(
+            sol=best_solution, profit=self.p, weeks_between=self.r
+        )
 
         num_iterations_no_change = 0
 
@@ -65,10 +61,15 @@ class LNS:
         elapsed_time = 0
         num_iterations = 0
         avg_run_time = 0
-        while num_iterations_no_change <= 100 and (time.time() - t0) + avg_run_time < self.time_out:
+        while (
+            num_iterations_no_change <= 100
+            and (time.time() - t0) + avg_run_time < self.time_out
+        ):
             t0_iteration = time.time()
-            sol_destroyed, games, weeks_changed = self.destroy(best_solution.copy())
-            new_sol = self.repair(sol_destroyed, games, weeks_changed)
+            sol_destroyed, games, weeks_changed = self.destroy(sol=best_solution.copy())
+            new_sol = self.repair(
+                sol=sol_destroyed, games=games, weeks_changed=weeks_changed
+            )
             profit_new_sol = compute_profit(
                 sol=new_sol, profit=np.array(object=self.p), weeks_between=self.r
             )
@@ -80,9 +81,9 @@ class LNS:
             else:
                 num_iterations_no_change += 1
 
-            elapsed_time += (time.time()-t0_iteration)
+            elapsed_time += time.time() - t0_iteration
             num_iterations += 1
-            avg_run_time = elapsed_time/num_iterations
+            avg_run_time = elapsed_time / num_iterations
 
         self.best_solution = best_solution
 
@@ -92,26 +93,27 @@ class LNS:
         # Randomly choose a destroy parameter
         num_destroy_operators = 2
         destroy_operators = list(range(num_destroy_operators))
-        weights = [100] * num_destroy_operators
-        destroy_operator = random.choices(destroy_operators, weights=weights)[0]
+        # All destroy parameters are equally distributed
+        p = [1 / num_destroy_operators for _ in range(num_destroy_operators)]
+        destroy_operator = np.random.choice(a=destroy_operators, size=1, p=p)[0]
 
         weeks_changed = []
 
         if destroy_operator == 0:
             # Destroy 2 weeks randomly
             weeks_changed, games = select_random_weeks(sol=sol, number_of_weeks=2)
-            sol[weeks_changed] = np.full(games.shape, np.nan)
+            sol[weeks_changed] = np.full(shape=games.shape, fill_value=np.nan)
         elif destroy_operator == 1:
             # Destroy the two worst weeks
             worst_weeks, games = select_n_worst_weeks(
                 sol=sol, n=2, profits=self.p, weeks_between=self.r
             )
 
-            sol[worst_weeks] = np.full(games.shape, np.nan)
+            sol[worst_weeks] = np.full(shape=games.shape, fill_value=np.nan)
             weeks_changed = worst_weeks
         else:
-            games = np.array([])
-            weeks_changed = np.array([])
+            games = np.array(object=[])
+            weeks_changed = np.array(object=[])
 
         return sol, games, weeks_changed
 
@@ -119,25 +121,26 @@ class LNS:
         # Randomly choose a repai parameter
         num_repair_operators = 2
         repair_operators = list(range(num_repair_operators))
-        weights = [100] * num_repair_operators
-        repair_operator = random.choices(repair_operators, weights=weights)[0]
+        # All destroy parameters are equally distributed
+        p = [1 / num_repair_operators for _ in range(num_repair_operators)]
+        repair_operator = np.random.choice(a=repair_operators, size=1, p=p)[0]
 
         if repair_operator == 0:
             # Random fill
-            for i, week_changed in enumerate(weeks_changed):
+            for i, week_changed in enumerate(iterable=weeks_changed):
                 week_new = insert_games_random_week(
                     sol=sol,
                     games_week=games[i],
                     week_changed=week_changed,
                     number_of_teams=self.n,
-                    t=self.t
+                    t=self.t,
                 )
                 sol[week_changed] = week_new
         elif repair_operator == 1:
             games_old = games.copy()
             # Extract all games
             games = games[np.logical_not(np.isnan(games))]
-            games = games.reshape(int(games.shape[0] / 2), 2).astype(int)
+            games = games.reshape(int(games.shape[0] / 2), 2).astype(dtype=int)
 
             games_encoded = [i for i in range(games.shape[0])]
 
@@ -155,11 +158,11 @@ class LNS:
                     profits=self.p,
                     num_teams=self.n,
                     weeks_between=self.r,
-                    t=self.t
+                    t=self.t,
                 )
                 sol = max_sol.copy()
                 try:
-                    validate(sol, self.n)
+                    validate(sol=sol, num_teams=self.n)
                 except Exception:
                     print("asd")
 
@@ -171,7 +174,7 @@ class LNS:
         not feasible returns none
         is feasible returns np.array
         """
-        validation = validate(self.sol, self.n)
+        validation = validate(sol=self.sol, num_teams=self.n)
         assert validation == True
 
     def execute_cmd(self):
@@ -184,7 +187,7 @@ class LNS:
 
 
 # if __name__ == "__main__":
-    
+
 
 #     sol_str = []
 #     for week in sol:

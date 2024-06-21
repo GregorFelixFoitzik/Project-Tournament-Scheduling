@@ -9,8 +9,8 @@ from math import inf
 
 # Third party library
 import numpy as np
+
 from typing import Union
-from itertools import permutations
 from tabulate import tabulate
 
 
@@ -41,18 +41,20 @@ def read_in_file(path_to_file: str) -> dict[str, Union[float, int, list[int]]]:
             algo_config[key] = int(value.split("/")[0]) / int(value.split("/")[1])
         elif re.search(pattern=r"\[.*\]", string=value):
             # https://stackoverflow.com/a/1894296, accessed 28.05.2024
-            algo_config[key] = np.array(ast.literal_eval(node_or_string=value))
+            algo_config[key] = np.array(object=ast.literal_eval(node_or_string=value))
         elif key == "t":
             algo_config[key] = float(value.strip())
         elif key == "p":
-            algo_config[key] = np.array(value.strip().split(" ")).astype(int)
+            algo_config[key] = np.array(object=value.strip().split(" ")).astype(
+                dtype=int
+            )
         else:
             algo_config[key] = int(value.strip())
 
     return algo_config
 
 
-def print_solution(runtime: float, solution: np.array = None) -> None:
+def print_solution(runtime: float, solution: np.ndarray = np.array(object=[])) -> None:
     """
     Prints the solution as wanted.
 
@@ -74,37 +76,41 @@ def print_solution(runtime: float, solution: np.array = None) -> None:
             formatted_blocks.append(formatted_block)
 
         # Convert the formatted blocks into numpy arrays
-        formatted_blocks = [np.array(block) for block in formatted_blocks]
+        formatted_blocks = [np.array(object=block) for block in formatted_blocks]
 
         # Concatenate the blocks horizontally
-        concatenated_array = np.hstack(formatted_blocks)
+        concatenated_array = np.hstack(tup=formatted_blocks)
 
         # Print the concatenated array using tabulate
         headers = ["Mon", "Mon", "Mon", "Fri", "Fri", "Fri", "Sat", "Sat", "Sat"]
-        print(tabulate(concatenated_array, tablefmt="grid", headers=headers))
+        print(
+            tabulate(tabular_data=concatenated_array, tablefmt="grid", headers=headers)
+        )
 
     else:
         print("The solution is None and cannot be processed.")
 
 
 def compute_profit(sol: np.ndarray, profit: np.ndarray, weeks_between: int) -> float:
-    return np.sum(get_profits_per_week(sol, profit, weeks_between))
+    return np.sum(
+        get_profits_per_week(sol=sol, profit=profit, weeks_between=weeks_between)
+    )
 
 
 def get_profits_per_week(sol: np.ndarray, profit: np.ndarray, weeks_between: int):
     week_profits = []
 
-    for week_num, week in enumerate(sol):
+    for week_num, week in enumerate(iterable=sol):
         sum_week = 0
-        for i, games in enumerate(week):
+        for i, games in enumerate(iterable=week):
             if i == 0 and np.unique(games, axis=0).shape[0] == 2:
                 game = games[np.logical_not(np.isnan(games))]
                 sum_week += compute_profit_game(
-                    sol,
-                    game,
-                    profit[0][int(game[0]) - 1][int(game[1]) - 1],
-                    weeks_between,
-                    week_num,
+                    sol=sol,
+                    game=game,
+                    profit_game=profit[0][int(game[0]) - 1][int(game[1]) - 1],
+                    weeks_between=weeks_between,
+                    current_week=week_num,
                 )
                 continue
             if i == 0 and np.unique(games, axis=0).shape[1] > 2:
@@ -114,11 +120,11 @@ def get_profits_per_week(sol: np.ndarray, profit: np.ndarray, weeks_between: int
                 for game in games:
                     if profit[0][int(game[0]) - 1][int(game[1]) - 1] < min_profit:
                         min_profit = compute_profit_game(
-                            sol,
-                            game,
-                            profit[0][int(game[0]) - 1][int(game[1]) - 1],
-                            weeks_between,
-                            week_num,
+                            sol=sol,
+                            game=game,
+                            profit_game=profit[0][int(game[0]) - 1][int(game[1]) - 1],
+                            weeks_between=weeks_between,
+                            current_week=week_num,
                         )
                 sum_week += min_profit
                 continue
@@ -126,11 +132,11 @@ def get_profits_per_week(sol: np.ndarray, profit: np.ndarray, weeks_between: int
             for game in games:
                 if False in np.isnan(game):
                     sum_week += compute_profit_game(
-                        sol,
-                        game,
-                        profit[i][int(game[0]) - 1][int(game[1]) - 1],
-                        weeks_between,
-                        week_num,
+                        sol=sol,
+                        game=game,
+                        profit_game=profit[i][int(game[0]) - 1][int(game[1]) - 1],
+                        weeks_between=weeks_between,
+                        current_week=week_num,
                     )
         week_profits.append(sum_week)
 
@@ -147,7 +153,7 @@ def compute_profit_game(
     if sol[:current_week].size == 0:
         return profit_game
 
-    for week, games in enumerate(sol[:current_week]):
+    for week, games in enumerate(iterable=sol[:current_week]):
         games = games[np.logical_not(np.isnan(games))]
         games = games.reshape(int(games.shape[0] / 2), 2).astype(int)
         # Check if the game is in the current week, if no, no move on
@@ -200,7 +206,7 @@ def generate_possible_weekly_combinations(
     possible_weekly_combinations = []
     # Create all possible weekly combinations
     weekly_combinations = np.array(
-        list(
+        object=list(
             itertools.permutations(
                 iterable=possible_combinations_tmp_idx, r=weeks_changed.size
             )
@@ -223,9 +229,11 @@ def generate_possible_weekly_combinations(
     return possible_weekly_combinations
 
 
-# Described here: https://en.wikipedia.org/wiki/Round-robin_tournament#Circle_method, 
+# Described here: https://en.wikipedia.org/wiki/Round-robin_tournament#Circle_method,
 #   accessed 19th June
-def generate_solution_round_robin_tournament(num_teams: int, t: float, random_team_order: bool):
+def generate_solution_round_robin_tournament(
+    num_teams: int, t: float, random_team_order: bool
+):
     from src.validation import validate
 
     # Create an empty array of shape: num-weeks x 3 x max num games per day x 2
@@ -253,20 +261,21 @@ def generate_solution_round_robin_tournament(num_teams: int, t: float, random_te
 
     teams = list(range(1, num_teams + 1))
     if random_team_order:
-        team = np.random.choice(teams, np.array(teams).shape, replace=False).tolist()
-        print('asd')
-    teams = np.array(teams).reshape(2, int(num_teams / 2)).tolist()
+        teams = np.random.choice(
+            a=teams, size=np.array(object=teams).shape, replace=False
+        ).tolist()
+    teams = np.array(object=teams).reshape(2, int(num_teams / 2)).tolist()
 
     for week in range(num_teams - 1):
         solution_shortened[week] = [
-            np.array(teams)[:, i].tolist() for i in range(int(num_teams / 2))
+            np.array(object=teams)[:, i].tolist() for i in range(int(num_teams / 2))
         ]
         upper_row = [teams[0][0], teams[1][0]] + teams[0][1:-1]
         lower_row = teams[1][1:] + [teams[0][-1]]
 
         teams = [upper_row, lower_row]
 
-    solution_extended = np.array(solution_shortened + solution_shortened)
+    solution_extended = np.array(object=solution_shortened + solution_shortened)
 
     # Invert the second half of the solution
     for i in range(num_teams - 1, solution_extended.shape[0]):
@@ -286,11 +295,9 @@ def generate_solution_round_robin_tournament(num_teams: int, t: float, random_te
         ]
 
         if week[num_games_monday + num_games_friday :].shape[0] > 0:
-            remaining_games = week[
-                num_games_monday + num_games_friday:
-            ]
+            remaining_games = week[num_games_monday + num_games_friday :]
             solution[i][2][: remaining_games.shape[0]] = remaining_games
 
-    validate(solution, num_teams)
+    validate(sol=solution, num_teams=num_teams)
 
     return solution
