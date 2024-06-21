@@ -66,21 +66,6 @@ class SolutionValidation:
                     assert not second_round in solution[idx_w:idx_w+r+1], f"Less than r={r} weeks between first and second round of {match[0]} resp. {second_round}"
 
 
-class StepValidation:
-    def team_plays_on_day(self, team:int, weekday:int, week:int):
-        return any(team in match for match in self.solution[weekday][week])
-    
-    def teams_play_in_recovery(self, team:int, weekday:int, week:int):
-        pass
-
-    def alg_monday_check(self, n, solution):
-        all_teams = set(range(1, n + 1))
-        # {num: np.any(test == num) for num in teams}
-        dict_teams_covered = {team: np.any(solution == team) for team in all_teams}
-        return dict_teams_covered
-
-
-
 if __name__ == "__main__":
     print(
         StepValidation.team_does_not_play_on_day(1, np.array([(0,0), (4,6), (3,5)]))
