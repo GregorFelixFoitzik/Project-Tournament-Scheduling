@@ -53,11 +53,11 @@ if __name__ == "__main__":
         t=float(algo_config["t"]),
         random_team_order=True,
     )
-    metaheuristic_name = "large_neighborhood_search_simulated_annealing"
+    metaheuristic_name = "lns"
     parameters = {
-        "alpha": 0.95,
-        "temperature": 10000,
-        "epsilon": 0.001,
+        # "alpha": 0.95,
+        # "temperature": 10000,
+        # "epsilon": 0.001,
         # "neighborhood": "random_swap_within_week",
     }
 

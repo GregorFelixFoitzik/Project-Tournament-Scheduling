@@ -135,7 +135,7 @@ class LNS:
         # Only allow the exact solution if there are not so many combinations
         if self.n > 10 and weeks_changed.size > 2:
             p = [
-                0 if i == 1 else 1 / (num_repair_operators - 2)
+                0 if i == 1 else 1 / (num_repair_operators - 1)
                 for i in range(num_repair_operators)
             ]
         else:
