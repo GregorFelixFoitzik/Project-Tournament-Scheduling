@@ -25,7 +25,7 @@ class SimulatedAnnealing:
     def __init__(
         self,
         algo_config: dict[str, Union[int, float, np.ndarray]],
-        time_out: int,
+        timeout: float,
         start_solution: np.ndarray,
         temperature: float,
         alpha: float,
@@ -39,7 +39,7 @@ class SimulatedAnnealing:
         # Has shape (3, n, n), so self.p[0] is the profit for monday
         self.p = np.array(object=algo_config["p"]).reshape((3, self.n, self.n))
 
-        self.time_out = time_out
+        self.timeout = timeout
         self.sol = start_solution
         self.best_solution = start_solution
 
@@ -77,7 +77,7 @@ class SimulatedAnnealing:
         avg_runtime = 0
         while (
             self.temperature >= self.epsilon
-            and (time.time() - t0) + avg_runtime < self.time_out
+            and (time.time() - t0) + avg_runtime < self.timeout
         ):
             t0_iteration = time.time()
             new_sol = self.neighborhoods[self.neighborhood](sol)
@@ -430,7 +430,7 @@ class SimulatedAnnealing:
 
 #     simulated_annealing = SimulatedAnnealing(
 #         algo_config=algo_config,
-#         time_out=30,
+#         timeout=30,
 #         start_solution=sol,
 #         alpha=0.95,
 #         temperature=10000,

@@ -12,6 +12,7 @@ from src.helper import (
     generate_possible_weekly_combinations,
     get_profits_per_week,
     compute_profit,
+    compute_profit_game
 )
 
 

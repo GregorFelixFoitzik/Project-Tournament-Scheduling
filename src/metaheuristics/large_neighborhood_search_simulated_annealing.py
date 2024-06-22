@@ -22,7 +22,7 @@ class LNSSimAnnealing:
     def __init__(
         self,
         algo_config: dict[str, Union[int, float, np.ndarray]],
-        time_out: int,
+        timeout: float,
         start_solution: np.ndarray,
         temperature: float,
         alpha: float,
@@ -37,7 +37,7 @@ class LNSSimAnnealing:
             (3, self.n, self.n)
         )
 
-        self.time_out = time_out
+        self.timeout = timeout
         self.sol = start_solution
         self.best_solution = start_solution
 
@@ -69,7 +69,7 @@ class LNSSimAnnealing:
         avg_runtime = 0
         while (
             self.temperature >= self.epsilon
-            and (time.time() - t0) + avg_runtime < self.time_out
+            and (time.time() - t0) + avg_runtime < self.timeout
         ):
             t0_iteration = time.time()
             sol_destroyed, games, weeks_changed = self.destroy(sol=best_solution.copy())
@@ -135,7 +135,10 @@ class LNSSimAnnealing:
         num_repair_operators = 2
         repair_operators = list(range(num_repair_operators))
         # All destroy parameters are equally distributed
-        p = [1 / num_repair_operators for _ in range(num_repair_operators)]
+        if self.n > 10:
+            p = [1 / (num_repair_operators-1) if i != 1 else 0 for i in range(num_repair_operators)]
+        else:
+            p = [1 / num_repair_operators for _ in range(num_repair_operators)]
         repair_operator = np.random.choice(a=repair_operators, size=1, p=p)[0]
 
         if repair_operator == 0:

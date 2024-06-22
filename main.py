@@ -1,5 +1,6 @@
 # Standard library
 import os
+import time
 import argparse
 
 # Project specific library
@@ -31,11 +32,12 @@ def main():
     file_names = os.listdir(path="data")
     for file_name in file_names:
         path_to_file = f"data/{file_name}"
-        print(f'File name: {path_to_file}')
+        print(f"File name: {path_to_file}")
 
         algo_config = read_in_file(path_to_file=path_to_file)
 
         metaheuristics_to_use = run_config["metaheuristics"]
+        t0 = time.time()
         start_sol = generate_solution_round_robin_tournament(
             num_teams=int(algo_config["n"]),
             t=float(algo_config["t"]),
@@ -46,8 +48,10 @@ def main():
             start_sol=start_sol,
             metaheuristics_to_use=metaheuristics_to_use,
             algo_config=algo_config,
-            time_out=4,
+            timeout=30 - (time.time() - t0),
         )
+        print()
+        print()
 
 
 if __name__ == "__main__":

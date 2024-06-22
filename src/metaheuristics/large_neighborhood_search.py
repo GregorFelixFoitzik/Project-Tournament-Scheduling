@@ -23,7 +23,7 @@ class LNS:
     def __init__(
         self,
         algo_config: dict[str, Union[int, float, np.ndarray]],
-        time_out: int,
+        timeout: float,
         start_solution: np.ndarray,
     ) -> None:
         self.n = int(algo_config["n"])
@@ -33,7 +33,7 @@ class LNS:
         # Has shape (3, n, n), so self.p[0] is the profit for monday
         self.p = np.array(object=algo_config["p"]).reshape((3, self.n, self.n))
 
-        self.time_out = time_out
+        self.timeout = timeout
         self.sol = start_solution
         self.best_solution = start_solution
 
@@ -63,7 +63,7 @@ class LNS:
         avg_run_time = 0
         while (
             num_iterations_no_change <= 100
-            and (time.time() - t0) + avg_run_time < self.time_out
+            and (time.time() - t0) + avg_run_time < self.timeout
         ):
             t0_iteration = time.time()
             sol_destroyed, games, weeks_changed = self.destroy(sol=best_solution.copy())
@@ -122,7 +122,10 @@ class LNS:
         num_repair_operators = 2
         repair_operators = list(range(num_repair_operators))
         # All destroy parameters are equally distributed
-        p = [1 / num_repair_operators for _ in range(num_repair_operators)]
+        if self.n > 10:
+            p = [1 / (num_repair_operators-1) if i != 1 else 0 for i in range(num_repair_operators)]
+        else:
+            p = [1 / num_repair_operators for _ in range(num_repair_operators)]
         repair_operator = np.random.choice(a=repair_operators, size=1, p=p)[0]
 
         if repair_operator == 0:
@@ -206,7 +209,7 @@ class LNS:
 #     headers = ["Mon", "Fri", "Sat"]
 #     print(tabulate(sol_str, tablefmt="grid", headers=headers))
 
-#     lns = ALNS(algo_config=algo_config, time_out=30, start_solution=sol)
+#     lns = ALNS(algo_config=algo_config, timeout=30, start_solution=sol)
 #     print(f"Original solution: {compute_profit(sol, lns.p, algo_config['r'])}")
 #     lns.check_solution()
 #     t0 = time.time()

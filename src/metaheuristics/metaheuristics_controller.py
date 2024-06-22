@@ -34,12 +34,12 @@ def apply_metaheuristic(
     metaheuristic_name: str,
     start_sol: np.ndarray,
     algo_config: dict[str, Union[int, float, np.ndarray]],
-    time_out: int,
+    timeout: float,
     parameters: dict[str, Union[int, float]],
 ) -> list[Union[str, float]]:
     metaheuristic = METAHEURISTICS[metaheuristic_name](
         algo_config=algo_config,
-        time_out=time_out,
+        timeout=timeout,
         start_solution=start_sol,
         **parameters,
     )
@@ -57,7 +57,7 @@ def main_metaheuristics_controller(
     start_sol: np.ndarray,
     metaheuristics_to_use: list[str],
     algo_config: dict[str, Union[int, float, list]],
-    time_out: int,
+    timeout: float,
 ):
     df_res = pd.DataFrame(columns=["Metaheuristic", "profit", "duration"])
     profit = compute_profit(
@@ -76,7 +76,7 @@ def main_metaheuristics_controller(
             metaheuristic_name=metaheuristic_name,
             start_sol=start_sol,
             algo_config=algo_config,
-            time_out=time_out,
+            timeout=timeout,
             parameters=parameters,
         )
         df_res.loc[len(df_res)] = results
