@@ -101,20 +101,18 @@ class LNS:
         weeks_changed = []
 
         if destroy_operator == 0:
-            # Destroy 2-10 weeks randomly
             weeks_changed, games = select_random_weeks(
                 sol=sol,
                 number_of_weeks=np.random.randint(
-                    low=2, high=np.minimum(10, 2 * (self.n - 1)), size=1
+                    low=2, high=3, size=1
                 )[0],
             )
             sol[weeks_changed] = np.full(shape=games.shape, fill_value=np.nan)
         elif destroy_operator == 1:
-            # Destroy the 2-10 worst weeks
             worst_weeks, games = select_n_worst_weeks(
                 sol=sol,
                 n=np.random.randint(
-                    low=2, high=np.minimum(10, 2 * (self.n - 1)), size=1
+                    low=2, high=3, size=1
                 )[0],
                 profits=self.p,
                 weeks_between=self.r,

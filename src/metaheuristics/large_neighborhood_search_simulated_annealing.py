@@ -113,20 +113,18 @@ class LNSSimAnnealing:
         weeks_changed = []
 
         if destroy_operator == 0:
-            # Destroy 2-10 weeks randomly
             weeks_changed, games = select_random_weeks(
                 sol=sol,
                 number_of_weeks=np.random.randint(
-                    low=2, high=np.minimum(10, 2 * (self.n - 1)), size=1
+                    low=2, high=3, size=1
                 )[0],
             )
             sol[weeks_changed] = np.full(shape=games.shape, fill_value=np.nan)
         elif destroy_operator == 1:
-            # Destroy 2-10 weeks randomly
             worst_weeks, games = select_n_worst_weeks(
                 sol=sol,
                 n=np.random.randint(
-                    low=2, high=np.minimum(10, 2 * (self.n - 1)), size=1
+                    low=2, high=3, size=1
                 )[0],
                 profits=self.p,
                 weeks_between=self.r,
@@ -147,7 +145,7 @@ class LNSSimAnnealing:
         # Only allow the exact solution if there are not so many combinations
         if self.n > 10 and weeks_changed.size > 2:
             p = [
-                0 if i == 1 else 1 / (num_repair_operators - 2)
+                0 if i == 1 else 1 / (num_repair_operators - 1)
                 for i in range(num_repair_operators)
             ]
         else:
