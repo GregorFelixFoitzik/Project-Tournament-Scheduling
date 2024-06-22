@@ -91,6 +91,22 @@ def print_solution(runtime: float, solution: np.ndarray = np.array(object=[])) -
         print("The solution is None and cannot be processed.")
 
 
+def print_feasible_solution(sol: np.ndarray, runtime: float, profit: float):
+    print("### RESULT: Feasible")
+    print(f"### OBJECTIVE: {profit}")
+    weekdays = {0: "M", 1: "F", 2: "S"}
+    for week_num, week in enumerate(iterable=sol):
+        for weekday_num, games in enumerate(iterable=week):
+            for game in games:
+                if not np.isnan(np.unique(game)).any():
+                    print(
+                        f"### Game {week_num+1}-{weekdays[weekday_num]}: "
+                        f"{game[0]} {game[1]}"
+                    )
+
+    print(f"### CPU-TIME : {np.round(a=runtime, decimals=2)}")
+
+
 def compute_profit(sol: np.ndarray, profit: np.ndarray, weeks_between: int) -> float:
     return np.sum(
         get_profits_per_week(sol=sol, profit=profit, weeks_between=weeks_between)

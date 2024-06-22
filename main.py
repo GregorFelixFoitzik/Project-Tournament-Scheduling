@@ -28,9 +28,10 @@ def main():
     with open(file="configs/run_config.yaml", mode="r") as file:
         run_config = yaml.safe_load(stream=file)
 
-    file_names = os.listdir(path="instances")
+    file_names = os.listdir(path="data")
     for file_name in file_names:
-        path_to_file = f"instances/{file_name}"
+        path_to_file = f"data/{file_name}"
+        print(f'File name: {path_to_file}')
 
         algo_config = read_in_file(path_to_file=path_to_file)
 

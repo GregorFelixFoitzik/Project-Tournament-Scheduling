@@ -147,6 +147,7 @@ class LNS:
             # Iterate over the possible combinations extract those, where each
             #   team is present
             for num_repetitions in range(int(self.n / 2), int(self.n * self.t)):
+                print(num_repetitions)
                 max_sol = insert_games_max_profit_per_week(
                     sol=sol,
                     games_old=games_old,
