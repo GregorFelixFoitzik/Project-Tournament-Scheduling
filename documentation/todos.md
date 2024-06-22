@@ -2,9 +2,9 @@
 
 - [x] Create final file(s)
 - [ ] LNS:
-  - [ ] Reorder weeks
-    - [ ] Maximum profit
-    - [ ] At random
+  - [x] Reorder weeks
+    - [x] Maximum profit (takes too long)
+    - [x] At random
   - [ ] Adapt weights for selection of method (starting with random -> later the other method(s))
 - [ ] Tabu-Search:
   - [ ] Only change weeks, which are not changed

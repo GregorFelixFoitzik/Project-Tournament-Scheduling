@@ -11,9 +11,10 @@ import numpy as np
 from src.neighborhoods import (
     insert_games_max_profit_per_week,
     insert_games_random_week,
+    random_reorder_weeks,
     select_n_worst_weeks,
     select_random_weeks,
-    reorder_week_max_profit
+    reorder_week_max_profit,
 )
 from src.validation import validate
 from src.helper import compute_profit, print_solution
@@ -34,9 +35,7 @@ class LNSSimAnnealing:
         self.s = int(algo_config["s"])
         self.r = int(algo_config["r"])
         # Has shape (3, n, n), so self.p[0] is the profit for monday
-        self.p = np.array(object=algo_config["p"]).reshape(
-            (3, self.n, self.n)
-        )
+        self.p = np.array(object=algo_config["p"]).reshape((3, self.n, self.n))
 
         self.timeout = timeout
         self.sol = start_solution
@@ -114,13 +113,23 @@ class LNSSimAnnealing:
         weeks_changed = []
 
         if destroy_operator == 0:
-            # Destroy 2 weeks randomly
-            weeks_changed, games = select_random_weeks(sol=sol, number_of_weeks=2)
+            # Destroy 2-10 weeks randomly
+            weeks_changed, games = select_random_weeks(
+                sol=sol,
+                number_of_weeks=np.random.randint(
+                    low=2, high=np.minimum(10, 2 * (self.n - 1)), size=1
+                )[0],
+            )
             sol[weeks_changed] = np.full(shape=games.shape, fill_value=np.nan)
         elif destroy_operator == 1:
-            # Destroy the two worst weeks
+            # Destroy 2-10 weeks randomly
             worst_weeks, games = select_n_worst_weeks(
-                sol=sol, n=2, profits=self.p, weeks_between=self.r
+                sol=sol,
+                n=np.random.randint(
+                    low=2, high=np.minimum(10, 2 * (self.n - 1)), size=1
+                )[0],
+                profits=self.p,
+                weeks_between=self.r,
             )
 
             sol[worst_weeks] = np.full(shape=games.shape, fill_value=np.nan)
@@ -133,12 +142,16 @@ class LNSSimAnnealing:
 
     def repair(self, sol: np.ndarray, games: np.ndarray, weeks_changed: np.ndarray):
         # Randomly choose a repai parameter
-        num_repair_operators = 3
+        num_repair_operators = 4
         repair_operators = list(range(num_repair_operators))
-        # All destroy parameters are equally distributed
-        if self.n > 10:
-            p = [1 / (num_repair_operators-1) if i != 1 else 0 for i in range(num_repair_operators)]
+        # Only allow the exact solution if there are not so many combinations
+        if self.n > 10 and weeks_changed.size > 2:
+            p = [
+                0 if i == 1 else 1 / (num_repair_operators - 2)
+                for i in range(num_repair_operators)
+            ]
         else:
+            # All destroy parameters are equally distributed
             p = [1 / num_repair_operators for _ in range(num_repair_operators)]
         repair_operator = np.random.choice(a=repair_operators, size=1, p=p)[0]
 
@@ -164,6 +177,7 @@ class LNSSimAnnealing:
             # Iterate over the possible combinations extract those, where each
             #   team is present
             for num_repetitions in range(int(self.n / 2), int(self.n * self.t)):
+                print(num_repetitions)
                 max_sol = insert_games_max_profit_per_week(
                     sol=sol,
                     games_old=games_old,
@@ -191,8 +205,12 @@ class LNSSimAnnealing:
                 )
 
                 sol[week_changed] = week_updated
+        elif repair_operator == 3:
+            # Random re-ordering of destroyed weeks
+            sol = random_reorder_weeks(
+                sol=sol, games=games, weeks_changed=weeks_changed
+            )
 
-        self.sol = sol
         return sol
 
     def check_solution(self):

@@ -1,6 +1,7 @@
 """This file contains different neighborhoods for the Metaheuristics"""
 
 # Standard library
+import itertools
 
 # Third party libraries
 import numpy as np
@@ -203,7 +204,7 @@ def reorder_week_max_profit(
     games_added = []
     if teams_on_monay.size > 0:
         print("asd")
-        raise NotImplementedError
+        raise NotImplementedError("Teams that have to play on monday")
     else:
         games_on_monday = np.argsort(profits_per_game[:, 0])[:num_teams_monday]
         games_added += games_on_monday.tolist()
@@ -214,9 +215,9 @@ def reorder_week_max_profit(
     num_games_per_fri_sat = [0, 0]
     for profit in profits_friday_saturday:
         possible_game = np.setdiff1d(
-            ar1=np.where(np.isin(element=profits_per_game[:, 1:], test_elements=[profit]))[
-                0
-            ],
+            ar1=np.where(
+                np.isin(element=profits_per_game[:, 1:], test_elements=[profit])
+            )[0],
             ar2=games_added,
         )
         if possible_game.size == 0:
@@ -243,3 +244,11 @@ def reorder_week_max_profit(
             num_games_per_fri_sat[day_max_profit[1] - 1] += 1
 
     return sol[current_week]
+
+
+def random_reorder_weeks(sol: np.ndarray, games: np.ndarray, weeks_changed: np.ndarray):
+    new_order = np.random.choice(
+        a=list(range(games.shape[0])), size=games.shape[0], replace=False
+    )
+    sol[weeks_changed] = games[new_order]
+    return sol
