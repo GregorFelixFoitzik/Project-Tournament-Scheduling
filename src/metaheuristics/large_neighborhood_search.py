@@ -104,7 +104,7 @@ class LNS:
             weeks_changed, games = select_random_weeks(
                 sol=sol,
                 number_of_weeks=np.random.randint(
-                    low=2, high=3, size=1
+                    low=2, high=4, size=1
                 )[0],
             )
             sol[weeks_changed] = np.full(shape=games.shape, fill_value=np.nan)
@@ -112,7 +112,7 @@ class LNS:
             worst_weeks, games = select_n_worst_weeks(
                 sol=sol,
                 n=np.random.randint(
-                    low=2, high=3, size=1
+                    low=2, high=4, size=1
                 )[0],
                 profits=self.p,
                 weeks_between=self.r,
@@ -131,7 +131,7 @@ class LNS:
         num_repair_operators = 4
         repair_operators = list(range(num_repair_operators))
         # Only allow the exact solution if there are not so many combinations
-        if self.n > 10 and weeks_changed.size > 2:
+        if self.n > 10 or weeks_changed.size > 2:
             p = [
                 0 if i == 1 else 1 / (num_repair_operators - 1)
                 for i in range(num_repair_operators)
@@ -163,7 +163,6 @@ class LNS:
             # Iterate over the possible combinations extract those, where each
             #   team is present
             for num_repetitions in range(int(self.n / 2), int(self.n * self.t)):
-                print(num_repetitions)
                 max_sol = insert_games_max_profit_per_week(
                     sol=sol,
                     games_old=games_old,
@@ -179,7 +178,7 @@ class LNS:
                 )
                 sol = max_sol.copy()
         elif repair_operator == 2:
-            for i, week_changed in enumerate(weeks_changed):
+            for i, week_changed in enumerate(iterable=weeks_changed):
                 week_updated = reorder_week_max_profit(
                     sol=sol,
                     profits=self.p,

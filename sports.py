@@ -74,6 +74,9 @@ if __name__ == "__main__":
     )
 
     solution_valid = validate(sol=new_sol, num_teams=algo_config["n"])
+    print(compute_profit(
+        sol=init_sol, profit=metaheuristic.p, weeks_between=int(algo_config["r"])
+    ))
     if solution_valid:
         print_feasible_solution(sol=new_sol, runtime=duration, profit=profit)
     else:

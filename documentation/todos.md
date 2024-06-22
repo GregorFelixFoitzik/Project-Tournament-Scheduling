@@ -6,6 +6,7 @@
     - [x] Maximum profit (takes too long)
     - [x] At random
   - [ ] Adapt weights for selection of method (starting with random -> later the other method(s))
+- [ ] Select time-consuming operations not at the end of iterations -> Change more 
 - [ ] Tabu-Search:
   - [ ] Only change weeks, which are not changed
   - [ ] Save certain week combinations, which are allowed
