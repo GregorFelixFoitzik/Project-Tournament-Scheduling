@@ -1,6 +1,0 @@
-parameters:
-  max_num_generations: 10000
-  max_population_size: 10
-  crossover: "uniform_crossover"
-  crossover_parameters:
-    num_swaps: 4
