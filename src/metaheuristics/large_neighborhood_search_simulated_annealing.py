@@ -13,6 +13,7 @@ from src.neighborhoods import (
     insert_games_random_week,
     select_n_worst_weeks,
     select_random_weeks,
+    reorder_week_max_profit
 )
 from src.validation import validate
 from src.helper import compute_profit, print_solution
@@ -132,7 +133,7 @@ class LNSSimAnnealing:
 
     def repair(self, sol: np.ndarray, games: np.ndarray, weeks_changed: np.ndarray):
         # Randomly choose a repai parameter
-        num_repair_operators = 2
+        num_repair_operators = 3
         repair_operators = list(range(num_repair_operators))
         # All destroy parameters are equally distributed
         if self.n > 10:
@@ -177,10 +178,19 @@ class LNSSimAnnealing:
                     t=self.t,
                 )
                 sol = max_sol.copy()
-                try:
-                    validate(sol=sol, num_teams=self.n)
-                except Exception:
-                    print("asd")
+        elif repair_operator == 2:
+            for i, week_changed in enumerate(weeks_changed):
+                week_updated = reorder_week_max_profit(
+                    sol=sol,
+                    profits=self.p,
+                    games=games[i],
+                    num_teams=self.n,
+                    t=self.t,
+                    current_week=week_changed,
+                    weeks_between=self.r,
+                )
+
+                sol[week_changed] = week_updated
 
         self.sol = sol
         return sol

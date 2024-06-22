@@ -1,6 +1,6 @@
 # To-Dos
 
-- [ ] Create final file(s)
+- [x] Create final file(s)
 - [ ] LNS:
   - [ ] Reorder weeks
     - [ ] Maximum profit
@@ -15,3 +15,4 @@
 - [ ] Pseudocode
 - [ ] Search for papers: Round-robin-timetabeling
 - [ ] Check code
+- [ ] Check for `NotImplementedErrors`

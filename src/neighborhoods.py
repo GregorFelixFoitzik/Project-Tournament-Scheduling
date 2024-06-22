@@ -12,7 +12,7 @@ from src.helper import (
     generate_possible_weekly_combinations,
     get_profits_per_week,
     compute_profit,
-    compute_profit_game
+    compute_profit_game,
 )
 
 
@@ -155,3 +155,91 @@ def insert_games_max_profit_per_week(
             max_profit = profit_new_sol
             max_sol = sol_new.copy()
     return max_sol.copy()
+
+
+def reorder_week_max_profit(
+    sol: np.ndarray,
+    profits: np.ndarray,
+    games: np.ndarray,
+    num_teams: int,
+    t: float,
+    current_week: int,
+    weeks_between: int,
+):
+    games_unique = np.unique(ar=games, axis=1)
+    games_unique = games_unique[np.logical_not(np.isnan(games_unique))]
+    games_unique = games_unique.reshape(int(games_unique.shape[0] / 2), 2)
+
+    profits_per_game = np.full(shape=(games_unique.shape[0], 3), fill_value=np.nan)
+    for i, game in enumerate(iterable=games_unique):
+        profit_monday = compute_profit_game(
+            sol=sol,
+            game=game,
+            profit_game=profits[0][int(game[0]) - 1][int(game[1]) - 1],
+            weeks_between=weeks_between,
+            current_week=current_week,
+        )
+        profit_friday = compute_profit_game(
+            sol=sol,
+            game=game,
+            profit_game=profits[1][int(game[0]) - 1][int(game[1]) - 1],
+            weeks_between=weeks_between,
+            current_week=current_week,
+        )
+        profit_saturday = compute_profit_game(
+            sol=sol,
+            game=game,
+            profit_game=profits[2][int(game[0]) - 1][int(game[1]) - 1],
+            weeks_between=weeks_between,
+            current_week=current_week,
+        )
+        profits_per_game[i] = [profit_monday, profit_friday, profit_saturday]
+
+    num_teams_monday = max(1, int(num_teams / 2) - 2 * np.ceil(num_teams / 2 * t))
+    num_games_fri_sat = np.ceil(num_teams / 2 * t)
+    teams_on_monay = np.setdiff1d(
+        ar1=list(range(1, num_teams + 1)), ar2=np.unique(ar=sol[:, 0])[:-1]
+    )
+    games_added = []
+    if teams_on_monay.size > 0:
+        print("asd")
+        raise NotImplementedError
+    else:
+        games_on_monday = np.argsort(profits_per_game[:, 0])[:num_teams_monday]
+        games_added += games_on_monday.tolist()
+
+        sol[current_week][0][:num_teams_monday] = games_unique[games_on_monday]
+
+    profits_friday_saturday = np.sort(profits_per_game[:, 1:].reshape(1, -1)[0])[::-1]
+    num_games_per_fri_sat = [0, 0]
+    for profit in profits_friday_saturday:
+        possible_game = np.setdiff1d(
+            ar1=np.where(np.isin(element=profits_per_game[:, 1:], test_elements=[profit]))[
+                0
+            ],
+            ar2=games_added,
+        )
+        if possible_game.size == 0:
+            continue
+        possible_game = possible_game[0]
+        day_max_profit = np.where(profits_per_game[possible_game] == profit)[0]
+        games_added.append(possible_game)
+        if num_games_per_fri_sat[day_max_profit[0] - 1] < num_games_fri_sat:
+            sol[current_week][day_max_profit[0]][
+                num_games_per_fri_sat[day_max_profit[0] - 1]
+            ] = games_unique[
+                possible_game
+            ]  #
+            num_games_per_fri_sat[day_max_profit[0] - 1] += 1
+        elif (
+            day_max_profit.size == 2
+            and num_games_per_fri_sat[day_max_profit[1] - 1] < num_games_fri_sat
+        ):
+            sol[current_week][day_max_profit[1]][
+                num_games_per_fri_sat[day_max_profit[1] - 1]
+            ] = games_unique[
+                possible_game
+            ]  #
+            num_games_per_fri_sat[day_max_profit[1] - 1] += 1
+
+    return sol[current_week]
