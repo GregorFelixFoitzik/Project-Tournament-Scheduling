@@ -213,15 +213,23 @@ def reorder_week_max_profit(
 
     num_teams_monday = max(1, int(num_teams / 2) - 2 * np.ceil(num_teams / 2 * t))
     num_games_fri_sat = np.ceil(num_teams / 2 * t)
-    teams_on_monay = np.setdiff1d(
+    teams_on_monday = np.setdiff1d(
         ar1=list(range(1, num_teams + 1)), ar2=np.unique(ar=sol[:, 0])[:-1]
     )
     games_added = []
-    if teams_on_monay.size > 0:
-        print("asd")
-        raise NotImplementedError("Teams that have to play on monday")
-    else:
-        games_on_monday = np.argsort(profits_per_game[:, 0])[:num_teams_monday]
+    if teams_on_monday.size > 0:
+        games_on_monday = np.intersect1d(
+            np.argsort(profits_per_game[:, 0]), teams_on_monday
+        )
+        if teams_on_monday.size > num_teams_monday:
+            games_on_monday = games_on_monday[:num_teams_monday]
+            num_teams_monday = 0
+        else:
+            games_on_monday = games_on_monday
+            num_teams_monday -= games_on_monday.size
+
+    if num_teams_monday > 0:
+        games_on_monday = np.argsort(profits_per_game[:, 0])[::-1][:num_teams_monday]
         games_added += games_on_monday.tolist()
 
         sol[current_week][0][:num_teams_monday] = games_unique[games_on_monday]
