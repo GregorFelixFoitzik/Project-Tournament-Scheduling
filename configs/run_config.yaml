@@ -2,5 +2,6 @@ metaheuristics: [
   # "simulated_annealing",
   # "lns",
   # "large_neighborhood_search_simulated_annealing"
-  "tabu_search"
+  # "tabu_search",
+  "tabu_search_lns"
 ]

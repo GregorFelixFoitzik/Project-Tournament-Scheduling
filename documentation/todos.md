@@ -13,6 +13,7 @@
 - [ ] VNS:
   - [ ] Reorder different number of weeks, so profit is maximized
 - [x] Implement Grid-Search for finding optimal parameters
+- [ ] Combination of all
 - [ ] Pseudocode
 - [ ] Search for papers: Round-robin-timetabeling
 - [ ] Check code

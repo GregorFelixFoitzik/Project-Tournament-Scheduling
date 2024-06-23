@@ -18,12 +18,19 @@ from src.helper import (
 
 
 def select_random_weeks(
-    sol: np.ndarray, number_of_weeks: int
+    sol: np.ndarray, number_of_weeks: int, tabu_list: list[int] = []
 ) -> tuple[np.ndarray, np.ndarray]:
     # Destroy 2 weeks randomly
-    weeks_changed = np.random.choice(
-        a=list(range(sol.shape[0])), size=number_of_weeks, replace=False
-    )
+    if tabu_list:
+        weeks_changed = np.random.choice(
+            a=np.setdiff1d(ar1=list(range(sol.shape[0])), ar2=tabu_list),
+            size=4,
+            replace=False,
+        )
+    else:
+        weeks_changed = np.random.choice(
+            a=list(range(sol.shape[0])), size=number_of_weeks, replace=False
+        )
     games = sol[weeks_changed].copy()
 
     return weeks_changed, games
@@ -87,12 +94,20 @@ def insert_games_random_week(
 
 
 def select_n_worst_weeks(
-    sol: np.ndarray, n: int, profits: np.ndarray, weeks_between: int
+    sol: np.ndarray,
+    n: int,
+    profits: np.ndarray,
+    weeks_between: int,
+    tabu_list: list = [],
 ) -> tuple[np.ndarray, np.ndarray]:
     week_profits = get_profits_per_week(
         sol=sol, profit=profits, weeks_between=weeks_between
     )
-    worst_weeks = np.argsort(week_profits)[:n]
+    if tabu_list:
+        worst_weeks = np.setdiff1d(np.argsort(week_profits), tabu_list)[:n]
+    else:
+        worst_weeks = np.argsort(week_profits)[:n]
+
     games = sol[worst_weeks].copy()
 
     return worst_weeks, games

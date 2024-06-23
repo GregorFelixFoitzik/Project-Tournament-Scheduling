@@ -9,6 +9,7 @@ import numpy as np
 import pandas as pd
 
 # Project specific library
+from src.metaheuristics.lns_ts import LNSTS
 from src.helper import compute_profit
 from src.metaheuristics.tabu_search import TabuSearch
 from src.metaheuristics.large_neighborhood_search import LNS
@@ -22,6 +23,7 @@ METAHEURISTICS = {
     "simulated_annealing": SimulatedAnnealing,
     "large_neighborhood_search_simulated_annealing": LNSSimAnnealing,
     "tabu_search": TabuSearch,
+    "tabu_search_lns": LNSTS,
 }
 
 
