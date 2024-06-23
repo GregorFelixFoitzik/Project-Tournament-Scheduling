@@ -1,11 +1,8 @@
 # Standard library
-from importlib.resources import path
-import os
 import time
 import argparse
 
 # Third party libraries
-import yaml
 import numpy as np
 
 # Project specific library
@@ -17,7 +14,6 @@ from src.metaheuristics.simulated_annealing import SimulatedAnnealing
 from src.metaheuristics.large_neighborhood_search_simulated_annealing import (
     LNSSimAnnealing,
 )
-from src.metaheuristics.metaheuristics_controller import main_metaheuristics_controller
 
 # Copied from https://docs.python.org/3/library/argparse.html, accessed 28.05.2024
 parser = argparse.ArgumentParser(description="Input for algorithms")
@@ -74,9 +70,11 @@ if __name__ == "__main__":
     )
 
     solution_valid = validate(sol=new_sol, num_teams=algo_config["n"])
-    print(compute_profit(
-        sol=init_sol, profit=metaheuristic.p, weeks_between=int(algo_config["r"])
-    ))
+    print(
+        compute_profit(
+            sol=init_sol, profit=metaheuristic.p, weeks_between=int(algo_config["r"])
+        )
+    )
     if solution_valid:
         print_feasible_solution(sol=new_sol, runtime=duration, profit=profit)
     else:

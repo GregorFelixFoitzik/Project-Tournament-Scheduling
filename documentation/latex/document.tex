@@ -12,11 +12,49 @@
 \begin{document}
 
 \maketitle
-\todo[inline]{Use algpseudocode-package}
+\section{Large Neighborhood Search}
 \begin{algorithm}
-    \caption{TITLE}
+    \caption{Pseudocode for the Large-Neighborhood Search}
     \begin{algorithmic}[1]
-        \State $a\leftarrow 1$
+        \Function{LNS}{$s^*, t, \text{config}$}
+            \State $s_{\text{best}}\leftarrow s^*$
+            \State $n\leftarrow 0$\Comment{Numer of iterations with no change}
+            \While{$n\leq 100 \wedge t_{\text{run}}<t$} \Comment{Do not exceed time limit}
+                \State $s_{\text{destroyed}}\leftarrow \Call{Destroy}{s^*}$ 
+                \State $s_{\text{repair}}\leftarrow \Call{Repair}{s_{\text{destroyed}}}$
+                \If{$s_{\text{repair}} > s_{\text{best}}$}
+                    \State $s_{\text{best}} \leftarrow s_{\text{repair}}$
+                    \State $n\leftarrow 0$
+                \Else
+                    \State $n\leftarrow n + 1$ \Comment{If the solution is not better, increase $n$}
+                \EndIf
+            \EndWhile
+        \EndFunction
+    \end{algorithmic}
+\end{algorithm}
+
+
+\begin{algorithm}
+    \caption{Pseudocode for the Destroy Operators}
+    \begin{algorithmic}[1] 
+        \Function{Destroy}{$s^*$}
+            \State $o\leftarrow \text{randomly choose destroy operator}$
+            \If{$o = 1$}
+                \State $\text{weeks}, \text{ganes}\leftarrow \text{Randomly destroy 2 or 3 weeks}$
+            \ElsIf{$o = 1$}
+                \State $\text{weeks}, \text{ganes}\leftarrow \text{Destroy the 2 or 3 worst weeks}$
+            \EndIf
+            \Return $\text{weeks}, \text{games}$
+        \EndFunction
+    \end{algorithmic}
+\end{algorithm}
+
+
+\begin{algorithm}
+    \caption{Pseudocode for the Repair Operators}
+    \begin{algorithmic}[1] 
+        \Function{Repair}{$s^*$}
+        \EndFunction
     \end{algorithmic}
 \end{algorithm}
 

@@ -64,12 +64,12 @@ class LNS:
         avg_run_time = 0
         while (
             num_iterations_no_change <= 100
-            and (time.time() - t0) + avg_run_time < self.timeout
+            and (time.time() - t0) + avg_run_time + 1 < self.timeout
         ):
             t0_iteration = time.time()
             sol_destroyed, games, weeks_changed = self.destroy(sol=best_solution.copy())
             new_sol = self.repair(
-                sol=sol_destroyed, games=games, weeks_changed=weeks_changed
+                sol=sol_destroyed, games=games, weeks_changed=weeks_changed, elapsed_time=elapsed_time
             )
             profit_new_sol = compute_profit(
                 sol=new_sol, profit=np.array(object=self.p), weeks_between=self.r
@@ -126,7 +126,7 @@ class LNS:
 
         return sol, games, weeks_changed
 
-    def repair(self, sol: np.ndarray, games: np.ndarray, weeks_changed: np.ndarray):
+    def repair(self, sol: np.ndarray, games: np.ndarray, weeks_changed: np.ndarray, elapsed_time: float):
         # Randomly choose a repai parameter
         num_repair_operators = 4
         repair_operators = list(range(num_repair_operators))
@@ -139,6 +139,13 @@ class LNS:
         else:
             # All destroy parameters are equally distributed
             p = [1 / num_repair_operators for _ in range(num_repair_operators)]
+        if elapsed_time > 25:
+            print('Here')
+            p = [
+                0 if i == 1 or i == 2 else 1 / (num_repair_operators - 2)
+                for i in range(num_repair_operators)
+            ]
+        
         repair_operator = np.random.choice(a=repair_operators, size=1, p=p)[0]
 
         if repair_operator == 0:
