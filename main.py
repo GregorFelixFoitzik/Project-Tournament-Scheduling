@@ -16,7 +16,6 @@ from src.helper import (
     generate_solution_round_robin_tournament,
     compute_profit,
 )
-from src.greedy_heuristic import GreedyHeuristic
 from src.metaheuristics.metaheuristics_controller import (
     apply_metaheuristic,
     main_metaheuristics_controller,
