@@ -17,4 +17,4 @@
 - [ ] Pseudocode
 - [ ] Search for papers: Round-robin-timetabeling
 - [ ] Check code
-- [ ] Check for `NotImplementedErrors`
+- [x] Check for `NotImplementedErrors`
