@@ -42,9 +42,9 @@ def uniqueness(sol: np.ndarray, num_teams: int, weeks: int) -> bool:
     # f"{games.shape[0] == ((num_teams/2)*weeks)}"
     # )
 
-    # assert games.shape[0] == games_unique.shape[0] and (
-        # games_unique.shape[0] == ((num_teams / 2) * weeks)
-    # ), "uniqueness"
+    assert games.shape[0] == games_unique.shape[0] and (
+        games_unique.shape[0] == ((num_teams / 2) * weeks)
+    ), "uniqueness"
 
     return games.shape[0] == games_unique.shape[0] and (
         games_unique.shape[0] == ((num_teams / 2) * weeks)
@@ -80,7 +80,7 @@ def check_games(sol: np.ndarray, num_teams: int) -> bool:
 
     # print(f"XvsY and YvsX: {games_required.shape[0] == games_in_sol}")
 
-    # assert games_required.shape[0] == games_in_sol, "XvsY and YvsX"
+    assert games_required.shape[0] == games_in_sol, "XvsY and YvsX"
 
     return games_required.shape[0] == games_in_sol
 
@@ -98,22 +98,22 @@ def every_team_on_monday(sol: np.ndarray, num_teams: int) -> bool:
     # f"on monday: {np.logical_not(False in (unique_values_monday_games == teams))}"
     # )
 
-    # assert unique_values_monday_games.shape[0] == len(teams) and np.logical_not(
-        # False in (unique_values_monday_games == teams)
-    # ), "Every team on monday"
+    assert unique_values_monday_games.shape[0] == len(teams) and np.logical_not(
+        False in (unique_values_monday_games == teams)
+    ), "Every team on monday"
 
     return np.logical_not(False in (unique_values_monday_games == teams))
 
 
 def every_team_every_week(sol: np.ndarray, num_teams: int) -> bool:
     for i, week in enumerate(sol):
-        if not np.all(
-            np.unique(week)[:-1] == list(range(1, num_teams + 1))
-        ):
-            return False
-        # assert np.all(
+        # if not np.all(
             # np.unique(week)[:-1] == list(range(1, num_teams + 1))
-        # ), f"In week {i} not all teams play!"
+        # ):
+            # return False
+        assert np.all(
+            np.unique(week)[:-1] == list(range(1, num_teams + 1))
+        ), f"In week {i} not all teams play!"
 
     return True
 

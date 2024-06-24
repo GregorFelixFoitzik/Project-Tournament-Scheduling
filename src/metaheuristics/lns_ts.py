@@ -121,14 +121,14 @@ class LNSTS:
         if destroy_operator == 0:
             weeks_changed, games = select_random_weeks(
                 sol=sol,
-                number_of_weeks=np.random.randint(low=2, high=4, size=1)[0],
+                number_of_weeks=np.random.randint(low=1, high=4, size=1)[0],
                 tabu_list=self.tabu_list,
             )
             sol[weeks_changed] = np.full(shape=games.shape, fill_value=np.nan)
         elif destroy_operator == 1:
             worst_weeks, games = select_n_worst_weeks(
                 sol=sol,
-                n=np.random.randint(low=2, high=4, size=1)[0],
+                n=np.random.randint(low=1, high=4, size=1)[0],
                 profits=self.p,
                 weeks_between=self.r,
                 tabu_list=self.tabu_list,
@@ -168,7 +168,7 @@ class LNSTS:
             ]
 
         repair_operator = np.random.choice(a=repair_operators, size=1, p=p)[0]
-        # print(repair_operator)
+        print(repair_operator)
 
         if repair_operator == 0:
             # Random fill
@@ -223,7 +223,11 @@ class LNSTS:
             # Random re-ordering of destroyed weeks
             sol = random_reorder_weeks(
                 sol=sol, games=games, weeks_changed=weeks_changed
-            )
+            )   
+        try:
+            validate(sol, self.n)
+        except Exception:
+            print('asd')
 
         return sol
 
