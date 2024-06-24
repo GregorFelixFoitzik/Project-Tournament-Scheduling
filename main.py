@@ -106,6 +106,7 @@ def main():
     file_names = os.listdir(path="data")
     for file_name in file_names:
         path_to_file = f"data/{file_name}"
+
         print(f"File name: {path_to_file}")
 
         algo_config = read_in_file(path_to_file=path_to_file)

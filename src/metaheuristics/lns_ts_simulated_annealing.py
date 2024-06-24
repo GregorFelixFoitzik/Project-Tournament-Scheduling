@@ -149,6 +149,7 @@ class LNSTSSimAnnealing:
             sol[worst_weeks] = np.full(shape=games.shape, fill_value=np.nan)
             weeks_changed = worst_weeks
         else:
+            print('But why?')
             games = np.array(object=[])
             weeks_changed = np.array(object=[])
 
