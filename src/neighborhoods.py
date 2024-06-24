@@ -42,11 +42,9 @@ def insert_games_random_week(
     number_of_teams: int,
     t: float,
 ) -> np.ndarray:
-    games_flatten = games_week.flatten()
-    games_flatten_no_nan = np.logical_not(np.isnan(games_week.flatten()))
-    games_unique = games_flatten[games_flatten_no_nan].reshape(
-        int(games_flatten[games_flatten_no_nan].shape[0] / 2), 2
-    )
+    games_week_reshape = games_week.reshape((games_week.shape[0] * games_week.shape[1], 2))
+    games_week_idx = np.logical_not(np.isnan(games_week_reshape)).all(axis=1)
+    games_unique = games_week_reshape[games_week_idx] 
 
     sol_without_week = sol.copy()
     sol_without_week[week_changed] = np.full(shape=games_week.shape, fill_value=np.nan)
@@ -71,17 +69,15 @@ def insert_games_random_week(
             == np.setdiff1d(ar1=range(1, number_of_teams + 1), ar2=teams_play_on_monday)
         )[0]
         week_new[0][: monday_games_idx.shape[0]] = games_unique[monday_games_idx]
-        games_added += monday_games_idx.tolist()
 
-        games_unique = games_unique[
-            np.setdiff1d(ar1=list(range(games_unique.shape[0])), ar2=monday_games_idx)
-        ]
         num_games_monday -= monday_games_idx.shape[0]
         start_index_monday += monday_games_idx.shape[0]
 
+        games_added += monday_games_idx.tolist()
+
     if num_games_monday > 0:
         monday_games_idx = np.random.choice(
-            a=games_unique.shape[0], size=num_games_monday, replace=False
+            a=list(range(games_unique.shape[0])), size=num_games_monday, replace=False
         )
         week_new[0][start_index_monday:num_games_monday] = games_unique[
             monday_games_idx
@@ -90,25 +86,18 @@ def insert_games_random_week(
 
     # Randomly distribute the remaiing games
     remaining_games_idx = np.setdiff1d(list(range(games_unique.shape[0])), games_added)
-
+    days_per_game = np.random.choice([0 for _ in range(int(num_games_fri_sat))] + [1 for _ in range(int(num_games_fri_sat))], size=len(remaining_games_idx), replace=False)
     games_per_day = [0, 0]
-    for game_idx in remaining_games_idx:
-        day_choice = np.random.choice([1, 2])
-        if day_choice == 1 and games_per_day[0] < num_games_fri_sat:
-            week_new[day_choice][games_per_day[0]] = games_unique[game_idx]
-            games_per_day[0] += 1
-        elif day_choice == 1 and games_per_day[1] < num_games_fri_sat:
-            week_new[day_choice][games_per_day[1]] = games_unique[game_idx]
-            games_per_day[1] += 1
-        elif day_choice == 2 and games_per_day[1] < num_games_fri_sat:
-            week_new[day_choice][games_per_day[1]] = games_unique[game_idx]
-            games_per_day[1] += 1
-        elif day_choice == 2 and games_per_day[0] < num_games_fri_sat:
-            week_new[day_choice][games_per_day[0]] = games_unique[game_idx]
-            games_per_day[0] += 1
-        else:
-            print("BIIIIIIG problem")
-            raise Exception
+    for i, day in enumerate(days_per_game):
+        week_new[day+1][games_per_day[day]] = games_unique[remaining_games_idx[i]]
+        games_per_day[day] += 1
+
+    a = week_new[np.logical_not(np.isnan(week_new))].reshape(
+        int(week_new[np.logical_not(np.isnan(week_new))].shape[0] / 2), 2
+    )
+
+    if a.shape[0] != int(number_of_teams/2):
+        print('asddsa')
         
     return week_new
 
@@ -241,13 +230,13 @@ def reorder_week_max_profit(
     )
     games_added = []
     if teams_on_monday.size > 0:
-        print('Monday')
         games_forced_monday_idx = np.where(teams_on_monday == games_unique)[0]
         sol[current_week][0][: games_forced_monday_idx.shape[0]] = games_unique[
             games_forced_monday_idx
         ]
         start_index_monday += games_forced_monday_idx.shape[0]
         num_teams_monday -= games_forced_monday_idx.shape[0]
+        games_added += games_forced_monday_idx.tolist()
 
     if num_teams_monday > 0:
         games_on_monday = np.argsort(profits_per_game[:, 0])[::-1][:num_teams_monday]
@@ -294,7 +283,7 @@ def reorder_week_max_profit(
         else:
             print("BIIIIIIG problem")
             raise Exception
-
+        
     return sol[current_week]
 
 

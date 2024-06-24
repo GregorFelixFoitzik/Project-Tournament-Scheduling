@@ -168,7 +168,7 @@ class LNSTS:
             ]
 
         repair_operator = np.random.choice(a=repair_operators, size=1, p=p)[0]
-        print(repair_operator)
+        print(f'{repair_operator}   {weeks_changed.shape}')
 
         if repair_operator == 0:
             # Random fill
@@ -227,7 +227,7 @@ class LNSTS:
         try:
             validate(sol, self.n)
         except Exception:
-            print('asd')
+            print('Validation again')
 
         return sol
 

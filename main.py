@@ -52,7 +52,8 @@ def grid_search():
         "tabu_search": {"max_size_tabu_list": [i * 10 for i in range(1, 4)]},
     }
     file_names = os.listdir(path="data")
-    for file_name in file_names[3:]:
+    for file_name in file_names:
+        file_name = "data/dotl_n50_t0.666_s4_r2_mnunif_31544.in"
         path_to_file = f"data/{file_name}"
         print(f"File name: {path_to_file}")
 
