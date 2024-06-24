@@ -104,7 +104,7 @@ class LNS:
             weeks_changed, games = select_random_weeks(
                 sol=sol,
                 number_of_weeks=np.random.randint(
-                    low=2, high=4, size=1
+                    low=2, high=10, size=1
                 )[0],
             )
             sol[weeks_changed] = np.full(shape=games.shape, fill_value=np.nan)
@@ -112,7 +112,7 @@ class LNS:
             worst_weeks, games = select_n_worst_weeks(
                 sol=sol,
                 n=np.random.randint(
-                    low=2, high=4, size=1
+                    low=2, high=10, size=1
                 )[0],
                 profits=self.p,
                 weeks_between=self.r,
@@ -140,13 +140,13 @@ class LNS:
             # All destroy parameters are equally distributed
             p = [1 / num_repair_operators for _ in range(num_repair_operators)]
         if elapsed_time > 25:
-            print('Here')
             p = [
                 0 if i == 1 or i == 2 else 1 / (num_repair_operators - 2)
                 for i in range(num_repair_operators)
             ]
         
         repair_operator = np.random.choice(a=repair_operators, size=1, p=p)[0]
+        repair_operator = 2
 
         if repair_operator == 0:
             # Random fill

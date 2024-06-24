@@ -115,7 +115,7 @@ def main():
         start_sol = generate_solution_round_robin_tournament(
             num_teams=int(algo_config["n"]),
             t=float(algo_config["t"]),
-            random_team_order=True,
+            random_team_order=False,
         )
 
         main_metaheuristics_controller(

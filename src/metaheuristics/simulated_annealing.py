@@ -11,8 +11,8 @@ import numpy as np
 
 # Project specific library
 from src.neighborhoods import (
-    insert_games_max_profit_per_week,
     insert_games_random_week,
+    reorder_week_max_profit,
     select_n_worst_weeks,
     select_random_weeks,
 )
@@ -130,33 +130,23 @@ class SimulatedAnnealing:
     def select_worst_n_weeks(self, sol: np.ndarray) -> np.ndarray:
         # Extract the two worst weeks
         worst_weeks, games = select_n_worst_weeks(
-            sol=sol, n=2, profits=self.p, weeks_between=self.r
+            sol=sol, n=np.random.randint(
+                    low=2, high=10, size=1
+                )[0], profits=self.p, weeks_between=self.r
         )
 
-        games_old = games.copy()
-        # Extract all games
-        games = games[np.logical_not(np.isnan(games))]
-        games = games.reshape(int(games.shape[0] / 2), 2).astype(int)
-
-        games_encoded = [i for i in range(games.shape[0])]
-
-        # Iterate over the possible combinations extract those, where each
-        #   team is present
-        for num_repetitions in range(int(self.n / 2), int(self.n * self.t)):
-            max_sol = insert_games_max_profit_per_week(
+        for i, week_changed in enumerate(iterable=worst_weeks):
+            week_updated = reorder_week_max_profit(
                 sol=sol,
-                games_old=games_old,
-                games_encoded=games_encoded,
-                num_repetitions=num_repetitions,
-                games=games,
-                all_teams=list(self.all_teams),
-                weeks_changed=worst_weeks,
                 profits=self.p,
+                games=games[i],
                 num_teams=self.n,
-                weeks_between=self.r,
                 t=self.t,
+                current_week=week_changed,
+                weeks_between=self.r,
             )
-            sol = max_sol.copy()
+
+            sol[week_changed] = week_updated
 
         return sol
 

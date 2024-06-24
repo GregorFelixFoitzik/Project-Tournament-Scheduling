@@ -116,7 +116,7 @@ class LNSSimAnnealing:
             weeks_changed, games = select_random_weeks(
                 sol=sol,
                 number_of_weeks=np.random.randint(
-                    low=2, high=4, size=1
+                    low=2, high=10, size=1
                 )[0],
             )
             sol[weeks_changed] = np.full(shape=games.shape, fill_value=np.nan)
@@ -124,7 +124,7 @@ class LNSSimAnnealing:
             worst_weeks, games = select_n_worst_weeks(
                 sol=sol,
                 n=np.random.randint(
-                    low=2, high=4, size=1
+                    low=2, high=10, size=1
                 )[0],
                 profits=self.p,
                 weeks_between=self.r,

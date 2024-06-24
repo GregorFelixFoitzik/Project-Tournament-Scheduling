@@ -110,6 +110,7 @@ class LNSTSSimAnnealing:
                     self.tabu_list.pop(0)
 
             self.tabu_list += weeks_changed.tolist()
+            # print(len(self.tabu_list))
 
             elapsed_time += time.time() - t0_iteration
             num_iterations += 1
@@ -132,14 +133,14 @@ class LNSTSSimAnnealing:
         if destroy_operator == 0:
             weeks_changed, games = select_random_weeks(
                 sol=sol,
-                number_of_weeks=np.random.randint(low=2, high=4, size=1)[0],
+                number_of_weeks=np.random.randint(low=2, high=10, size=1)[0],
                 tabu_list=self.tabu_list,
             )
             sol[weeks_changed] = np.full(shape=games.shape, fill_value=np.nan)
         elif destroy_operator == 1:
             worst_weeks, games = select_n_worst_weeks(
                 sol=sol,
-                n=np.random.randint(low=2, high=4, size=1)[0],
+                n=np.random.randint(low=2, high=10, size=1)[0],
                 profits=self.p,
                 weeks_between=self.r,
                 tabu_list=self.tabu_list,

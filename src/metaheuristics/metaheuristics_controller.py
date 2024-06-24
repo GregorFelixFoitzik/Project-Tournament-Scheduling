@@ -66,14 +66,6 @@ def main_metaheuristics_controller(
     timeout: float,
 ):
     df_res = pd.DataFrame(columns=["Metaheuristic", "profit", "duration"])
-    profit = compute_profit(
-        sol=start_sol,
-        profit=np.array(object=list(algo_config["p"])).reshape(
-            (3, algo_config["n"], algo_config["n"])
-        ),
-        weeks_between=int(algo_config["r"]),
-    )
-    df_res.loc[len(df_res)] = ["Start sol", profit, 0]
 
     for metaheuristic_name in metaheuristics_to_use:
         print(f"Executing {metaheuristic_name}")
@@ -87,5 +79,13 @@ def main_metaheuristics_controller(
         )
         df_res.loc[len(df_res)] = results
         print()
+    profit = compute_profit(
+        sol=start_sol,
+        profit=np.array(object=list(algo_config["p"])).reshape(
+            (3, algo_config["n"], algo_config["n"])
+        ),
+        weeks_between=int(algo_config["r"]),
+    )
+    df_res.loc[len(df_res)] = ["Start sol", profit, 0]
 
     print(df_res)

@@ -21,9 +21,11 @@ def select_random_weeks(
 ) -> tuple[np.ndarray, np.ndarray]:
     # Destroy 2 weeks randomly
     if tabu_list:
+        possible_weeks = np.setdiff1d(ar1=list(range(sol.shape[0])), ar2=tabu_list)
+        number_of_weeks = min(number_of_weeks, possible_weeks.shape[0])
         weeks_changed = np.random.choice(
-            a=np.setdiff1d(ar1=list(range(sol.shape[0])), ar2=tabu_list),
-            size=4,
+            a=possible_weeks,
+            size=number_of_weeks,
             replace=False,
         )
     else:
@@ -42,9 +44,11 @@ def insert_games_random_week(
     number_of_teams: int,
     t: float,
 ) -> np.ndarray:
-    games_week_reshape = games_week.reshape((games_week.shape[0] * games_week.shape[1], 2))
+    games_week_reshape = games_week.reshape(
+        (games_week.shape[0] * games_week.shape[1], 2)
+    )
     games_week_idx = np.logical_not(np.isnan(games_week_reshape)).all(axis=1)
-    games_unique = games_week_reshape[games_week_idx] 
+    games_unique = games_week_reshape[games_week_idx]
 
     sol_without_week = sol.copy()
     sol_without_week[week_changed] = np.full(shape=games_week.shape, fill_value=np.nan)
@@ -65,8 +69,12 @@ def insert_games_random_week(
         != 0
     ):
         monday_games_idx = np.where(
-            games_unique
-            == np.setdiff1d(ar1=range(1, number_of_teams + 1), ar2=teams_play_on_monday)
+            np.isin(
+                games_unique,
+                np.setdiff1d(
+                    ar1=range(1, number_of_teams + 1), ar2=teams_play_on_monday
+                ),
+            ).any(axis=1)
         )[0]
         week_new[0][: monday_games_idx.shape[0]] = games_unique[monday_games_idx]
 
@@ -86,19 +94,24 @@ def insert_games_random_week(
 
     # Randomly distribute the remaiing games
     remaining_games_idx = np.setdiff1d(list(range(games_unique.shape[0])), games_added)
-    days_per_game = np.random.choice([0 for _ in range(int(num_games_fri_sat))] + [1 for _ in range(int(num_games_fri_sat))], size=len(remaining_games_idx), replace=False)
+    days_per_game = np.random.choice(
+        [0 for _ in range(int(num_games_fri_sat))]
+        + [1 for _ in range(int(num_games_fri_sat))],
+        size=len(remaining_games_idx),
+        replace=False,
+    )
     games_per_day = [0, 0]
     for i, day in enumerate(days_per_game):
-        week_new[day+1][games_per_day[day]] = games_unique[remaining_games_idx[i]]
+        week_new[day + 1][games_per_day[day]] = games_unique[remaining_games_idx[i]]
         games_per_day[day] += 1
 
     a = week_new[np.logical_not(np.isnan(week_new))].reshape(
         int(week_new[np.logical_not(np.isnan(week_new))].shape[0] / 2), 2
     )
 
-    if a.shape[0] != int(number_of_teams/2):
-        print('asddsa')
-        
+    if a.shape[0] != int(number_of_teams / 2):
+        print("asddsa")
+
     return week_new
 
 
@@ -230,7 +243,9 @@ def reorder_week_max_profit(
     )
     games_added = []
     if teams_on_monday.size > 0:
-        games_forced_monday_idx = np.where(teams_on_monday == games_unique)[0]
+        games_forced_monday_idx = np.where(
+            np.isin(games_unique, teams_on_monday).any(axis=1)
+        )[0]
         sol[current_week][0][: games_forced_monday_idx.shape[0]] = games_unique[
             games_forced_monday_idx
         ]
@@ -283,7 +298,7 @@ def reorder_week_max_profit(
         else:
             print("BIIIIIIG problem")
             raise Exception
-        
+
     return sol[current_week]
 
 

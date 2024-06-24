@@ -107,6 +107,7 @@ class TabuSearch:
                     tabu_list.pop(0)
 
             tabu_list += weeks_changed.tolist()
+            # print(len(tabu_list))
 
             elapsed_time += time.time() - t0_iteration
             num_iterations += 1
