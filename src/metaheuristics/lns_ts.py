@@ -162,13 +162,13 @@ class LNSTS:
             # All destroy parameters are equally distributed
             p = [1 / num_repair_operators for _ in range(num_repair_operators)]
         if elapsed_time > 25:
-            print("Here")
             p = [
                 0 if i == 1 or i == 2 else 1 / (num_repair_operators - 2)
                 for i in range(num_repair_operators)
             ]
 
         repair_operator = np.random.choice(a=repair_operators, size=1, p=p)[0]
+        # print(repair_operator)
 
         if repair_operator == 0:
             # Random fill

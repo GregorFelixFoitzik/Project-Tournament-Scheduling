@@ -109,52 +109,67 @@ def print_feasible_solution(sol: np.ndarray, runtime: float, profit: float):
 
 def compute_profit(sol: np.ndarray, profit: np.ndarray, weeks_between: int) -> float:
     return np.sum(
-        get_profits_per_week(sol=sol, profit=profit, weeks_between=weeks_between)
+        get_profits_per_week(sol=sol, profits=profit, weeks_between=weeks_between)
     )
 
 
-def get_profits_per_week(sol: np.ndarray, profit: np.ndarray, weeks_between: int):
+def get_profits_per_week(sol: np.ndarray, profits: np.ndarray, weeks_between: int):
     week_profits = []
+
+    games_all_flatten = sol.flatten()
+    games_all_flatten_no_nan = np.logical_not(np.isnan(sol.flatten()))
+    games_all = games_all_flatten[games_all_flatten_no_nan].reshape(int(games_all_flatten[games_all_flatten_no_nan].shape[0] / 2), 2)
+
+    # import time
+    # t0=time.time()
 
     for week_num, week in enumerate(iterable=sol):
         sum_week = 0
         for i, games in enumerate(iterable=week):
-            if i == 0 and np.unique(games, axis=0).shape[0] == 2:
-                game = games[np.logical_not(np.isnan(games))]
-                sum_week += compute_profit_game(
-                    sol=sol,
-                    game=game,
-                    profit_game=profit[0][int(game[0]) - 1][int(game[1]) - 1],
-                    weeks_between=weeks_between,
-                    current_week=week_num,
-                )
+            games_flatten = games.flatten()
+            games_flatten_no_nan = np.logical_not(np.isnan(games.flatten()))
+            games = games_flatten[games_flatten_no_nan].reshape(int(games_flatten[games_flatten_no_nan].shape[0] / 2), 2)
+
+            if i == 0 and games.shape[0] == 1:
+                game = games[0]
+                game_other_location = np.where((games_all[:, 0] == game[1]) & (games_all[:, 1] == game[0]))[0][0]
+                if game_other_location > week_num:
+                    sum_week += profits[0][int(game[0]) - 1][int(game[1]) - 1]
+                else:
+                    if 1<=week_num-game_other_location<weeks_between:
+                        sum_week += profits[0][int(game[0]) - 1][int(game[1]) - 1] / (1 + (week_num - game_other_location) ** 2)
+                    else:
+                        sum_week += profits[0][int(game[0]) - 1][int(game[1]) - 1] 
                 continue
-            if i == 0 and np.unique(games, axis=0).shape[1] > 2:
-                games = games[np.logical_not(np.isnan(games))]
+            if i == 0 and np.unique(games, axis=0).shape[1] > 1:
                 min_profit = float(inf)
 
                 for game in games:
-                    if profit[0][int(game[0]) - 1][int(game[1]) - 1] < min_profit:
-                        min_profit = compute_profit_game(
-                            sol=sol,
-                            game=game,
-                            profit_game=profit[0][int(game[0]) - 1][int(game[1]) - 1],
-                            weeks_between=weeks_between,
-                            current_week=week_num,
-                        )
+                    game_other_location = np.where((games_all[:, 0] == game[1]) & (games_all[:, 1] == game[0]))[0][0]
+                    if game_other_location > week_num:
+                        profit = profits[0][int(game[0]) - 1][int(game[1]) - 1]
+                    else:
+                        if 1<=week_num-game_other_location<weeks_between:
+                            profit = profits[0][int(game[0]) - 1][int(game[1]) - 1] / (1 + (week_num - game_other_location) ** 2)
+                        else:
+                            profit = profits[0][int(game[0]) - 1][int(game[1]) - 1] 
+                    if profit < min_profit:
+                        min_profit = profit
                 sum_week += min_profit
                 continue
-
+            
             for game in games:
-                if False in np.isnan(game):
-                    sum_week += compute_profit_game(
-                        sol=sol,
-                        game=game,
-                        profit_game=profit[i][int(game[0]) - 1][int(game[1]) - 1],
-                        weeks_between=weeks_between,
-                        current_week=week_num,
-                    )
+                game_other_location = np.where((games_all[:, 0] == game[1]) & (games_all[:, 1] == game[0]))[0][0]
+                if game_other_location > week_num:
+                    sum_week += profits[0][int(game[0]) - 1][int(game[1]) - 1]
+                else:
+                    if 1<=week_num-game_other_location<weeks_between:
+                        sum_week += profits[0][int(game[0]) - 1][int(game[1]) - 1] / (1 + (week_num - game_other_location) ** 2)
+                    else:
+                        sum_week += profits[0][int(game[0]) - 1][int(game[1]) - 1]
         week_profits.append(sum_week)
+
+    # print(time.time() - t0)
 
     return week_profits
 
@@ -168,7 +183,7 @@ def compute_profit_game(
 ) -> float:
     if sol[:current_week].size == 0:
         return profit_game
-
+    
     for week, games in enumerate(iterable=sol[:current_week]):
         games = games[np.logical_not(np.isnan(games))]
         games = games.reshape(int(games.shape[0] / 2), 2).astype(int)

@@ -1,7 +1,10 @@
 # To-Dos
 
+- [ ] Swap 1,5 and 5,1
+
 ## Gregor
 - [ ] Check Jonas code
+- [ ] Grid-Search CSV
 - [ ] VNS:
   - [ ] Reorder different number of weeks, so profit is maximized
 - [ ] Pseudocode

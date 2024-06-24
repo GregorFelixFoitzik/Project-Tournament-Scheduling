@@ -1,7 +1,6 @@
 """This file contains different neighborhoods for the Metaheuristics"""
 
 # Standard library
-import itertools
 
 # Third party libraries
 import numpy as np
@@ -43,9 +42,9 @@ def insert_games_random_week(
     number_of_teams: int,
     t: float,
 ) -> np.ndarray:
-    games_unique = np.unique(ar=games_week, axis=1)
-    games_unique = games_unique[np.logical_not(np.isnan(games_unique))]
-    games_unique = games_unique.reshape(int(games_unique.shape[0] / 2), 2)
+    games_flatten = games_week.flatten()
+    games_flatten_no_nan = np.logical_not(np.isnan(games_week.flatten()))
+    games_unique = games_flatten[games_flatten_no_nan].reshape(int(games_flatten[games_flatten_no_nan].shape[0] / 2), 2)
 
     sol_without_week = sol.copy()
     sol_without_week[week_changed] = np.full(shape=games_week.shape, fill_value=np.nan)
@@ -101,7 +100,7 @@ def select_n_worst_weeks(
     tabu_list: list = [],
 ) -> tuple[np.ndarray, np.ndarray]:
     week_profits = get_profits_per_week(
-        sol=sol, profit=profits, weeks_between=weeks_between
+        sol=sol, profits=profits, weeks_between=weeks_between
     )
     if tabu_list:
         worst_weeks = np.setdiff1d(np.argsort(week_profits), tabu_list)[:n]
@@ -182,9 +181,9 @@ def reorder_week_max_profit(
     current_week: int,
     weeks_between: int,
 ):
-    games_unique = np.unique(ar=games, axis=1)
-    games_unique = games_unique[np.logical_not(np.isnan(games_unique))]
-    games_unique = games_unique.reshape(int(games_unique.shape[0] / 2), 2)
+    games_flatten = games.flatten()
+    games_flatten_no_nan = np.logical_not(np.isnan(games.flatten()))
+    games_unique = games_flatten[games_flatten_no_nan].reshape(int(games_flatten[games_flatten_no_nan].shape[0] / 2), 2)
 
     profits_per_game = np.full(shape=(games_unique.shape[0], 3), fill_value=np.nan)
     for i, game in enumerate(iterable=games_unique):
@@ -246,25 +245,39 @@ def reorder_week_max_profit(
         if possible_game.size == 0:
             continue
         possible_game = possible_game[0]
-        day_max_profit = np.where(profits_per_game[possible_game] == profit)[0]
+        day_max_profit = np.where(profits_per_game[possible_game][1:] == profit)[0][0]
         games_added.append(possible_game)
-        if num_games_per_fri_sat[day_max_profit[0] - 1] < num_games_fri_sat:
-            sol[current_week][day_max_profit[0]][
-                num_games_per_fri_sat[day_max_profit[0] - 1]
+        if day_max_profit == 0 and num_games_per_fri_sat[0] < num_games_fri_sat:
+            sol[current_week][1][
+                num_games_per_fri_sat[0]
             ] = games_unique[
                 possible_game
             ]  #
-            num_games_per_fri_sat[day_max_profit[0] - 1] += 1
-        elif (
-            day_max_profit.size == 2
-            and num_games_per_fri_sat[day_max_profit[1] - 1] < num_games_fri_sat
-        ):
-            sol[current_week][day_max_profit[1]][
-                num_games_per_fri_sat[day_max_profit[1] - 1]
+            num_games_per_fri_sat[0] += 1
+        elif day_max_profit == 0 and num_games_per_fri_sat[1] < num_games_fri_sat:
+            sol[current_week][2][
+                num_games_per_fri_sat[1]
             ] = games_unique[
                 possible_game
             ]  #
-            num_games_per_fri_sat[day_max_profit[1] - 1] += 1
+            num_games_per_fri_sat[1] += 1
+        elif day_max_profit == 1 and num_games_per_fri_sat[1] < num_games_fri_sat:
+            sol[current_week][2][
+                num_games_per_fri_sat[1]
+            ] = games_unique[
+                possible_game
+            ]  #
+            num_games_per_fri_sat[1] += 1
+        elif day_max_profit == 1 and num_games_per_fri_sat[0] < num_games_fri_sat:
+            sol[current_week][1][
+                num_games_per_fri_sat[0]
+            ] = games_unique[
+                possible_game
+            ]  #
+            num_games_per_fri_sat[0] += 1
+        else:
+            print('BIIIIIIG problem')
+            raise Exception
 
     return sol[current_week]
 

@@ -157,10 +157,6 @@ class SimulatedAnnealing:
                 t=self.t,
             )
             sol = max_sol.copy()
-            try:
-                validate(sol=sol, num_teams=self.n)
-            except Exception:
-                print("asd")
 
         return sol
 
