@@ -1,7 +1,7 @@
 # To-Dos
 
 ## Gregor
-
+- [ ] Check Jonas code
 - [ ] VNS:
   - [ ] Reorder different number of weeks, so profit is maximized
 - [ ] Pseudocode
