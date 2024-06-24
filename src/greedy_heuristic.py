@@ -3,6 +3,7 @@ import time
 
 # Third party library
 import numpy as np
+np.random.seed(0)
 from copy import deepcopy
 from collections import deque
 
@@ -22,6 +23,7 @@ class GreedyHeuristic(SolutionValidation, ConstructionHelper):
         self.__w__ = 2*(self.__n__ - 1)
         self.__mpw__ = self.__n__ * self.__n__
         self.__maxMatchesDay__ = np.floor(self.__n__*self.__t__).astype(np.int16)
+        self.__MatchesWeek__ = self.__n__//2
         self.__allTeams__ = set(range(1,self.__n__+1))
 
         if self.input_p_is_correct(algo_config['p']):
@@ -40,7 +42,7 @@ class GreedyHeuristic(SolutionValidation, ConstructionHelper):
             None
         """
         # number_matches = (self.__n__*self.__n__) - self.__n__
-        self.assign_monday_games()
+        # self.assign_monday_games()
         p_shape = self.get_current_profits()
         # total_incomplete_weeks = self.get_total_incomplete_weeks()
         # for week in total_incomplete_weeks:
@@ -61,7 +63,7 @@ class GreedyHeuristic(SolutionValidation, ConstructionHelper):
         #     self.set_to_solution(week, day, 0, np.array([t1,t2])+1)
         
         helper = 0
-        while len(self.allMatches) != 0: #helper < 1: #
+        while len(self.allMatches) != 0: #helper < 18: #
             iMatchesPlayed = self.get_matches_played()        
             iRematches = self.get_rematches_in_r(0)            
             p_shape = self.get_current_profits()
@@ -74,9 +76,29 @@ class GreedyHeuristic(SolutionValidation, ConstructionHelper):
                     if self.allMatches.issubset(teams_left):
                         continue
                     self.fill_weeks_greedy(p_shape, week, teams_left)
-            
+            else:
+                total_incomplete_weeks = self.get_total_incomplete_weeks()
+                # for week in total_incomplete_weeks:
+                week = np.random.choice(total_incomplete_weeks)
+                idxMaxMatches = p_shape.flatten().argsort()[::-1]
+                idxNegProfit = np.where(p_shape.flatten() == -1)[0]
+                idxMaxMatches = np.setdiff1d(idxMaxMatches, idxNegProfit, assume_unique=True)
+                
+                iRematches = self.get_rematches_in_r(week) 
+                iMatchesPlayed = self.get_matches_played()
+                matchesNotAllowed = np.append(iMatchesPlayed, iRematches, axis=0)
+                idxFlatNotAllowedMon = matchesNotAllowed[:,0] * 6 + matchesNotAllowed[:,1]
+                idxFlatNotAllowed = np.append(idxFlatNotAllowedMon, idxFlatNotAllowedMon+(self.__n__*self.__n__))
+                idxFlatNotAllowed = np.append(idxFlatNotAllowed, idxFlatNotAllowedMon+(self.__n__*self.__n__)*2)
+
+                idxMaxMatches = np.setdiff1d(idxMaxMatches, idxFlatNotAllowed, assume_unique=True)
+                
+                day, t1, t2 = np.array(np.unravel_index(idxMaxMatches[0], (3,6,6)))
+                self.set_to_solution(week, day, 0, np.array([t1,t2])+1)
+
+
             print_solution(0, self.solution)
-        helper += 1
+            helper += 1
 
     def assign_monday_games(self):
         p_shape = deepcopy(self.p)
@@ -98,6 +120,64 @@ class GreedyHeuristic(SolutionValidation, ConstructionHelper):
             self.allMatches.remove((t1,t2))
 
     def fill_weeks_greedy(self, p_shape, week, teams_left):
+        permutsMatches = list(permutations(teams_left, 2))
+        iRematches = self.get_rematches_in_r(week) 
+        iMatchesPlayed = self.get_matches_played()
+        print(len(iRematches), len(iMatchesPlayed))
+
+        allowedMatches = deque()        
+        for match in permutsMatches:
+            checker = deque()
+            for re in iRematches:
+                for mp in iMatchesPlayed:
+                    if not (np.all(match == re+1) or np.all(match == mp+1)):
+                        checker.append(True)
+            if len(checker) == (len(iRematches)*len(iMatchesPlayed)): #self.__MatchesWeek__-1:
+                allowedMatches.append(match)
+        print(allowedMatches)
+        allowedCombs = [
+            perm for perm in permutations(allowedMatches, self.__MatchesWeek__-1)
+            if self.get_allowed_week_combs(perm)
+        ]
+
+        print(allowedCombs)
+        # if len(allowedCombs) == 0:
+        #     print(list(permutations(teams_left, 2)))
+        #     for mmm in permutations(teams_left, 2):
+        #         # print(np.argwhere(mmm == self.solution))
+        #         # print(np.argwhere(mmm == self.solution).all(axis=1))
+        #         slot = np.argwhere(np.any(self.solution == mmm, axis=3))
+        #         if len(slot) != 0:
+        #             self.allMatches.add(tuple(self.solution[*slot[0]]))
+        #             # print(self.solution[*slot[0]])
+        #             self.solution[*slot[0]] = 0 #np.zeros(2, dtype=np.int16)
+        #             # print(self.solution[*slot[0]])
+        #             # print(len(self.allMatches))
+        #             self.allMatches.add(tuple(self.solution[*slot[0]]))
+        #             print(mmm)
+        #             # print(len(self.allMatches))
+        #     print('REMOVED \t'*10)
+        #     return
+
+
+        combProfits = deque()
+        for comb in allowedCombs:
+            m1, m2 = comb
+            combProfits.append(
+                p_shape[1, m1[0]-1, m1[1]-1] + p_shape[2, m2[0]-1, m2[1]-1]
+            )
+
+        combMaxProfit = np.argsort(combProfits)[::-1][0]
+        for day, match in enumerate(allowedCombs[combMaxProfit]):
+            self.set_to_solution(week, day+1, 0, np.array(match))
+        # print_solution(0, self.solution)
+        # print(permuts_filler)
+        
+        # raise AssertionError
+        
+
+    
+    def fill_weeks_greedy_alt(self, p_shape, week, teams_left):
         allSlots = self.solution.transpose(1,0,2,3)[week]
         freeTeamSlots = np.argwhere(allSlots == 0)
         freeSlots = np.unique(freeTeamSlots[:,[0,1]], axis=0)
@@ -201,15 +281,15 @@ if __name__ == "__main__":
     parser.add_argument("-t", "--timeout", type=int, default=30, help="Timeout duration in seconds")
     parser.add_argument("-p", "--path_to_instance", type=str, default="data/example.in", help="Path to the input file")
 
-    if __name__ == '__main__':
-        # Extract command line arguments
-        args = parser.parse_args()
-        path_to_file = args.path_to_instance
-        timeout = args.timeout
 
-        algo_config = read_in_file(path_to_file=path_to_file)
-        # print(
-        #     algo_config['p'].reshape(3,6,6)
-        # )
-        agent = GreedyHeuristic(algo_config)
-        agent.execute_cmd()
+    # Extract command line arguments
+    args = parser.parse_args()
+    path_to_file = args.path_to_instance
+    timeout = args.timeout
+
+    algo_config = read_in_file(path_to_file=path_to_file)
+    # print(
+    #     algo_config['p'].reshape(3,6,6)
+    # )
+    agent = GreedyHeuristic(algo_config)
+    agent.execute_cmd()

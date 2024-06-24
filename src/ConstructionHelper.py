@@ -66,6 +66,10 @@ class ConstructionHelper:
         C = np.setdiff1d(A.copy().view(dtype), B.copy().view(dtype))
         return np.array( [list(m) for m in C] )
     
+    def get_allowed_week_combs(self, comb):
+        all_numbers = [num for subtuple in comb for num in subtuple]
+        return len(set(all_numbers)) == len(all_numbers)
+    
     ### CHECKER
     def check_imcomplete_week(self, week):
         week = self.solution.transpose(1,0,2,3)[week]
