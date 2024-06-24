@@ -8,7 +8,8 @@ from collections import deque
 
 # Project specific library
 # from src.helper import print_solution
-# from src.ValidationGregor import SolutionValidation, StepValidation, permutations
+# from src.ValidationGregor import SolutionValidation, permutations
+# from src.ConstructionHelper import ConstructionHelper
 from helper import print_solution
 from ValidationGregor import SolutionValidation, permutations
 from ConstructionHelper import ConstructionHelper
@@ -41,48 +42,41 @@ class GreedyHeuristic(SolutionValidation, ConstructionHelper):
         # number_matches = (self.__n__*self.__n__) - self.__n__
         self.assign_monday_games()
         p_shape = self.get_current_profits()
-        total_incomplete_weeks = self.get_total_incomplete_weeks()
-        for week in total_incomplete_weeks:
-            idxMaxMatches = p_shape.flatten().argsort()[::-1]
-            idxNegProfit = np.where(p_shape.flatten() == -1)[0]
-            idxMaxMatches = np.setdiff1d(idxMaxMatches, idxNegProfit, assume_unique=True)
+        # total_incomplete_weeks = self.get_total_incomplete_weeks()
+        # for week in total_incomplete_weeks:
+        #     idxMaxMatches = p_shape.flatten().argsort()[::-1]
+        #     idxNegProfit = np.where(p_shape.flatten() == -1)[0]
+        #     idxMaxMatches = np.setdiff1d(idxMaxMatches, idxNegProfit, assume_unique=True)
             
-            iRematches = self.get_rematches_in_r(week) 
-            iMatchesPlayed = self.get_matches_played()
-            matchesNotAllowed = np.append(iMatchesPlayed, iRematches, axis=0)
-            idxFlatNotAllowedMon = matchesNotAllowed[:,0] * 6 + matchesNotAllowed[:,1]
-            idxFlatNotAllowed = np.append(idxFlatNotAllowedMon, idxFlatNotAllowedMon+(self.__n__*self.__n__))
-            idxFlatNotAllowed = np.append(idxFlatNotAllowed, idxFlatNotAllowedMon+(self.__n__*self.__n__)*2)
+        #     iRematches = self.get_rematches_in_r(week) 
+        #     iMatchesPlayed = self.get_matches_played()
+        #     matchesNotAllowed = np.append(iMatchesPlayed, iRematches, axis=0)
+        #     idxFlatNotAllowedMon = matchesNotAllowed[:,0] * 6 + matchesNotAllowed[:,1]
+        #     idxFlatNotAllowed = np.append(idxFlatNotAllowedMon, idxFlatNotAllowedMon+(self.__n__*self.__n__))
+        #     idxFlatNotAllowed = np.append(idxFlatNotAllowed, idxFlatNotAllowedMon+(self.__n__*self.__n__)*2)
 
-            idxMaxMatches = np.setdiff1d(idxMaxMatches, idxFlatNotAllowed, assume_unique=True)
+        #     idxMaxMatches = np.setdiff1d(idxMaxMatches, idxFlatNotAllowed, assume_unique=True)
             
-            day, t1, t2 = np.array(np.unravel_index(idxMaxMatches[0], (3,6,6)))
-            self.set_to_solution(week, day, 0, np.array([t1,t2])+1)
+        #     day, t1, t2 = np.array(np.unravel_index(idxMaxMatches[0], (3,6,6)))
+        #     self.set_to_solution(week, day, 0, np.array([t1,t2])+1)
         
         helper = 0
-        while helper < 3: #len(self.allMatches) != 0: #
-            # matchesPlayed = self.solution.transpose(1,0,2,3)[:]
-            # iMatchesPlayed = matchesPlayed[matchesPlayed != [0, 0]].reshape(-1, 2) - 1
-            iMatchesPlayed = self.get_matches_played()
-            print(iMatchesPlayed)
-            iRematches = self.get_rematches_in_r(0)
-            print(iRematches)
-            print_solution(0, self.solution)
-            break
+        while len(self.allMatches) != 0: #helper < 1: #
+            iMatchesPlayed = self.get_matches_played()        
+            iRematches = self.get_rematches_in_r(0)            
             p_shape = self.get_current_profits()
             
-            helper += 1
-
-            incomplete_weeks = self.get_partially_incomplete_weeks()
-            if len(incomplete_weeks) != 0:
-                for week in list(incomplete_weeks)[:1]:
+            partially_incomplete_weeks = self.get_partially_incomplete_weeks()
+            # print('partially incomplete', partially_incomplete_weeks)
+            if len(partially_incomplete_weeks) != 0:
+                for week in list(partially_incomplete_weeks)[:1]:
                     teams_left = self.get_missing_teams(week=week)
                     if self.allMatches.issubset(teams_left):
                         continue
                     self.fill_weeks_greedy(p_shape, week, teams_left)
-
+            
             print_solution(0, self.solution)
-
+        helper += 1
 
     def assign_monday_games(self):
         p_shape = deepcopy(self.p)
@@ -109,33 +103,60 @@ class GreedyHeuristic(SolutionValidation, ConstructionHelper):
         freeSlots = np.unique(freeTeamSlots[:,[0,1]], axis=0)
         forbiddenSlots = [[0,i] for i in range(1, self.__maxMatchesDay__)]
         freeSlots = np.array([row for row in freeSlots if list(row) not in forbiddenSlots])
-
+        freeDays = np.unique(freeSlots[:,0])
+        
         missingTeams = self.get_missing_teams(week)
         iRematches = self.get_rematches_in_r(week) 
         iMatchesPlayed = self.get_matches_played()
-        for m in list(permutations(missingTeams, 2)):
-            for imp, ir  in zip(iMatchesPlayed, iRematches):
-                print(m, imp+1, all(m==imp+1), "___", all(m[::-1]==ir+1), all(m[::-1]==ir+1))
+        possibleMatches = np.array(list(permutations(missingTeams, 2)), np.int16)
+        allowedMatches = self.get_allowed_matches(possibleMatches, iRematches+1)
+        allowedMatches = self.get_allowed_matches(allowedMatches, iMatchesPlayed+1)
+        print(allowedMatches)
+        print('missing teams before while', missingTeams)
+
+        matchInfo = np.zeros(
+            (   allowedMatches.shape[0]*3,
+                allowedMatches.shape[1]+2   )
+        ,dtype=np.int16)
+
+        for dd in freeDays:
+            matchInfo[allowedMatches.shape[0]*dd : allowedMatches.shape[0]*(dd+1), 0] = dd
+            matchInfo[allowedMatches.shape[0]*dd : allowedMatches.shape[0]*(dd+1),[1,2]] = allowedMatches-1
+            print('MI1', matchInfo)
+
+        for i, m in enumerate(matchInfo):
+            matchInfo[i, 3] = p_shape[m[0], m[1], m[2]]
+
+        arg_profit = np.argsort(matchInfo[:, 3])[::-1]
+        print('info before while', matchInfo)
 
         while self.check_imcomplete_week(week=week):
-            print_solution(0, self.solution)
+            print(week, self.check_imcomplete_week(week))
+            # print_solution(0, self.solution)
             iMaxProfit = arg_profit[0]
-            print('imaxprofit',iMaxProfit)
-            sMaxProfit = matchInfo[iMaxProfit, 0]
+            print('imaxprofit', iMaxProfit)
+            dMaxProfit = matchInfo[iMaxProfit, 0]
+            print('dmaxprofit', dMaxProfit)
             tMaxProfit = matchInfo[iMaxProfit, [1,2]]
-            dayWeek = self.solution.transpose(1,0,2,3)[week, sMaxProfit]
+            print('tmaxprofit', tMaxProfit)
+            dayWeek = self.solution.transpose(1,0,2,3)[week, dMaxProfit]
             freeSlots = np.where(np.all(dayWeek == [0,0], axis=1))[0]
             teams = tMaxProfit + 1
+            print(teams)
 
-            self.set_to_solution(week, sMaxProfit, freeSlots[0], teams)
-            
             matches = matchInfo[:, [1,2]]
             test1 = np.any(matches == tMaxProfit, axis=1)
             test2 = np.any(matches == tMaxProfit[::-1], axis=1)
             iCoveredTeams = np.unique(np.where(test1 | test2))
-            print(iCoveredTeams)
-
+            
             arg_profit = np.setdiff1d(arg_profit, iCoveredTeams, assume_unique=True)
+            print('profit updated', matchInfo[arg_profit])
+            
+            self.set_to_solution(week, dMaxProfit, freeSlots[0], teams)
+            print_solution(0, self.solution)
+
+            print(week, 'missingteams', self.get_missing_teams(week=week))
+
 
     def check_solution(self):
         """

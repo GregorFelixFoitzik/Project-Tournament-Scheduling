@@ -52,13 +52,19 @@ class ConstructionHelper:
         r_end = np.minimum(week+self.__r__, self.__w__) + 1
         r_weeks = self.solution.transpose(1,0,2,3)[r_start : r_end]
         iRematches = r_weeks[r_weeks != [0, 0]].reshape(-1, 2)[:, [1,0]] - 1
-        return iRematches
+        return np.array(iRematches, np.int16)
 
     def get_matches_played(self):
         matchesPlayed = self.solution.transpose(1,0,2,3)[:]
         iMatchesPlayed = matchesPlayed[matchesPlayed != [0, 0]].reshape(-1, 2) - 1
-        
-        return iMatchesPlayed
+        return np.array(iMatchesPlayed, np.int16)
+    
+    #https://stackoverflow.com/a/64416484
+    def get_allowed_matches(self, A, B):
+        nrows, ncols = A.shape
+        dtype={'names':['f{}'.format(i) for i in range(ncols)], 'formats':ncols * [A.dtype]}
+        C = np.setdiff1d(A.copy().view(dtype), B.copy().view(dtype))
+        return np.array( [list(m) for m in C] )
     
     ### CHECKER
     def check_imcomplete_week(self, week):
