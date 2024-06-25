@@ -93,7 +93,7 @@ def grid_search():
                     combination
                 )
                 df_res.loc[len(df_res)] = results + list(combination)
-                print('\t\t' + str(df_res).replace('\n', '\n\t\t'))
+                print("\t\t" + str(df_res).replace("\n", "\n\t\t"))
                 print()
             print()
 
@@ -104,10 +104,32 @@ def main():
 
     file_names = os.listdir(path="data")
     for file_name in file_names:
-        if 'example' in file_name:
+        path_to_file = f"data/{file_name}"
+        skip = [
+            "data/dotl_n100_t0.666_s4_r2_mnunif_15173.in",
+            "data/dotl_n50_t0.666_s4_r2_mnunif_31544.in",
+            "data/dotl_n20_t0.666_s4_r2_mnunif_22154.in",
+            "data/dotl_n20_t0.666_s4_r2_mnunif_27436.in",
+            "data/dotl_n100_t0.666_s4_r2_mnunif_26492.in",
+            "data/dotl_n10_t0.666_s4_r2_mnunif_14057.in",
+            "data/dotl_n10_t0.666_s4_r2_mnunif_1689.in",
+            "data/dotl_n50_t0.666_s4_r2_mnunif_27785.in",
+            "data/dotl_n100_t0.666_s4_r2_mnunif_3271.in",
+            "data/dotl_n20_t0.666_s4_r2_mnunif_8057.in",
+            "data/dotl_n50_t0.666_s4_r2_mnunif_21870.in",
+            "data/dotl_n50_t0.666_s4_r2_mnunif_3849.in",
+            "data/dotl_n50_t0.666_s4_r2_mnunif_1234.in",
+            "data/dotl_n20_t0.666_s4_r2_mnunif_23566.in",
+            "data/dotl_n20_t0.666_s4_r2_mnunif_26559.in",
+            "data/dotl_n10_t0.666_s4_r2_mnunif_24700.in",
+            "data/dotl_n50_t0.666_s4_r2_mnunif_7992.in",
+            "data/dotl_n100_t0.666_s4_r2_mnunif_17126.in",
+            "data/dotl_n10_t0.666_s4_r2_mnunif_14873.in",
+            "data/dotl_n100_t0.666_s4_r2_mnunif_1234.in",
+        ]
+        if "example" in file_name or path_to_file in skip:
             print(file_name)
             continue
-        path_to_file = f"data/{file_name}"
 
         print(f"File name: {path_to_file}")
 

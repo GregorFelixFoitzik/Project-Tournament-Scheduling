@@ -40,7 +40,7 @@
         \Function{Destroy}{$s^*$}
             \State $o\leftarrow \text{randomly choose destroy operator}$
             \If{$o = 1$}
-                \State $\text{weeks}, \text{ganes}\leftarrow \text{Randomly destroy 2 or 3 weeks}$
+                \State $\text{weeks}, \text{ganes}\leftarrow \text{Randomly destroy 2 or 3 weeks}$ \Comment{Use uniform distribution}
             \ElsIf{$o = 1$}
                 \State $\text{weeks}, \text{ganes}\leftarrow \text{Destroy the 2 or 3 worst weeks}$
             \EndIf
@@ -53,9 +53,78 @@
 \begin{algorithm}
     \caption{Pseudocode for the Repair Operators}
     \begin{algorithmic}[1] 
-        \Function{Repair}{$s^*$}
+        \Function{Repair}{$s^*, n, \text{weeks}, \text{games}, t$}
+            \If {$n > 6 \wedge |\text{weeks}| > 2$}
+                \State $o\leftarrow \text{randomly choose repair operator}\backslash\{1\}$ \Comment{Use uniform distribution}
+            \Else
+                \State $o\leftarrow \text{randomly choose repair operator}$ \Comment{Use uniform distribution}
+            \EndIf
+            \If {$t>25$}
+                \State $o\leftarrow \text{randomly choose repair operator}\backslash\{1, 2\}$ \Comment{Use uniform distribution}
+            \EndIf
+            \If{$o = 1$}
+                \For{$\text{week}\in\text{weeks}$}
+                    \State $\text{week}_{\text{new}}\leftarrow \Call{RandomInsertion}{s^*, \text{games}, \text{week}, n, t}$
+                \EndFor
+                \State $\text{weeks}, \text{ganes}\leftarrow \text{Destroy the 2 or 3 worst weeks}$
+            \ElsIf{$o=2$}
+                \For{$\text{week}\in\text{weeks}$}
+                    \State $\text{week}_{\text{new}}\leftarrow \Call{InsertGameMaxProfitWeek}{s^*, \text{games}, \text{week}, n, t}$
+                \EndFor
+                    \State $\text{weeks}, \text{ganes}\leftarrow \text{Destroy the 2 or 3 worst weeks}$
+            \EndIf
+            \Return $\text{weeks}, \text{games}$
         \EndFunction
     \end{algorithmic}
 \end{algorithm}
+
+
+\begin{algorithm}
+    \caption{Pseudocode for random-insertion}
+    \begin{algorithmic}[1] 
+        \Function{RandomInsertion}{$s^*, games, week, n, t$}
+            \If {$n > 6 \wedge |\text{weeks}| > 2$}
+                \State $o\leftarrow \text{randomly choose repair operator}\backslash\{1\}$ \Comment{Use uniform distribution}
+            \Else
+                \State $o\leftarrow \text{randomly choose repair operator}$ \Comment{Use uniform distribution}
+            \EndIf
+            \If {$t>25$}
+                \State $o\leftarrow \text{randomly choose repair operator}\backslash\{1, 2\}$ \Comment{Use uniform distribution}
+            \EndIf
+            \If{$o = 1$}
+                \State $\text{weeks}, \text{ganes}\leftarrow \text{Randomly destroy 2 or 3 weeks}$
+            \ElsIf{$o = 1$}
+                \State $\text{weeks}, \text{ganes}\leftarrow \text{Destroy the 2 or 3 worst weeks}$
+            \EndIf
+            \Return $\text{weeks}, \text{games}$
+        \EndFunction
+    \end{algorithmic}
+\end{algorithm}
+
+
+\begin{algorithm}
+    \caption{Pseudocode for inserting the game with max-profit}
+    \begin{algorithmic}[1] 
+        \Function{InsertGameMaxProfitWeek}{$s^*, games, week, n, t$}
+            \If {$n > 6 \wedge |\text{weeks}| > 2$}
+                \State $o\leftarrow \text{randomly choose repair operator}\backslash\{1\}$ \Comment{Use uniform distribution}
+            \Else
+                \State $o\leftarrow \text{randomly choose repair operator}$ \Comment{Use uniform distribution}
+            \EndIf
+            \If {$t>25$}
+                \State $o\leftarrow \text{randomly choose repair operator}\backslash\{1, 2\}$ \Comment{Use uniform distribution}
+            \EndIf
+            \If{$o = 1$}
+                \State $\text{weeks}, \text{ganes}\leftarrow \text{Randomly destroy 2 or 3 weeks}$
+            \ElsIf{$o = 1$}
+                \State $\text{weeks}, \text{ganes}\leftarrow \text{Destroy the 2 or 3 worst weeks}$
+            \EndIf
+            \Return $\text{weeks}, \text{games}$
+        \EndFunction
+    \end{algorithmic}
+\end{algorithm}
+
+
+
 
 \end{document}
