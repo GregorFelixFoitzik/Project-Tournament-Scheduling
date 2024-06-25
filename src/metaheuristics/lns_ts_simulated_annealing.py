@@ -94,9 +94,10 @@ class LNSTSSimAnnealing:
             ):
                 sol = new_sol
 
-            if profit_new_sol > profit_best_solution:
-                best_solution = new_sol.copy()
-                profit_best_solution = profit_new_sol
+            # Check if the new solution is better than the old solution
+            if profit_sol > profit_best_solution:
+                best_solution = sol.copy()
+                profit_best_solution = profit_sol
 
             self.tabu_list += weeks_changed.tolist()
             if len(self.tabu_list) > self.max_size_tabu_list:

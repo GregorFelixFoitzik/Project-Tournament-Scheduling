@@ -21,6 +21,18 @@ from src.helper import compute_profit, print_solution
 
 
 class LNSSimAnnealing:
+    """Class contains the implementation of a LNS-Simualted-Annealing combination.
+
+    Args:
+        algo_config (dict[str, Union[int, float, np.ndarray]]): Dictionary containing 
+            some information about the dataset.
+        timeout (float): Timeout for the Metaheuristic
+        start_solution (np.ndarray): Start-solution that should be improved.
+        temperature (float): Temeprature value for the simulated-annealing part.
+        alpha (float): Alpha for the simulated-annealing part.
+        epsilon (float): Epsilon for the simulated-annelaing part.
+    """
+
     def __init__(
         self,
         algo_config: dict[str, Union[int, float, np.ndarray]],
@@ -48,15 +60,12 @@ class LNSSimAnnealing:
         self.epsilon = epsilon
 
     def run(self) -> np.ndarray:
-        """
-        Execute algorithm
-
-        Args:
-           None
+        """Execute the metaheuristic.
 
         Returns:
-            None
+            np.ndarray: The improved solution.
         """
+        # Set the start sol as best solution
         sol = self.sol.copy()
         best_solution = sol.copy()
         profit_best_solution = compute_profit(
@@ -72,10 +81,12 @@ class LNSSimAnnealing:
             and (time.time() - t0) + avg_runtime < self.timeout
         ):
             t0_iteration = time.time()
+            # Destroy and repair the solution
             sol_destroyed, games, weeks_changed = self.destroy(sol=best_solution.copy())
             new_sol = self.repair(
                 sol=sol_destroyed, games=games, weeks_changed=weeks_changed
             )
+            # Compute the profit of the new solution and solution
             profit_new_sol = compute_profit(
                 sol=new_sol, profit=np.array(object=self.p), weeks_between=self.r
             )
@@ -90,9 +101,10 @@ class LNSSimAnnealing:
             ):
                 sol = new_sol
 
-            if profit_new_sol > profit_best_solution:
-                best_solution = new_sol.copy()
-                profit_best_solution = profit_new_sol
+            # Check if the new solution is better than the old solution
+            if profit_sol > profit_best_solution:
+                best_solution = sol.copy()
+                profit_best_solution = profit_sol
 
             elapsed_time += time.time() - t0_iteration
             num_iterations += 1
@@ -103,6 +115,17 @@ class LNSSimAnnealing:
         return best_solution
 
     def destroy(self, sol: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """Destroy the given solution.
+
+        The selection of the destroy parameter is random.
+
+        Args:
+            sol (np.ndarray): The solution that should be destroyed.
+
+        Returns:
+            tuple[np.ndarray, np.ndarray, np.ndarray]: Tuple containing the destroyed 
+                solution, the games of the destroyed weeks and the week numbers.
+        """
         # Randomly choose a destroy parameter
         num_destroy_operators = 2
         destroy_operators = list(range(num_destroy_operators))
@@ -113,12 +136,14 @@ class LNSSimAnnealing:
         weeks_changed = []
 
         if destroy_operator == 0:
+            # Destroy a random week
             weeks_changed, games = select_random_weeks(
                 sol=sol,
                 number_of_weeks=np.random.randint(low=2, high=10, size=1)[0],
             )
             sol[weeks_changed] = np.full(shape=games.shape, fill_value=np.nan)
         elif destroy_operator == 1:
+            # Destroy the n worst weeks
             worst_weeks, games = select_n_worst_weeks(
                 sol=sol,
                 n=np.random.randint(low=2, high=10, size=1)[0],
@@ -134,7 +159,17 @@ class LNSSimAnnealing:
 
         return sol, games[np.argsort(weeks_changed)], np.sort(weeks_changed)
 
-    def repair(self, sol: np.ndarray, games: np.ndarray, weeks_changed: np.ndarray):
+    def repair(self, sol: np.ndarray, games: np.ndarray, weeks_changed: np.ndarray)->np.ndarray:
+        """Repair the solution.
+
+        Args:
+            sol (np.ndarray): Solution that should be repaired.
+            games (np.ndarray): Games that correspond to the destroyed weeks.
+            weeks_changed (np.ndarray): Which weeks where destroyed?
+
+        Returns:
+            np.ndarray: The repaired solution.
+        """
         # Randomly choose a repai parameter
         num_repair_operators = 4
         repair_operators = list(range(num_repair_operators))
@@ -206,13 +241,16 @@ class LNSSimAnnealing:
 
         return sol
 
-    def check_solution(self):
-        """
-        not feasible returns none
-        is feasible returns np.array
+    def check_solution(self)->bool:
+        """Check if the solutionis valued
+
+        Returns:
+            bool: True fi solution is valid, otherise an Assertion-Errror is raised.
         """
         validation = validate(sol=self.sol, num_teams=self.n)
         assert validation == True
+
+        return True
 
     def execute_cmd(self):
         # https://stackoverflow.com/a/61713634 28.05.2024

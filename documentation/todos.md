@@ -24,7 +24,7 @@
 - [ ] Check code
   - [x] helper.py
   - [x] neighborhoods.py
-  - [ ] validation.py
+  - [x] validation.py
   - [ ] large_neighborhood_search_simulated_annealing.py
   - [ ] large_neighborhood_search.py
   - [ ] lns_ts_simulated_annealing.py
