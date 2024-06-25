@@ -17,7 +17,7 @@ from src.neighborhoods import (
     reorder_week_max_profit,
 )
 from src.validation import validate
-from src.helper import compute_profit, print_solution
+from src.helper import compute_profit, print_solution, get_profits_per_week, get_profits_of_week
 
 
 class VNS:
@@ -35,7 +35,7 @@ class VNS:
         algo_config: dict[str, Union[int, float, np.ndarray]],
         timeout: float,
         start_solution: np.ndarray,
-        k_max: int
+        k_max_p: float
     ) -> None:
         self.n = int(algo_config["n"])
         self.t = float(algo_config["t"])
@@ -49,7 +49,7 @@ class VNS:
         self.best_solution = start_solution
 
         self.all_teams = range(1, self.n + 1)
-        self.k_max = k_max
+        self.k_max = int(self.sol.shape[0] * k_max_p)
 
     def run(self) -> np.ndarray:
         """Execute the metaheuristic.
@@ -63,6 +63,7 @@ class VNS:
         profit_best_solution = compute_profit(
             sol=best_solution, profit=self.p, weeks_between=self.r
         )
+        
 
         num_iterations_no_change = 0
 
@@ -80,6 +81,7 @@ class VNS:
             while (
                 k < self.k_max
             ):
+                
                 # Destroy and repair the solution
                 sol_destroyed, games, weeks_changed = self.destroy(sol=best_solution.copy())
                 repaired_sol = self.repair(
@@ -88,28 +90,43 @@ class VNS:
                     weeks_changed=weeks_changed,
                     elapsed_time=elapsed_time,
                 )
-                new_sol = self.get_random_kth_neighborhood(
-                    sol=repaired_sol, 
-                    k=k
-                )
+                # new_sol = self.get_random_kth_neighborhood(
+                #     sol=best_solution.copy(), 
+                #     k=k
+                # )
+                
+                test_profits_week1 = get_profits_per_week(repaired_sol, self.p, self.r)
+                num_weeks = list(range(repaired_sol.shape[0]))
+                idx_weeks = np.random.choice(num_weeks, k, replace=False) # get k*2 different ints from num_weeks range
+
+                for week in repaired_sol:
+                    idx_matches1 = np.argwhere(~np.isnan(week[1]))
+                    idx_matches2 = np.argwhere(~np.isnan(week[2]))
+                    idx_pop1 = np.random.choice(idx_matches1)
+                    idx_pop2 = np.random.choice(idx_matches2)
+                    matches1 = week[idx_pop1].copy()
+
+
                 # Compute the profit of the new solution and solution
                 profit_new_sol = compute_profit(
-                    sol=new_sol, profit=np.array(object=self.p), weeks_between=self.r
+                    sol=repaired_sol, profit=np.array(object=self.p), weeks_between=self.r
                 )
 
                 # Check if the new solution is better than the old solution
                 if profit_new_sol > profit_best_solution:
-                    best_solution = new_sol.copy()
+                    best_solution = repaired_sol.copy()
                     profit_best_solution = profit_new_sol
                     num_iterations_no_change = 0
+                    print('Solution was updated')
                 else:
                     num_iterations_no_change += 1
+                    k += 1
+                    
 
                 elapsed_time += time.time() - t0_iteration
                 num_iterations += 1
                 avg_run_time = elapsed_time / num_iterations
-
-                k += 1
+                
 
             self.best_solution = best_solution
 
@@ -260,17 +277,17 @@ class VNS:
         sol,
         k
     ) -> np.ndarray:
-        while k > 0:
-            num_weeks = list(range(sol.shape[1]))
-            swap1, swap2 = np.random.choice(num_weeks, 2, replace=False) # get k*2 different ints from num_weeks range
-            
-            week1 = sol.transpose(1,0,2,3)[swap1]
-            week2 = sol.transpose(1,0,2,3)[swap2]
+        num_weeks = list(range(sol.shape[0]))
+        idx_weeks = np.random.choice(num_weeks, k, replace=False) # get k*2 different ints from num_weeks range
 
-            sol.transpose(1,0,2,3)[swap1] = week2
-            sol.transpose(1,0,2,3)[swap2] = week1
+        for idx in idx_weeks[:1]:
+            week = sol[idx].copy()
+            idx_matches = np.argwhere( np.all(np.isnan(week), axis=2) == False )
+            for ii in range(week.shape[0]):
+                if ii > 0:
+                    np.random.shuffle(week[ii])
 
-            k -= 1
+            sol[idx] = week
 
         return sol
         

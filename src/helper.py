@@ -181,6 +181,73 @@ def get_profit_game(
     return profit_game
 
 
+def get_profits_of_week(
+    sol: np.ndarray, profits: np.ndarray, weeks_between: int, week_num: int
+    ) -> float:
+    """Compute the profit for the given week.
+
+    Compute the profit for the given week and return it.
+
+    Args:
+        sol (np.ndarray): The solution array, that should be printed.
+        profits (np.ndarray): Array contains the profits for a given day.
+        weeks_between (int): How many weeks should be between two games?
+        week: From which week should the profit be calculated?
+
+    Returns:
+        float: profit as float for given week.
+    """
+    week = sol[week_idx]
+    for i, games in enumerate(iterable=week):
+            # Extract the games of the given day
+            games_flatten = games.flatten()
+            games_flatten_no_nan = np.logical_not(np.isnan(games.flatten()))
+            games = games_flatten[games_flatten_no_nan].reshape(
+                int(games_flatten[games_flatten_no_nan].shape[0] / 2), 2
+            )
+
+            # If the day is monday and only one game is assigned to the monday slot
+            if i == 0 and games.shape[0] == 1:
+                game = games[0]
+                sum_week += get_profit_game(
+                    sol=sol,
+                    game=game,
+                    profits=profits[0],
+                    week_num=week_num,
+                    weeks_between=weeks_between,
+                )
+                continue
+            # If the day is monday and multiple games are assigned to this slot
+            if i == 0 and np.unique(games, axis=0).shape[1] > 1:
+                min_profit = float(inf)
+
+                # Iterate over the different games on monday
+                for game in games:
+                    profit_game = get_profit_game(
+                        sol=sol,
+                        game=game,
+                        profits=profits[0],
+                        week_num=week_num,
+                        weeks_between=weeks_between,
+                    )
+
+                    if profit_game < min_profit:
+                        min_profit = profit_game
+                sum_week += min_profit
+                continue
+
+            # If the day is not monday: iterate over the given games
+            for game in games:
+                sum_week += get_profit_game(
+                    sol=sol,
+                    game=game,
+                    profits=profits[i],
+                    week_num=week_num,
+                    weeks_between=weeks_between,
+                )
+    return sum_week
+
+
 def get_profits_per_week(
     sol: np.ndarray, profits: np.ndarray, weeks_between: int
 ) -> list[float]:
