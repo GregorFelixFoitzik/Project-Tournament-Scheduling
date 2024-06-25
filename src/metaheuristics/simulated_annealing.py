@@ -54,14 +54,10 @@ class SimulatedAnnealing:
         }
 
     def run(self) -> np.ndarray:
-        """
-        Execute algorithm
-
-        Args:
-           None
+        """Execute the metaheuristic.
 
         Returns:
-            None
+            np.ndarray: The improved solution.
         """
         sol = self.sol.copy()
         best_solution = sol.copy()
@@ -151,13 +147,17 @@ class SimulatedAnnealing:
 
         return sol
 
-    def check_solution(self):
-        """
-        not feasible returns none
-        is feasible returns np.array
+    def check_solution(self) -> bool:
+        """Check if the solutionis valued
+
+        Returns:
+            bool: True fi solution is valid, otherise an Assertion-Errror is raised.
         """
         validation = validate(sol=self.sol, num_teams=self.n)
-        assert validation == True
+        assert validation is True
+
+        return True
+
 
     def execute_cmd(self):
         # https://stackoverflow.com/a/61713634 28.05.2024

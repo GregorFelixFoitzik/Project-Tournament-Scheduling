@@ -27,9 +27,9 @@
   - [x] validation.py
   - [x] large_neighborhood_search_simulated_annealing.py
   - [x] large_neighborhood_search.py
-  - [ ] lns_ts_simulated_annealing.py
-  - [ ] lns_ts.py
-  - [ ] metaheuristics_controller.py
+  - [x] lns_ts_simulated_annealing.py
+  - [x] lns_ts.py
+  - [x] metaheuristics_controller.py
   - [ ] simulated_annealing.py
   - [ ] tabu_search.py
 - [ ] Select time-consuming operations not at the end of iterations -> Change more

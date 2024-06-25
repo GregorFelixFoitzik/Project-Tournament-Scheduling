@@ -1,3 +1,5 @@
+"""File controls the different metaheuristics"""
+
 # Standard library
 import time
 
@@ -30,6 +32,14 @@ METAHEURISTICS = {
 
 
 def get_yaml_config(metaheuristic_name: str) -> dict[str, Union[int, float]]:
+    """Load the yaml-config file for a given metaheuristic.
+
+    Args:
+        metaheuristic_name (str): Name of the metaheuristic.
+
+    Returns:
+        dict[str, Union[int, float]]: Dictionary containing the configuration.
+    """
     with open(file=f"configs/{metaheuristic_name}.yaml", mode="r") as file:
         config = yaml.safe_load(stream=file)
 
@@ -43,6 +53,20 @@ def apply_metaheuristic(
     timeout: float,
     parameters: dict[str, Union[int, float]],
 ) -> list[Union[str, float]]:
+    """Apply a metaheuristic to a given problem.
+
+    Args:
+        metaheuristic_name (str): Name of the metaheuristic.
+        start_sol (np.ndarray): Start solution for a given problem.
+        algo_config (dict[str, Union[int, float, np.ndarray]]): Configuration of the
+            algorithm.
+        timeout (float): Timeout for the Metaheuristic.
+        parameters (dict[str, Union[int, float]]): Paramter-configuration for the
+            Metaheuristic.
+
+    Returns:
+        list[Union[str, float]]: List containing the name, profit and duration.
+    """
     metaheuristic = METAHEURISTICS[metaheuristic_name](
         algo_config=algo_config,
         timeout=timeout,
@@ -64,7 +88,18 @@ def main_metaheuristics_controller(
     metaheuristics_to_use: list[str],
     algo_config: dict[str, Union[int, float, list]],
     timeout: float,
-):
+) -> None:
+    """Main function of the metaheuristics-controller.
+
+    _extended_summary_
+
+    Args:
+        start_sol (np.ndarray): Start-solutioon
+        start_sol (np.ndarray): Start solution for a given problem.
+        algo_config (dict[str, Union[int, float, np.ndarray]]): Configuration of the
+            algorithm.
+        timeout (float): Timeout for the Metaheuristic.
+    """
     df_res = pd.DataFrame(columns=["Metaheuristic", "profit", "duration"])
 
     for metaheuristic_name in metaheuristics_to_use:
