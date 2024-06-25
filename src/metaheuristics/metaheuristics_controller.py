@@ -17,6 +17,7 @@ from src.metaheuristics.tabu_search import TabuSearch
 from src.metaheuristics.large_neighborhood_search import LNS
 from src.metaheuristics.simulated_annealing import SimulatedAnnealing
 from src.metaheuristics.lns_ts_simulated_annealing import LNSTSSimAnnealing
+from src.metaheuristics.variable_neighborhood_search import VNS
 from src.metaheuristics.large_neighborhood_search_simulated_annealing import (
     LNSSimAnnealing,
 )
@@ -28,6 +29,7 @@ METAHEURISTICS = {
     "tabu_search": TabuSearch,
     "tabu_search_lns": LNSTS,
     "lns_ts_simulated_annealing": LNSTSSimAnnealing,
+    "vns": VNS
 }
 
 
