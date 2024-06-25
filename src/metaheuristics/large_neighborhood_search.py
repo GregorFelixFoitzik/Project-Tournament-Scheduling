@@ -131,7 +131,7 @@ class LNS:
         num_repair_operators = 4
         repair_operators = list(range(num_repair_operators))
         # Only allow the exact solution if there are not so many combinations
-        if self.n > 10 or weeks_changed.size > 2:
+        if self.n > 6 or weeks_changed.size > 2:
             p = [
                 0 if i == 1 else 1 / (num_repair_operators - 1)
                 for i in range(num_repair_operators)

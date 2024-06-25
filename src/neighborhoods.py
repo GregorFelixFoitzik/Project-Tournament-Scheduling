@@ -48,6 +48,9 @@ def select_random_weeks(
         )
     games = sol[weeks_changed].copy()
 
+    if weeks_changed.size == 0:
+        print('asd')
+
     return weeks_changed, games
 
 
@@ -179,6 +182,9 @@ def select_n_worst_weeks(
 
     games = sol[worst_weeks].copy()
 
+    if worst_weeks.size == 0:
+        print('asd')
+
     return worst_weeks, games
 
 
@@ -203,7 +209,7 @@ def insert_games_max_profit_per_week(
 
     Args:
         sol (np.ndarray): The solution that should be improved
-        games_old (np.ndarray): Games that were previously assigned to the changed 
+        games_old (np.ndarray): Games that were previously assigned to the changed
             weeks.
         games_encoded (list[int]): Games encoded to numbers for faster computation.
         num_repetitions (int): How often should a week be created.
@@ -414,5 +420,8 @@ def random_reorder_weeks(
     new_order = np.random.choice(
         a=list(range(games.shape[0])), size=games.shape[0], replace=False
     )
-    sol[weeks_changed] = games[new_order]
+    try:
+        sol[weeks_changed] = games[new_order]
+    except Exception:
+        print('asd')
     return sol

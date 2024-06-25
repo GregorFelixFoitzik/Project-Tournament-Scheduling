@@ -23,7 +23,7 @@
   - [ ] Adapt weights for selection of method (starting with random -> later the other method(s))
 - [ ] Check code
   - [x] helper.py
-  - [ ] neighborhoods.py
+  - [x] neighborhoods.py
   - [ ] validation.py
   - [ ] large_neighborhood_search_simulated_annealing.py
   - [ ] large_neighborhood_search.py

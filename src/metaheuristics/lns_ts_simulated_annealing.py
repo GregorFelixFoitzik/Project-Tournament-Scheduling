@@ -98,18 +98,13 @@ class LNSTSSimAnnealing:
                 best_solution = new_sol.copy()
                 profit_best_solution = profit_new_sol
 
-            if (
-                len(self.tabu_list) > self.max_size_tabu_list
-                and len(self.tabu_list) + len(weeks_changed.tolist())
-                > self.max_size_tabu_list
-            ):
+            self.tabu_list += weeks_changed.tolist()
+            if len(self.tabu_list) > self.max_size_tabu_list:
                 for _ in range(
-                    len(weeks_changed) > self.max_size_tabu_list,
-                    self.max_size_tabu_list,
+                    len(self.tabu_list) - self.max_size_tabu_list,
                 ):
                     self.tabu_list.pop(0)
-
-            self.tabu_list += weeks_changed.tolist()
+            
             # print(len(self.tabu_list))
 
             elapsed_time += time.time() - t0_iteration
@@ -160,7 +155,7 @@ class LNSTSSimAnnealing:
         num_repair_operators = 4
         repair_operators = list(range(num_repair_operators))
         # Only allow the exact solution if there are not so many combinations
-        if self.n > 10 or weeks_changed.size > 2:
+        if self.n > 6 or weeks_changed.size > 2:
             p = [
                 0 if i == 1 else 1 / (num_repair_operators - 1)
                 for i in range(num_repair_operators)
