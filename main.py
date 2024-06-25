@@ -106,7 +106,7 @@ def main():
     for file_name in file_names:
         path_to_file = f"data/{file_name}"
 
-        path_to_file = "data/dotl_n10_t0.666_s4_r2_mnunif_14057.in"
+        # path_to_file = "data/dotl_n10_t0.666_s4_r2_mnunif_14057.in"
         print(f"File name: {path_to_file}")
 
         algo_config = read_in_file(path_to_file=path_to_file)

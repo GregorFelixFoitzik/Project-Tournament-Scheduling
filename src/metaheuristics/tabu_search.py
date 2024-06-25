@@ -100,12 +100,12 @@ class TabuSearch:
             else:
                 num_iterations_no_change += 1
 
-            self.tabu_list += weeks_changed.tolist()
-            if len(self.tabu_list) > self.max_size_tabu_list:
+            tabu_list += weeks_changed.tolist()
+            if len(tabu_list) > self.max_size_tabu_list:
                 for _ in range(
-                    len(self.tabu_list) - self.max_size_tabu_list,
+                    len(tabu_list) - self.max_size_tabu_list,
                 ):
-                    self.tabu_list.pop(0)
+                    tabu_list.pop(0)
             # print(len(tabu_list))
 
             elapsed_time += time.time() - t0_iteration
