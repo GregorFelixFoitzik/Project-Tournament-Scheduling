@@ -141,7 +141,7 @@ class LNSTS:
             games = np.array(object=[])
             weeks_changed = np.array(object=[])
 
-        return sol, games, weeks_changed
+        return sol, games[np.argsort(weeks_changed)], np.sort(weeks_changed)
 
     def repair(
         self,
@@ -224,11 +224,11 @@ class LNSTS:
             # Random re-ordering of destroyed weeks
             sol = random_reorder_weeks(
                 sol=sol, games=games, weeks_changed=weeks_changed
-            )   
+            )
         try:
             validate(sol, self.n)
         except Exception:
-            print('Validation again')
+            print("Validation again")
 
         return sol
 

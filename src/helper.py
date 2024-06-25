@@ -1,4 +1,4 @@
-"""File contains helper functions which might be useful"""
+"""File contains helper functions to apply the Metaheuristics"""
 
 # Standard library
 import re
@@ -91,7 +91,17 @@ def print_solution(runtime: float, solution: np.ndarray = np.array(object=[])) -
         print("The solution is None and cannot be processed.")
 
 
-def print_feasible_solution(sol: np.ndarray, runtime: float, profit: float):
+def print_feasible_solution(sol: np.ndarray, runtime: float, profit: float) -> None:
+    """Print a feasible solution.
+
+    This function is only called if the solution is feasible. The output design is
+    specified in the task description.
+
+    Args:
+        sol (np.ndarray): The solution array, that should be printed.
+        runtime (float): How long dif the Metaheuristic run?
+        profit (float): Profit of the solution.
+    """
     print("### RESULT: Feasible")
     print(f"### OBJECTIVE: {profit}")
     weekdays = {0: "M", 1: "F", 2: "S"}
@@ -108,6 +118,18 @@ def print_feasible_solution(sol: np.ndarray, runtime: float, profit: float):
 
 
 def compute_profit(sol: np.ndarray, profit: np.ndarray, weeks_between: int) -> float:
+    """Compute the profit for a given solution.
+
+    Call the function that computes the profit for each week.
+
+    Args:
+        sol (np.ndarray): The solution array, that should be printed.
+        profit (np.ndarray): Array containing the profits for each week and game
+        weeks_between (int): How many games should be between two identical games?
+
+    Returns:
+        float: The overall profit for the scheduling.
+    """
     return np.sum(
         a=get_profits_per_week(sol=sol, profits=profit, weeks_between=weeks_between)
     )
@@ -120,10 +142,27 @@ def get_profit_game(
     week_num: int,
     weeks_between: int,
 ) -> float:
-    game_other_location = np.setdiff1d(
-        ar1=np.where(np.isin(element=sol, test_elements=game).all(axis=3))[0],
-        ar2=week_num,
-    )[0]
+    """Get the profit for one game.
+
+    Compute the profit for one game. If necessary, reduce the profit due to a violation
+    of the constraint, that two teams should play again after $r$ weeks.
+
+    Args:
+        sol (np.ndarray): The solution array, that should be printed.
+        game (np.ndarray): Array contains the game.
+        profits (np.ndarray): Array contains the profits for a given day.
+        week_num (int): Which week are we in?
+        weeks_between (int): How many weeks should be between two games?
+
+    Returns:
+        float: The computed profit.
+    """
+    location_game = np.where(np.isin(element=sol, test_elements=game).all(axis=3))[0]
+    # If the other games was also destroyed, return the profit becaus we start with
+    #   the smallest week
+    if location_game.size == 0:
+        return profits[int(game[0]) - 1][int(game[1]) - 1]
+    game_other_location = np.setdiff1d(ar1=location_game, ar2=week_num)[0]
     # Is the other game later than the current week?
     if game_other_location > week_num:
         # Yes: Add the the normal profit.
@@ -142,7 +181,22 @@ def get_profit_game(
     return profit_game
 
 
-def get_profits_per_week(sol: np.ndarray, profits: np.ndarray, weeks_between: int):
+def get_profits_per_week(
+    sol: np.ndarray, profits: np.ndarray, weeks_between: int
+) -> list[float]:
+    """Compute the profits for each week.
+
+    Iterate over the different weeks and compute the profit for each week and append
+    the value to a list, that is returned.
+
+    Args:
+        sol (np.ndarray): The solution array, that should be printed.
+        profits (np.ndarray): Array contains the profits for a given day.
+        weeks_between (int): How many weeks should be between two games?
+
+    Returns:
+        list[float]: List contains the profits as float for each week.
+    """
     week_profits = []
 
     # Extract all games, that play during that week
@@ -217,6 +271,19 @@ def generate_possible_game_combinations_per_week(
     games: np.ndarray,
     all_teams: list[int],
 ) -> list[int]:
+    """Generate possible game-combinations for each week.
+
+    This function is only used if there are not that many teams.
+
+    Args:
+        games_encoded (list[int]): List contains the encoding of the games.
+        num_repetitions (int): How long should be a combinations?
+        games (np.ndarray): All games for the tournament.
+        all_teams (list[int]): List containing each team.
+
+    Returns:
+        list[int]: List containing the different game indices for each combination.
+    """
     # Source: https://stackoverflow.com/a/5898031, accessed 11th June
     combinations = itertools.permutations(iterable=games_encoded, r=num_repetitions)
     possible_combinations_tmp_idx = []
@@ -240,6 +307,19 @@ def generate_possible_weekly_combinations(
     weeks_changed: np.ndarray,
     games: np.ndarray,
 ) -> list[np.ndarray]:
+    """Generate possible weekly combinations.
+
+    This function considers all hard side-constraints.
+
+    Args:
+        possible_combinations_tmp_idx (list[int]): List containing the different game
+            indices for each combination.
+        weeks_changed (np.ndarray): Which weeks were changed due to the Metaheuristic.
+        games (np.ndarray): All games that play during that week.
+
+    Returns:
+        list[np.ndarray]: The possible weekly-combinations.
+    """
     possible_weekly_combinations = []
     # Create all possible weekly combinations
     weekly_combinations = np.array(
@@ -270,7 +350,20 @@ def generate_possible_weekly_combinations(
 #   accessed 19th June
 def generate_solution_round_robin_tournament(
     num_teams: int, t: float, random_team_order: bool
-):
+) -> np.ndarray:
+    """Cretea a feasible initial solution via a round-robin tournament.
+
+    Dependingj on the input parameters, the team order is shuffeled or not.
+
+    Args:
+        num_teams (int): How many teams take part in this tournament.
+        t (float): Fraction to compute the number of games on friday and saturday.
+        random_team_order (bool): Whether the team order should be random or not for 
+            the start of the rr-tournament.
+
+    Returns:
+        np.ndarray: A possible solution that is feasible as ndarray.
+    """
     from src.validation import validate
 
     # Create an empty array of shape: num-weeks x 3 x max num games per day x 2

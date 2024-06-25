@@ -124,7 +124,7 @@ class LNS:
             games = np.array(object=[])
             weeks_changed = np.array(object=[])
 
-        return sol, games, weeks_changed
+        return sol, games[np.argsort(weeks_changed)], np.sort(weeks_changed)
 
     def repair(self, sol: np.ndarray, games: np.ndarray, weeks_changed: np.ndarray, elapsed_time: float):
         # Randomly choose a repai parameter

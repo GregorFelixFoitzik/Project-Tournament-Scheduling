@@ -115,17 +115,13 @@ class LNSSimAnnealing:
         if destroy_operator == 0:
             weeks_changed, games = select_random_weeks(
                 sol=sol,
-                number_of_weeks=np.random.randint(
-                    low=2, high=10, size=1
-                )[0],
+                number_of_weeks=np.random.randint(low=2, high=10, size=1)[0],
             )
             sol[weeks_changed] = np.full(shape=games.shape, fill_value=np.nan)
         elif destroy_operator == 1:
             worst_weeks, games = select_n_worst_weeks(
                 sol=sol,
-                n=np.random.randint(
-                    low=2, high=10, size=1
-                )[0],
+                n=np.random.randint(low=2, high=10, size=1)[0],
                 profits=self.p,
                 weeks_between=self.r,
             )
@@ -136,7 +132,7 @@ class LNSSimAnnealing:
             games = np.array(object=[])
             weeks_changed = np.array(object=[])
 
-        return sol, games, weeks_changed
+        return sol, games[np.argsort(weeks_changed)], np.sort(weeks_changed)
 
     def repair(self, sol: np.ndarray, games: np.ndarray, weeks_changed: np.ndarray):
         # Randomly choose a repai parameter
