@@ -128,9 +128,9 @@ def main_metaheuristics_controller(
 
     ### hier die csv
     row = [metaheuristic_name, algo_config, timeout, parameters, profit, results[1], results[2]]
-    with open('artifacts/evaluations.csv', 'w') as f:
+    with open('artifacts/evaluations.csv', 'a') as f:
         # [metaheuristic_name, profit, duration]
         """MetaName, AlgoConfig, Timeout, Parameters, StartSol_Profit, MH_Profti, MH_Time"""
         writer = csv.writer(f)
-        writer.writerow(row=row)
+        writer.writerow(row)
 

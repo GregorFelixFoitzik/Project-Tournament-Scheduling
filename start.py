@@ -10,6 +10,8 @@ for metaheuristic_name in metaheuristics_to_use:
     print(f"Metaheuristic: {metaheuristic_name}")
     file_names = os.listdir(path="data")
     for file_name in file_names:
+        if 'example' in file_name:
+            continue
         path_to_file = f"data/{file_name}"
         print(f"\tFile-name: {path_to_file}")
 
