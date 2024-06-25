@@ -104,9 +104,11 @@ def main():
 
     file_names = os.listdir(path="data")
     for file_name in file_names:
+        if 'example' in file_name:
+            print(file_name)
+            continue
         path_to_file = f"data/{file_name}"
 
-        # path_to_file = "data/dotl_n10_t0.666_s4_r2_mnunif_14057.in"
         print(f"File name: {path_to_file}")
 
         algo_config = read_in_file(path_to_file=path_to_file)

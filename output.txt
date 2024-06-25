@@ -241,3 +241,201 @@ Executing tabu_search_lns
 
 Executing lns_ts_simulated_annealing
 
+                                   Metaheuristic  profit  duration
+0                            simulated_annealing  107691     29.74
+1                                            lns  117156     28.91
+2  large_neighborhood_search_simulated_annealing  103370     29.49
+3                                    tabu_search   98070     29.92
+4                                tabu_search_lns  101643     29.03
+5                     lns_ts_simulated_annealing  105034     29.66
+6                                      Start sol   96641      0.00
+
+
+File name: data/dotl_n50_t0.666_s4_r2_mnunif_3849.in
+Executing simulated_annealing
+
+Executing lns
+
+Executing large_neighborhood_search_simulated_annealing
+
+Executing tabu_search
+
+Executing tabu_search_lns
+
+Executing lns_ts_simulated_annealing
+
+                                   Metaheuristic  profit  duration
+0                            simulated_annealing  107992     29.27
+1                                            lns  113421     29.18
+2  large_neighborhood_search_simulated_annealing  100950     29.95
+3                                    tabu_search   97498     29.98
+4                                tabu_search_lns  106122     28.90
+5                     lns_ts_simulated_annealing   98618     29.84
+6                                      Start sol   95755      0.00
+
+
+File name: data/dotl_n50_t0.666_s4_r2_mnunif_1234.in
+Executing simulated_annealing
+
+Executing lns
+
+Executing large_neighborhood_search_simulated_annealing
+
+Executing tabu_search
+
+Executing tabu_search_lns
+
+Executing lns_ts_simulated_annealing
+
+                                   Metaheuristic  profit  duration
+0                            simulated_annealing  110588     30.25
+1                                            lns  116308     29.50
+2  large_neighborhood_search_simulated_annealing  102791     29.96
+3                                    tabu_search   97367     29.97
+4                                tabu_search_lns  104112     28.75
+5                     lns_ts_simulated_annealing  103303     30.47
+6                                      Start sol   95424      0.00
+
+
+File name: data/dotl_n20_t0.666_s4_r2_mnunif_23566.in
+Executing simulated_annealing
+
+Executing lns
+
+Executing large_neighborhood_search_simulated_annealing
+
+Executing tabu_search
+
+Executing tabu_search_lns
+
+Executing lns_ts_simulated_annealing
+
+                                   Metaheuristic  profit  duration
+0                            simulated_annealing   18921     29.95
+1                                            lns   18511      9.51
+2  large_neighborhood_search_simulated_annealing   18511     29.97
+3                                    tabu_search   16665     30.01
+4                                tabu_search_lns   18520     17.93
+5                     lns_ts_simulated_annealing   18511     30.01
+6                                      Start sol   15124      0.00
+
+
+File name: data/dotl_n20_t0.666_s4_r2_mnunif_26559.in
+Executing simulated_annealing
+
+Executing lns
+
+Executing large_neighborhood_search_simulated_annealing
+
+Executing tabu_search
+
+Executing tabu_search_lns
+
+Executing lns_ts_simulated_annealing
+
+                                   Metaheuristic  profit  duration
+0                            simulated_annealing   18607     30.02
+1                                            lns   18875      9.64
+2  large_neighborhood_search_simulated_annealing   18884     29.99
+3                                    tabu_search   16711     16.75
+4                                tabu_search_lns   18877     16.83
+5                     lns_ts_simulated_annealing   18875     30.00
+6                                      Start sol   15034      0.00
+
+
+File name: data/dotl_n10_t0.666_s4_r2_mnunif_24700.in
+Executing simulated_annealing
+
+Executing lns
+
+Executing large_neighborhood_search_simulated_annealing
+
+Executing tabu_search
+
+Executing tabu_search_lns
+
+Executing lns_ts_simulated_annealing
+
+                                   Metaheuristic  profit  duration
+0                            simulated_annealing    5773     12.32
+1                                            lns    4287      5.92
+2  large_neighborhood_search_simulated_annealing    4287     30.00
+3                                    tabu_search    3889      1.70
+4                                tabu_search_lns    4288      2.40
+5                     lns_ts_simulated_annealing    4291     29.99
+6                                      Start sol    3503      0.00
+
+
+File name: data/dotl_n50_t0.666_s4_r2_mnunif_7992.in
+Executing simulated_annealing
+
+Executing lns
+
+Executing large_neighborhood_search_simulated_annealing
+
+Executing tabu_search
+
+Executing tabu_search_lns
+
+Executing lns_ts_simulated_annealing
+
+                                   Metaheuristic  profit  duration
+0                            simulated_annealing  109952     29.93
+1                                            lns  118334     28.85
+2  large_neighborhood_search_simulated_annealing  105484     29.43
+3                                    tabu_search   98748     30.02
+4                                tabu_search_lns  108076     28.91
+5                     lns_ts_simulated_annealing   99677     29.66
+6                                      Start sol   96939      0.00
+
+
+File name: data/dotl_n100_t0.666_s4_r2_mnunif_17126.in
+Executing simulated_annealing
+
+Executing lns
+
+Executing large_neighborhood_search_simulated_annealing
+
+Executing tabu_search
+
+Executing tabu_search_lns
+
+Executing lns_ts_simulated_annealing
+
+                                   Metaheuristic  profit  duration
+0                            simulated_annealing  391635     27.79
+1                                            lns  398983     32.84
+2  large_neighborhood_search_simulated_annealing  390632     24.01
+3                                    tabu_search  388575     31.72
+4                                tabu_search_lns  393947     31.41
+5                     lns_ts_simulated_annealing  388222     32.99
+6                                      Start sol  388154      0.00
+
+
+File name: data/dotl_n10_t0.666_s4_r2_mnunif_14873.in
+Executing simulated_annealing
+
+Executing lns
+
+Executing large_neighborhood_search_simulated_annealing
+
+Executing tabu_search
+
+Executing tabu_search_lns
+
+Executing lns_ts_simulated_annealing
+
+                                   Metaheuristic  profit  duration
+0                            simulated_annealing    6489     12.19
+1                                            lns    4538      3.02
+2  large_neighborhood_search_simulated_annealing    4538     29.99
+3                                    tabu_search    4313      2.97
+4                                tabu_search_lns    4535      2.58
+5                     lns_ts_simulated_annealing    4538     30.01
+6                                      Start sol    3487      0.00
+
+
+File name: data/example.in
+Executing simulated_annealing
+
+Executing lns

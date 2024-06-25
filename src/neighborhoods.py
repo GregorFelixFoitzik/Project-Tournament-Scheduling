@@ -49,7 +49,7 @@ def select_random_weeks(
     games = sol[weeks_changed].copy()
 
     if weeks_changed.size == 0:
-        print('asd')
+        print('select_random_weeks')
 
     return weeks_changed, games
 
@@ -109,12 +109,13 @@ def insert_games_random_week(
                 ),
             ).any(axis=1)
         )[0]
-        week_new[0][: monday_games_idx.shape[0]] = games_unique[monday_games_idx]
+        pos_games = min(sol.shape[2], monday_games_idx.shape[0])
+        week_new[0][: pos_games] = games_unique[monday_games_idx[:pos_games]]
 
-        num_games_monday -= monday_games_idx.shape[0]
-        start_index_monday += monday_games_idx.shape[0]
+        num_games_monday -= pos_games
+        start_index_monday += pos_games
 
-        games_added += monday_games_idx.tolist()
+        games_added += monday_games_idx[:pos_games].tolist()
 
     # If there are remaining games that should be added to the monday slot
     if num_games_monday > 0:
@@ -145,7 +146,7 @@ def insert_games_random_week(
     )
 
     if a.shape[0] != int(number_of_teams / 2):
-        print("asddsa")
+        print("insert_games_random_week")
 
     return week_new
 
@@ -183,7 +184,7 @@ def select_n_worst_weeks(
     games = sol[worst_weeks].copy()
 
     if worst_weeks.size == 0:
-        print('asd')
+        print('select_n_worst_weeks')
 
     return worst_weeks, games
 
@@ -342,12 +343,13 @@ def reorder_week_max_profit(
         games_forced_monday_idx = np.where(
             np.isin(games_unique, teams_on_monday).any(axis=1)
         )[0]
-        sol[current_week][0][: games_forced_monday_idx.shape[0]] = games_unique[
-            games_forced_monday_idx
+        pos_games = min(sol.shape[2], games_forced_monday_idx.shape[0])
+        sol[current_week][0][: pos_games] = games_unique[
+            games_forced_monday_idx[:pos_games]
         ]
-        start_index_monday += games_forced_monday_idx.shape[0]
-        num_teams_monday -= games_forced_monday_idx.shape[0]
-        games_added += games_forced_monday_idx.tolist()
+        start_index_monday += pos_games
+        num_teams_monday -= pos_games
+        games_added += games_forced_monday_idx[:pos_games].tolist()
 
     # If the monday slot is not full: Add more games but with the highest profit
     if num_teams_monday > 0:
@@ -420,8 +422,5 @@ def random_reorder_weeks(
     new_order = np.random.choice(
         a=list(range(games.shape[0])), size=games.shape[0], replace=False
     )
-    try:
-        sol[weeks_changed] = games[new_order]
-    except Exception:
-        print('asd')
+    sol[weeks_changed] = games[new_order]
     return sol
