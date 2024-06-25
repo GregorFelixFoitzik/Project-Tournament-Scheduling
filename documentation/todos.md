@@ -16,12 +16,7 @@
   - [x] Save certain week combinations, which are allowed
 - [x] Implement Grid-Search for finding optimal parameters
 - [x] Check for `NotImplementedErrors`
-- [ ] LNS:
-  - [x] Reorder weeks
-    - [x] Maximum profit (takes too long)
-    - [x] At random
-  - [ ] Adapt weights for selection of method (starting with random -> later the other method(s))
-- [ ] Check code
+- [x] Check code
   - [x] helper.py
   - [x] neighborhoods.py
   - [x] validation.py
@@ -30,8 +25,13 @@
   - [x] lns_ts_simulated_annealing.py
   - [x] lns_ts.py
   - [x] metaheuristics_controller.py
-  - [ ] simulated_annealing.py
-  - [ ] tabu_search.py
+  - [x] simulated_annealing.py
+  - [x] tabu_search.py
+- [ ] LNS:
+  - [x] Reorder weeks
+    - [x] Maximum profit (takes too long)
+    - [x] At random
+  - [ ] Adapt weights for selection of method (starting with random -> later the other method(s))
 - [ ] Select time-consuming operations not at the end of iterations -> Change more
 - [ ] Combination of all
 - [ ] Search for papers: Round-robin-tournament
