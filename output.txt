@@ -1,6 +1,0 @@
-File name: data/dotl_n10_t0.666_s4_r2_mnunif_14057.in
-Executing simulated_annealing
-
-Executing lns
-
-Executing large_neighborhood_search_simulated_annealing

@@ -10,6 +10,15 @@ def validate(
     sol: np.ndarray,
     num_teams: int,
 ) -> bool:
+    """Validate the given solution by checking the constraints.
+
+    Args:
+        sol (np.ndarray): The solution that should be checked.
+        num_teams (int): How many teams take part in the tournament?
+
+    Returns:
+        bool: Whether the solution is valid or not.
+    """
     weeks = 2 * (num_teams - 1)
 
     feasible_uniqueness = uniqueness(sol=sol, num_teams=num_teams, weeks=weeks)
@@ -26,6 +35,18 @@ def validate(
 
 
 def uniqueness(sol: np.ndarray, num_teams: int, weeks: int) -> bool:
+    """Check for uniqueness.
+
+    Each game should be only once in the solution.
+
+    Args:
+        sol (np.ndarray): The solution that should be checked.
+        num_teams (int): How many teams take part in the tournament.
+        weeks (int): How many weeks the tounament is long.
+
+    Returns:
+        bool: If there are no duplicate games.
+    """
     # Source: https://www.pythonpool.com/flatten-list-python/, accessed 29.05.2023
     games = sol[np.logical_not(np.isnan(sol))].reshape(
         int(sol[np.logical_not(np.isnan(sol))].shape[0] / 2), 2
@@ -59,6 +80,15 @@ def uniqueness(sol: np.ndarray, num_teams: int, weeks: int) -> bool:
 
 
 def check_games(sol: np.ndarray, num_teams: int) -> bool:
+    """Check that every game is in the solution.
+
+    Args:
+        sol (np.ndarray): The solution that should be checked.
+        num_teams (int): How many teams take part in the tournament.
+
+    Returns:
+        bool: If all games are in the solution.
+    """
     games_required = np.array(
         [
             [i, j] if i != j else [np.nan, np.nan]
@@ -85,6 +115,15 @@ def check_games(sol: np.ndarray, num_teams: int) -> bool:
 
 
 def every_team_on_monday(sol: np.ndarray, num_teams: int) -> bool:
+    """Check, that every team plays at least once on monday.
+
+    Args:
+        sol (np.ndarray): The solution that should be checked.
+        num_teams (int): How many teams take part in the tournament.
+
+    Returns:
+        bool: If every team plays at least once on monday.
+    """
     teams = [team for team in range(1, num_teams + 1)]
 
     monday_games = sol[:, 0]
@@ -105,13 +144,22 @@ def every_team_on_monday(sol: np.ndarray, num_teams: int) -> bool:
 
 
 def every_team_every_week(sol: np.ndarray, num_teams: int) -> bool:
+    """Check that every team plays every week.
+
+    Args:
+        sol (np.ndarray): The solution that should be checked.
+        num_teams (int): How many teams take part in the tournament.
+
+    Returns:
+        bool: If every team plays every week.
+    """
     for i, week in enumerate(sol):
         # if not np.all(
         # np.unique(week)[:-1] == list(range(1, num_teams + 1))
         # ):
         # return False
         assert np.all(
-            np.unique(week)[:-1] == list(range(1, num_teams + 1))
+            a=np.unique(week)[:-1] == list(range(1, num_teams + 1))
         ), f"In week {i} not all teams play!"
 
     return True
