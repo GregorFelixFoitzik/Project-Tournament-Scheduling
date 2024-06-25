@@ -8,6 +8,7 @@
 - [ ] VNS:
   - [ ] Reorder different number of weeks, so profit is maximized
 - [ ] Pseudocode
+- [ ] Search for papers: Round-robin-tournament (https://en.wikipedia.org/wiki/Round-robin_tournament)
 
 ## Jonas 
 - [x] Create final file(s)
@@ -27,12 +28,14 @@
   - [x] metaheuristics_controller.py
   - [x] simulated_annealing.py
   - [x] tabu_search.py
-- [ ] LNS:
+- [x] LNS:
   - [x] Reorder weeks
     - [x] Maximum profit (takes too long)
     - [x] At random
-  - [ ] Adapt weights for selection of method (starting with random -> later the other method(s))
+  - [x] Adapt weights for selection of method (starting with random -> later the other method(s))
+- [ ] Disable Multithreading numpy
+- [ ] Implemenet timeout with CPU-timeout (os.times)
+- [ ] Reactive Tabu-Search
 - [ ] Select time-consuming operations not at the end of iterations -> Change more
 - [ ] Combination of all
-- [ ] Search for papers: Round-robin-tournament
 - [ ] Remove print-statements

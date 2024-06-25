@@ -126,6 +126,16 @@ def main():
             "data/dotl_n100_t0.666_s4_r2_mnunif_17126.in",
             "data/dotl_n10_t0.666_s4_r2_mnunif_14873.in",
             "data/dotl_n100_t0.666_s4_r2_mnunif_1234.in",
+            "data/dotl_n100_t0.666_s4_r2_mnunif_25274.in",
+            "data/dotl_n20_t0.666_s4_r2_mnunif_15407.in",
+            "data/dotl_n10_t0.666_s4_r2_mnunif_2793.in",
+            "data/dotl_n10_t0.666_s4_r2_mnunif_11034.in",
+            "data/dotl_n10_t0.666_s4_r2_mnunif_30857.in",
+            "data/dotl_n100_t0.666_s4_r2_mnunif_32057.in",
+            "data/dotl_n100_t0.666_s4_r2_mnunif_8125.in",
+            "data/dotl_n20_t0.666_s4_r2_mnunif_25379.in",
+            "data/dotl_n100_t0.666_s4_r2_mnunif_21332.in",
+            "data/dotl_n20_t0.666_s4_r2_mnunif_1234.in",
         ]
         if "example" in file_name or path_to_file in skip:
             print(file_name)

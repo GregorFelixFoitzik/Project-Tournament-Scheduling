@@ -5,6 +5,7 @@
 \usepackage{xcolor}
 \usepackage{algorithm}
 \usepackage{algpseudocode}
+\usepackage{mathtools}
 
 \title{Metaheuristics Project}
 \author{Gregor Foitzik, Kevin Towa, Jonas Ginster}
@@ -78,25 +79,20 @@
     \end{algorithmic}
 \end{algorithm}
 
-
 \begin{algorithm}
     \caption{Pseudocode for random-insertion}
     \begin{algorithmic}[1] 
         \Function{RandomInsertion}{$s^*, games, week, n, t$}
-            \If {$n > 6 \wedge |\text{weeks}| > 2$}
-                \State $o\leftarrow \text{randomly choose repair operator}\backslash\{1\}$ \Comment{Use uniform distribution}
-            \Else
-                \State $o\leftarrow \text{randomly choose repair operator}$ \Comment{Use uniform distribution}
+            \State $n_{\text{mon}}\leftarrow \max(1, \frac{n}{2} - 2\cdot \lceil \frac{n}{2}\cdot t)\rceil$
+            \State $n_{\text{fri, sat}}\leftarrow \lceil \frac{n}{2}\cdot t\rceil$
+            \State $\text{team}_{\text{mon}}\leftarrow \text{Get teams to play on monday}$
+            \State $\text{games}_{\text{added}} \leftarrow \emptyset$
+            \If{$\text{team}_{\text{mon}}\neq \emptyset$}
+                \State $\text{games}_{\text{mon}}\leftarrow \text{Get games on monday based on } \text{team}_{\text{mon}}$
+                \State $n_{\text{mon}} \leftarrow \max(n_{\text{mon}}, |\text{games}_{\text{mon}}|)$
+                \State $s^*\leftarrow s^*\cup \text{games}_{\text{mon}}[:n_{\text{mon}}]$
+                \State $\text{games}_{\text{added}}\leftarrow \text{games}_{\text{added}}\cup \text{games}_{\text{mon}}[:n_{\text{mon}}]$
             \EndIf
-            \If {$t>25$}
-                \State $o\leftarrow \text{randomly choose repair operator}\backslash\{1, 2\}$ \Comment{Use uniform distribution}
-            \EndIf
-            \If{$o = 1$}
-                \State $\text{weeks}, \text{ganes}\leftarrow \text{Randomly destroy 2 or 3 weeks}$
-            \ElsIf{$o = 1$}
-                \State $\text{weeks}, \text{ganes}\leftarrow \text{Destroy the 2 or 3 worst weeks}$
-            \EndIf
-            \Return $\text{weeks}, \text{games}$
         \EndFunction
     \end{algorithmic}
 \end{algorithm}
