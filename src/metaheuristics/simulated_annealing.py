@@ -1,6 +1,7 @@
 """This file contains the implementation of a Tabu-Search."""
 
 # Standard library
+import os
 import time
 
 from typing import Union
@@ -84,10 +85,7 @@ class SimulatedAnnealing:
         elapsed_time = 0
         num_iterations = 0
         avg_runtime = 0
-        while (
-            self.temperature >= self.epsilon
-            and (time.time() - t0) + avg_runtime < self.timeout
-        ):
+        while (self.temperature >= self.epsilon and sum(os.times()[:2]) + avg_runtime < self.timeout):
             t0_iteration = time.time()
             new_sol = self.neighborhoods[self.neighborhood](sol)
             profit_new_sol = compute_profit(
@@ -162,6 +160,9 @@ class SimulatedAnnealing:
             weeks_between=self.r,
         )
 
+        sol[worst_weeks] = np.full(shape=games.shape, fill_value=np.nan)
+        weeks_changed = worst_weeks
+
         for i, week_changed in enumerate(iterable=worst_weeks):
             week_updated = reorder_week_max_profit(
                 sol=sol,
@@ -174,6 +175,11 @@ class SimulatedAnnealing:
             )
 
             sol[week_changed] = week_updated
+
+        try:
+            validate(sol, self.n)
+        except Exception:
+            print('sd')
 
         return sol
 

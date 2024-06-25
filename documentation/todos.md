@@ -33,7 +33,7 @@
     - [x] Maximum profit (takes too long)
     - [x] At random
   - [x] Adapt weights for selection of method (starting with random -> later the other method(s))
-- [ ] Disable Multithreading numpy
+- [x] Disable Multithreading numpy
 - [ ] Implemenet timeout with CPU-timeout (os.times)
 - [ ] Reactive Tabu-Search
 - [ ] Select time-consuming operations not at the end of iterations -> Change more
