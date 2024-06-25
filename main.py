@@ -57,6 +57,7 @@ def grid_search():
             "neighborhood": ["random_swap_within_week", "select_worst_n_weeks"],
         },
         "tabu_search": {"max_size_tabu_list": [i * 10 for i in range(1, 4)]},
+        "variable_neighborhood_search": {"k"}
     }
     file_names = os.listdir(path="data")
     for file_name in file_names:
