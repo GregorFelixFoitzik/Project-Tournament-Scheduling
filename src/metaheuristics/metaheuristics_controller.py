@@ -1,6 +1,7 @@
 """File controls the different metaheuristics"""
 
 # Standard library
+import os
 import time
 
 from typing import Union
@@ -8,7 +9,6 @@ from typing import Union
 # Third party libraries
 import yaml
 import numpy as np
-import pandas as pd
 
 # Project specific library
 from src.helper import compute_profit
@@ -75,9 +75,9 @@ def apply_metaheuristic(
         start_solution=start_sol,
         **parameters,
     )
-    t0 = time.time()
+    # t0 = time.time()
     new_sol = metaheuristic.run()
-    duration = np.round(a=time.time() - t0, decimals=2)
+    duration = sum(os.times()[:2])
     profit = compute_profit(
         sol=new_sol, profit=metaheuristic.p, weeks_between=int(algo_config["r"])
     )
@@ -87,7 +87,7 @@ def apply_metaheuristic(
 
 def main_metaheuristics_controller(
     start_sol: np.ndarray,
-    metaheuristics_to_use: list[str],
+    metaheuristic_name: str,
     algo_config: dict[str, Union[int, float, list]],
     timeout: float,
 ) -> None:
@@ -102,20 +102,16 @@ def main_metaheuristics_controller(
             algorithm.
         timeout (float): Timeout for the Metaheuristic.
     """
-    df_res = pd.DataFrame(columns=["Metaheuristic", "profit", "duration"])
-
-    for metaheuristic_name in metaheuristics_to_use:
-        print(f"Executing {metaheuristic_name}")
-        parameters = get_yaml_config(metaheuristic_name=metaheuristic_name)
-        results = apply_metaheuristic(
-            metaheuristic_name=metaheuristic_name,
-            start_sol=start_sol,
-            algo_config=algo_config,
-            timeout=timeout,
-            parameters=parameters,
-        )
-        df_res.loc[len(df_res)] = results
-        print()
+    # print(f"Executing {metaheuristic_name}")
+    parameters = get_yaml_config(metaheuristic_name=metaheuristic_name)
+    results = apply_metaheuristic(
+        metaheuristic_name=metaheuristic_name,
+        start_sol=start_sol,
+        algo_config=algo_config,
+        timeout=timeout,
+        parameters=parameters,
+    )
+    print()
     profit = compute_profit(
         sol=start_sol,
         profit=np.array(object=list(algo_config["p"])).reshape(
@@ -123,6 +119,5 @@ def main_metaheuristics_controller(
         ),
         weeks_between=int(algo_config["r"]),
     )
-    df_res.loc[len(df_res)] = ["Start sol", profit, 0]
 
-    print(df_res)
+    res_start_sol = ["Start sol", profit, 0]

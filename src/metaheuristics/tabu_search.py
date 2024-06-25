@@ -1,4 +1,5 @@
 # Standard library
+import os
 import time
 
 from typing import Union
@@ -65,11 +66,11 @@ class TabuSearch:
         t0 = time.time()
         elapsed_time = 0
         num_iterations = 0
-        avg_run_time = 0
+        avg_runtime = 0
         tabu_list = []
         while (
             num_iterations_no_change <= 100
-            and (time.time() - t0) + avg_run_time < self.timeout
+            and sum(os.times()[:2]) + avg_runtime < self.timeout
         ):
             t0_iteration = time.time()
             # Randomly select n weeks
@@ -117,7 +118,7 @@ class TabuSearch:
 
             elapsed_time += time.time() - t0_iteration
             num_iterations += 1
-            avg_run_time = elapsed_time / num_iterations
+            avg_runtime = elapsed_time / num_iterations
 
         self.best_solution = best_solution
 

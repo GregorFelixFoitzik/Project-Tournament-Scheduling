@@ -1,4 +1,5 @@
 # Standard library
+import os
 import time
 
 from typing import Union
@@ -78,7 +79,7 @@ class LNSSimAnnealing:
         avg_runtime = 0
         while (
             self.temperature >= self.epsilon
-            and (time.time() - t0) + avg_runtime < self.timeout
+            and sum(os.times()[:2]) + avg_runtime < self.timeout
         ):
             t0_iteration = time.time()
             # Destroy and repair the solution

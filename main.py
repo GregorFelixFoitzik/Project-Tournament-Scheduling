@@ -1,5 +1,10 @@
 # Standard library
 import os
+
+# Source: https://stackoverflow.com/a/48665619, accessed 25th June
+# Might need adaption if other CPU is used
+os.environ["MKL_NUM_THREADS"] = "1"
+os.environ["OPENBLAS_NUM_THREADS"] = "1"
 import time
 import argparse
 import itertools
@@ -25,14 +30,16 @@ from src.metaheuristics.metaheuristics_controller import (
 parser = argparse.ArgumentParser(description="Input for algorithms")
 # ChatGPT fixed the issues that default values were not used. => python main.py works now
 parser.add_argument(
-    "-t", "--timeout", type=int, default=30, help="Timeout duration in seconds"
-)
-parser.add_argument(
-    "-p",
-    "--path_to_instance",
+    "path_to_instance",
     type=str,
     default="data/example.in",
     help="Path to the input file",
+)
+
+parser.add_argument(
+    "metaheuristic_name",
+    type=str,
+    help="Name of the Metaheuristc.",
 )
 
 
@@ -98,71 +105,27 @@ def grid_search():
             print()
 
 
-def main():
-    with open(file="configs/run_config.yaml", mode="r") as file:
-        run_config = yaml.safe_load(stream=file)
+def main(path_to_file: str, metaheuristic_name: str):
+    algo_config = read_in_file(path_to_file=path_to_file)
 
-    file_names = os.listdir(path="data")
-    for file_name in file_names:
-        path_to_file = "data/dotl_n10_t0.666_s4_r2_mnunif_14057.in" #sf"data/{file_name}"
-        skip = [
-        #     "data/dotl_n100_t0.666_s4_r2_mnunif_15173.in",
-        #     "data/dotl_n50_t0.666_s4_r2_mnunif_31544.in",
-        #     "data/dotl_n20_t0.666_s4_r2_mnunif_22154.in",
-        #     "data/dotl_n20_t0.666_s4_r2_mnunif_27436.in",
-        #     "data/dotl_n100_t0.666_s4_r2_mnunif_26492.in",
-        #     "data/dotl_n10_t0.666_s4_r2_mnunif_14057.in",
-        #     "data/dotl_n10_t0.666_s4_r2_mnunif_1689.in",
-        #     "data/dotl_n50_t0.666_s4_r2_mnunif_27785.in",
-        #     "data/dotl_n100_t0.666_s4_r2_mnunif_3271.in",
-        #     "data/dotl_n20_t0.666_s4_r2_mnunif_8057.in",
-        #     "data/dotl_n50_t0.666_s4_r2_mnunif_21870.in",
-        #     "data/dotl_n50_t0.666_s4_r2_mnunif_3849.in",
-        #     "data/dotl_n50_t0.666_s4_r2_mnunif_1234.in",
-        #     "data/dotl_n20_t0.666_s4_r2_mnunif_23566.in",
-        #     "data/dotl_n20_t0.666_s4_r2_mnunif_26559.in",
-        #     "data/dotl_n10_t0.666_s4_r2_mnunif_24700.in",
-        #     "data/dotl_n50_t0.666_s4_r2_mnunif_7992.in",
-        #     "data/dotl_n100_t0.666_s4_r2_mnunif_17126.in",
-        #     "data/dotl_n10_t0.666_s4_r2_mnunif_14873.in",
-        #     "data/dotl_n100_t0.666_s4_r2_mnunif_1234.in",
-        #     "data/dotl_n100_t0.666_s4_r2_mnunif_25274.in",
-        #     "data/dotl_n20_t0.666_s4_r2_mnunif_15407.in",
-        #     "data/dotl_n10_t0.666_s4_r2_mnunif_2793.in",
-        #     "data/dotl_n10_t0.666_s4_r2_mnunif_11034.in",
-        #     "data/dotl_n10_t0.666_s4_r2_mnunif_30857.in",
-        #     "data/dotl_n100_t0.666_s4_r2_mnunif_32057.in",
-        #     "data/dotl_n100_t0.666_s4_r2_mnunif_8125.in",
-        #     "data/dotl_n20_t0.666_s4_r2_mnunif_25379.in",
-        #     "data/dotl_n100_t0.666_s4_r2_mnunif_21332.in",
-        #     "data/dotl_n20_t0.666_s4_r2_mnunif_1234.in",
-        ]
-        if "example" in file_name or path_to_file in skip:
-            print(file_name)
-            continue
+    start_sol = generate_solution_round_robin_tournament(
+        num_teams=int(algo_config["n"]),
+        t=float(algo_config["t"]),
+        random_team_order=False,
+    )
 
-        print(f"File name: {path_to_file}")
-
-        algo_config = read_in_file(path_to_file=path_to_file)
-
-        metaheuristics_to_use = run_config["metaheuristics"]
-        t0 = time.time()
-        start_sol = generate_solution_round_robin_tournament(
-            num_teams=int(algo_config["n"]),
-            t=float(algo_config["t"]),
-            random_team_order=False,
-        )
-
-        main_metaheuristics_controller(
-            start_sol=start_sol,
-            metaheuristics_to_use=metaheuristics_to_use,
-            algo_config=algo_config,
-            timeout=30 - (time.time() - t0),
-        )
-        print()
-        print()
+    main_metaheuristics_controller(
+        start_sol=start_sol,
+        metaheuristic_name=metaheuristic_name,
+        algo_config=algo_config,
+        timeout=30,
+    )
 
 
 if __name__ == "__main__":
     # grid_search()
-    main()
+    args = parser.parse_args()
+
+    path_to_file = args.path_to_instance
+    metaheuristic_name = args.metaheuristic_name
+    main(path_to_file=path_to_file, metaheuristic_name=metaheuristic_name)

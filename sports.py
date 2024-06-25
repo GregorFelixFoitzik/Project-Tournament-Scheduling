@@ -1,4 +1,9 @@
 # Standard library
+import os
+# Source: https://stackoverflow.com/a/48665619, accessed 25th June
+# Might need adaption if other CPU is used
+os.environ["MKL_NUM_THREADS"] = "1"
+os.environ['OPENBLAS_NUM_THREADS'] = '1'
 import time
 import argparse
 
