@@ -109,100 +109,106 @@ def print_feasible_solution(sol: np.ndarray, runtime: float, profit: float):
 
 def compute_profit(sol: np.ndarray, profit: np.ndarray, weeks_between: int) -> float:
     return np.sum(
-        get_profits_per_week(sol=sol, profits=profit, weeks_between=weeks_between)
+        a=get_profits_per_week(sol=sol, profits=profit, weeks_between=weeks_between)
     )
+
+
+def get_profit_game(
+    sol: np.ndarray,
+    game: np.ndarray,
+    profits: np.ndarray,
+    week_num: int,
+    weeks_between: int,
+) -> float:
+    game_other_location = np.setdiff1d(
+        ar1=np.where(np.isin(element=sol, test_elements=game).all(axis=3))[0],
+        ar2=week_num,
+    )[0]
+    # Is the other game later than the current week?
+    if game_other_location > week_num:
+        # Yes: Add the the normal profit.
+        profit_game = profits[int(game[0]) - 1][int(game[1]) - 1]
+    else:
+        # No: Check if the differenc between the current-week and other
+        #   week is in the interval [1, r)
+        if 1 <= week_num - game_other_location < weeks_between:
+            # Reduce the profit
+            profit_game = profits[int(game[0]) - 1][int(game[1]) - 1] / (
+                1 + (week_num - game_other_location) ** 2
+            )
+        else:
+            profit_game = profits[int(game[0]) - 1][int(game[1]) - 1]
+
+    return profit_game
 
 
 def get_profits_per_week(sol: np.ndarray, profits: np.ndarray, weeks_between: int):
     week_profits = []
 
-    games_all_flatten = sol.flatten()
-    games_all_flatten_no_nan = np.logical_not(np.isnan(sol.flatten()))
-    games_all = games_all_flatten[games_all_flatten_no_nan].reshape(int(games_all_flatten[games_all_flatten_no_nan].shape[0] / 2), 2)
+    # Extract all games, that play during that week
+    # games_all_flatten = sol.flatten()
+    # games_all_flatten_no_nan = np.logical_not(np.isnan(sol.flatten()))
+    # games_all = games_all_flatten[games_all_flatten_no_nan].reshape(
+    # int(games_all_flatten[games_all_flatten_no_nan].shape[0] / 2), 2
+    # )
 
-    # import time
-    # t0=time.time()
-
+    # Iterate over each week
     for week_num, week in enumerate(iterable=sol):
         sum_week = 0
+        # Iterate over the different days
         for i, games in enumerate(iterable=week):
+            # Extract the games of the given day
             games_flatten = games.flatten()
             games_flatten_no_nan = np.logical_not(np.isnan(games.flatten()))
-            games = games_flatten[games_flatten_no_nan].reshape(int(games_flatten[games_flatten_no_nan].shape[0] / 2), 2)
+            games = games_flatten[games_flatten_no_nan].reshape(
+                int(games_flatten[games_flatten_no_nan].shape[0] / 2), 2
+            )
 
+            # If the day is monday and only one game is assigned to the monday slot
             if i == 0 and games.shape[0] == 1:
                 game = games[0]
-                game_other_location = np.where((games_all[:, 0] == game[1]) & (games_all[:, 1] == game[0]))[0][0]
-                if game_other_location > week_num:
-                    sum_week += profits[0][int(game[0]) - 1][int(game[1]) - 1]
-                else:
-                    if 1<=week_num-game_other_location<weeks_between:
-                        sum_week += profits[0][int(game[0]) - 1][int(game[1]) - 1] / (1 + (week_num - game_other_location) ** 2)
-                    else:
-                        sum_week += profits[0][int(game[0]) - 1][int(game[1]) - 1] 
+                sum_week += get_profit_game(
+                    sol=sol,
+                    game=game,
+                    profits=profits[0],
+                    week_num=week_num,
+                    weeks_between=weeks_between,
+                )
                 continue
+            # If the day is monday and multiple games are assigned to this slot
             if i == 0 and np.unique(games, axis=0).shape[1] > 1:
                 min_profit = float(inf)
 
+                # Iterate over the different games on monday
                 for game in games:
-                    game_other_location = np.where((games_all[:, 0] == game[1]) & (games_all[:, 1] == game[0]))[0][0]
-                    if game_other_location > week_num:
-                        profit = profits[0][int(game[0]) - 1][int(game[1]) - 1]
-                    else:
-                        if 1<=week_num-game_other_location<weeks_between:
-                            profit = profits[0][int(game[0]) - 1][int(game[1]) - 1] / (1 + (week_num - game_other_location) ** 2)
-                        else:
-                            profit = profits[0][int(game[0]) - 1][int(game[1]) - 1] 
-                    if profit < min_profit:
-                        min_profit = profit
+                    profit_game = get_profit_game(
+                        sol=sol,
+                        game=game,
+                        profits=profits[0],
+                        week_num=week_num,
+                        weeks_between=weeks_between,
+                    )
+
+                    if profit_game < min_profit:
+                        min_profit = profit_game
                 sum_week += min_profit
                 continue
-            
+
+            # If the day is not monday: iterate over the given games
             for game in games:
-                game_other_location = np.where((games_all[:, 0] == game[1]) & (games_all[:, 1] == game[0]))[0][0]
-                if game_other_location > week_num:
-                    sum_week += profits[0][int(game[0]) - 1][int(game[1]) - 1]
-                else:
-                    if 1<=week_num-game_other_location<weeks_between:
-                        sum_week += profits[0][int(game[0]) - 1][int(game[1]) - 1] / (1 + (week_num - game_other_location) ** 2)
-                    else:
-                        sum_week += profits[0][int(game[0]) - 1][int(game[1]) - 1]
+                sum_week += get_profit_game(
+                    sol=sol,
+                    game=game,
+                    profits=profits[i],
+                    week_num=week_num,
+                    weeks_between=weeks_between,
+                )
+
         week_profits.append(sum_week)
 
     # print(time.time() - t0)
 
     return week_profits
-
-
-def compute_profit_game(
-    sol: np.ndarray,
-    game: np.ndarray,
-    profit_game: float,
-    weeks_between: int,
-    current_week: int,
-) -> float:
-    if sol[:current_week].size == 0:
-        return profit_game
-    
-    for week, games in enumerate(iterable=sol[:current_week]):
-        games = games[np.logical_not(np.isnan(games))]
-        games = games.reshape(int(games.shape[0] / 2), 2).astype(int)
-        # Check if the game is in the current week, if no, no move on
-        if np.where((games[:, 0] == game[1]) & (games[:, 1] == game[0]))[0].size == 0:
-            continue
-
-        # game is in current week: Does they play earlier than expected
-        if 1 <= current_week - week < weeks_between:
-            return profit_game / (1 + (current_week - week) ** 2)
-        else:
-            return profit_game
-
-    # If a new game is added
-    return profit_game
-
-
-def get_profit_games_earlier(profit: float, q: np.ndarray) -> np.ndarray:
-    return profit / (1 + q ^ 2)
 
 
 def generate_possible_game_combinations_per_week(
@@ -290,6 +296,7 @@ def generate_solution_round_robin_tournament(
         fill_value=np.nan,
     ).tolist()
 
+    # Create the teams array for the rr-tournament: for example [[1,2,3], [4,5,6]]
     teams = list(range(1, num_teams + 1))
     if random_team_order:
         teams = np.random.choice(
@@ -297,6 +304,7 @@ def generate_solution_round_robin_tournament(
         ).tolist()
     teams = np.array(object=teams).reshape(2, int(num_teams / 2)).tolist()
 
+    # Create the first half of the campaign via applying the rr-tournament-algorithm
     for week in range(num_teams - 1):
         solution_shortened[week] = [
             np.array(object=teams)[:, i].tolist() for i in range(int(num_teams / 2))
@@ -306,6 +314,7 @@ def generate_solution_round_robin_tournament(
 
         teams = [upper_row, lower_row]
 
+    # Add the second half to the solution
     solution_extended = np.array(object=solution_shortened + solution_shortened)
 
     # Invert the second half of the solution
@@ -313,18 +322,23 @@ def generate_solution_round_robin_tournament(
         week = solution_extended[i]
         week[:, [0, 1]] = week[:, [1, 0]]
 
+    # Get how many games should be played on monday
     num_games_monday = max(
         1, solution_extended.shape[1] - 2 * int(np.ceil(solution_extended.shape[1] * t))
     )
 
+    # Iterate over the weeks and assign the games to the different days for each week
     for i, week in enumerate(iterable=solution_extended):
+        # The first num_games_monday are monday games
         solution[i][0][:num_games_monday] = week[:num_games_monday]
 
+        # Assign all other games to friday
         num_games_friday = int(np.ceil(solution_extended.shape[1] * t))
         solution[i][1][: num_games_monday + num_games_friday - num_games_monday] = week[
             num_games_monday : num_games_monday + num_games_friday
         ]
 
+        # If there are remaining games: Assign them to saturday
         if week[num_games_monday + num_games_friday :].shape[0] > 0:
             remaining_games = week[num_games_monday + num_games_friday :]
             solution[i][2][: remaining_games.shape[0]] = remaining_games

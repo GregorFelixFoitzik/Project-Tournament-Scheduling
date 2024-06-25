@@ -10,9 +10,9 @@ from src.validation import validate
 from src.helper import (
     generate_possible_game_combinations_per_week,
     generate_possible_weekly_combinations,
+    get_profit_game,
     get_profits_per_week,
     compute_profit,
-    compute_profit_game,
 )
 
 
@@ -212,27 +212,28 @@ def reorder_week_max_profit(
 
     profits_per_game = np.full(shape=(games_unique.shape[0], 3), fill_value=np.nan)
     for i, game in enumerate(iterable=games_unique):
-        profit_monday = compute_profit_game(
+        profit_monday = get_profit_game(
             sol=sol,
             game=game,
-            profit_game=profits[0][int(game[0]) - 1][int(game[1]) - 1],
+            profits=profits[0],
+            week_num=current_week,
             weeks_between=weeks_between,
-            current_week=current_week,
         )
-        profit_friday = compute_profit_game(
+        profit_friday = get_profit_game(
             sol=sol,
             game=game,
-            profit_game=profits[1][int(game[0]) - 1][int(game[1]) - 1],
+            profits=profits[1],
+            week_num=current_week,
             weeks_between=weeks_between,
-            current_week=current_week,
         )
-        profit_saturday = compute_profit_game(
+        profit_saturday = get_profit_game(
             sol=sol,
             game=game,
-            profit_game=profits[2][int(game[0]) - 1][int(game[1]) - 1],
+            profits=profits[2],
+            week_num=current_week,
             weeks_between=weeks_between,
-            current_week=current_week,
         )
+
         profits_per_game[i] = [profit_monday, profit_friday, profit_saturday]
 
     start_index_monday = 0
