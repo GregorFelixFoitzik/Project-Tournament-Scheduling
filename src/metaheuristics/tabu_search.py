@@ -66,9 +66,13 @@ class TabuSearch:
         ):
             t0_iteration = time.time()
             # Randomly select n weeks
+            possible_weeks = np.setdiff1d(
+                ar1=list(range(best_solution.shape[0])), ar2=tabu_list
+            )
+            number_of_weeks = min(4, possible_weeks.shape[0])
             weeks_changed = np.random.choice(
-                a=np.setdiff1d(ar1=list(range(best_solution.shape[0])), ar2=tabu_list),
-                size=4,
+                a=possible_weeks,
+                size=number_of_weeks,
                 replace=False,
             )
             games = best_solution[weeks_changed].copy()
@@ -98,7 +102,8 @@ class TabuSearch:
 
             if (
                 len(tabu_list) > self.max_size_tabu_list
-                and len(tabu_list) + len(weeks_changed.tolist()) > self.max_size_tabu_list
+                and len(tabu_list) + len(weeks_changed.tolist())
+                > self.max_size_tabu_list
             ):
                 for _ in range(
                     len(weeks_changed) > self.max_size_tabu_list,

@@ -19,7 +19,7 @@ from src.helper import (
 def select_random_weeks(
     sol: np.ndarray, number_of_weeks: int, tabu_list: list[int] = []
 ) -> tuple[np.ndarray, np.ndarray]:
-    # Destroy 2 weeks randomly
+    # Destroy n weeks randomly
     if tabu_list:
         possible_weeks = np.setdiff1d(ar1=list(range(sol.shape[0])), ar2=tabu_list)
         number_of_weeks = min(number_of_weeks, possible_weeks.shape[0])
@@ -44,6 +44,7 @@ def insert_games_random_week(
     number_of_teams: int,
     t: float,
 ) -> np.ndarray:
+    # Get unique games for a given week
     games_week_reshape = games_week.reshape(
         (games_week.shape[0] * games_week.shape[1], 2)
     )
@@ -64,6 +65,7 @@ def insert_games_random_week(
     # Set the monday game
     games_added = []
     start_index_monday = 0
+    # If team(s) do not play on monday, add them first
     if (
         np.setdiff1d(ar1=range(1, number_of_teams + 1), ar2=teams_play_on_monday).size
         != 0
@@ -83,6 +85,7 @@ def insert_games_random_week(
 
         games_added += monday_games_idx.tolist()
 
+    # If there are remaining games that should be added to the monday slot
     if num_games_monday > 0:
         monday_games_idx = np.random.choice(
             a=list(range(games_unique.shape[0])), size=num_games_monday, replace=False
@@ -95,11 +98,12 @@ def insert_games_random_week(
     # Randomly distribute the remaiing games
     remaining_games_idx = np.setdiff1d(list(range(games_unique.shape[0])), games_added)
     days_per_game = np.random.choice(
-        [0 for _ in range(int(num_games_fri_sat))]
+        a=[0 for _ in range(int(num_games_fri_sat))]
         + [1 for _ in range(int(num_games_fri_sat))],
         size=len(remaining_games_idx),
         replace=False,
     )
+    # Add the games to the new week
     games_per_day = [0, 0]
     for i, day in enumerate(days_per_game):
         week_new[day + 1][games_per_day[day]] = games_unique[remaining_games_idx[i]]
@@ -148,6 +152,7 @@ def insert_games_max_profit_per_week(
     weeks_between: int,
     t: float,
 ) -> np.ndarray:
+    # Get the possible combinations
     possible_combinations_tmp_idx = generate_possible_game_combinations_per_week(
         games_encoded=games_encoded,
         num_repetitions=num_repetitions,
@@ -178,7 +183,7 @@ def insert_games_max_profit_per_week(
                 ] = game
             sol_new[weeks_changed[i]] = week_new
 
-        # Check if the solution is valid or not
+        # Check if the solution is valid or not (if yes, continue)
         try:
             validate(sol=sol_new, num_teams=num_teams)
         except AssertionError:
@@ -204,12 +209,14 @@ def reorder_week_max_profit(
     current_week: int,
     weeks_between: int,
 ):
+    # Get all games for the given week
     games_flatten = games.flatten()
     games_flatten_no_nan = np.logical_not(np.isnan(games.flatten()))
     games_unique = games_flatten[games_flatten_no_nan].reshape(
         int(games_flatten[games_flatten_no_nan].shape[0] / 2), 2
     )
 
+    # For each of the games compute the profits for each of the days
     profits_per_game = np.full(shape=(games_unique.shape[0], 3), fill_value=np.nan)
     for i, game in enumerate(iterable=games_unique):
         profit_monday = get_profit_game(
@@ -236,6 +243,7 @@ def reorder_week_max_profit(
 
         profits_per_game[i] = [profit_monday, profit_friday, profit_saturday]
 
+    # Check which games should be played on monday
     start_index_monday = 0
     num_teams_monday = max(1, int(num_teams / 2) - 2 * np.ceil(num_teams / 2 * t))
     num_games_fri_sat = np.ceil(num_teams / 2 * t)
@@ -244,6 +252,7 @@ def reorder_week_max_profit(
     )
     games_added = []
     if teams_on_monday.size > 0:
+        # Insert the games with the teams that do not play on monday
         games_forced_monday_idx = np.where(
             np.isin(games_unique, teams_on_monday).any(axis=1)
         )[0]
@@ -254,6 +263,7 @@ def reorder_week_max_profit(
         num_teams_monday -= games_forced_monday_idx.shape[0]
         games_added += games_forced_monday_idx.tolist()
 
+    # If the monday slot is not full: Add more games but with the highest profit
     if num_teams_monday > 0:
         games_on_monday = np.argsort(profits_per_game[:, 0])[::-1][:num_teams_monday]
         games_added += games_on_monday.tolist()
@@ -262,9 +272,12 @@ def reorder_week_max_profit(
             games_on_monday
         ]
 
+    # Iterate over the profits for firday and saturday in descending order and add the
+    #   games with the biggest profit first
     profits_friday_saturday = np.sort(profits_per_game[:, 1:].reshape(1, -1)[0])[::-1]
     num_games_per_fri_sat = [0, 0]
     for profit in profits_friday_saturday:
+        # Get the game that corresponds to this profit
         possible_game = np.setdiff1d(
             ar1=np.where(
                 np.isin(element=profits_per_game[:, 1:], test_elements=[profit])
@@ -273,6 +286,8 @@ def reorder_week_max_profit(
         )
         if possible_game.size == 0:
             continue
+
+        # Check on which day the game should be play (friday or saturday)
         possible_game = possible_game[0]
         day_max_profit = np.where(profits_per_game[possible_game][1:] == profit)[0][0]
         games_added.append(possible_game)
@@ -303,7 +318,9 @@ def reorder_week_max_profit(
     return sol[current_week]
 
 
-def random_reorder_weeks(sol: np.ndarray, games: np.ndarray, weeks_changed: np.ndarray):
+def random_reorder_weeks(
+    sol: np.ndarray, games: np.ndarray, weeks_changed: np.ndarray
+) -> np.ndarray:
     new_order = np.random.choice(
         a=list(range(games.shape[0])), size=games.shape[0], replace=False
     )
