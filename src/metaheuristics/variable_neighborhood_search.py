@@ -82,11 +82,15 @@ class VNS:
             ):
                 # Destroy and repair the solution
                 sol_destroyed, games, weeks_changed = self.destroy(sol=best_solution.copy())
-                new_sol = self.repair(
+                repaired_sol = self.repair(
                     sol=sol_destroyed,
                     games=games,
                     weeks_changed=weeks_changed,
                     elapsed_time=elapsed_time,
+                )
+                new_sol = self.get_random_kth_neighborhood(
+                    sol=repaired_sol, 
+                    k=k
                 )
                 # Compute the profit of the new solution and solution
                 profit_new_sol = compute_profit(
@@ -104,6 +108,8 @@ class VNS:
                 elapsed_time += time.time() - t0_iteration
                 num_iterations += 1
                 avg_run_time = elapsed_time / num_iterations
+
+                k += 1
 
             self.best_solution = best_solution
 
@@ -248,6 +254,29 @@ class VNS:
             )
 
         return sol
+    
+    def get_random_kth_neighborhood(
+        self,
+        sol,
+        k
+    ) -> np.ndarray:
+        while k > 0:
+            num_weeks = list(range(sol.shape[1]))
+            swap1, swap2 = np.random.choice(num_weeks, 2, replace=False) # get k*2 different ints from num_weeks range
+            
+            week1 = sol.transpose(1,0,2,3)[swap1]
+            week2 = sol.transpose(1,0,2,3)[swap2]
+
+            sol.transpose(1,0,2,3)[swap1] = week2
+            sol.transpose(1,0,2,3)[swap2] = week1
+
+            k -= 1
+
+        return sol
+        
+        
+
+        
 
     def check_solution(self) -> bool:
         """Check if the solutionis valued
