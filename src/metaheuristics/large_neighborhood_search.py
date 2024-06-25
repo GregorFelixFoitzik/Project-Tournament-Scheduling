@@ -21,6 +21,15 @@ from src.helper import compute_profit, print_solution
 
 
 class LNS:
+    """Class contains the implementation of a LNS.
+
+    Args:
+        algo_config (dict[str, Union[int, float, np.ndarray]]): Dictionary containing
+            some information about the dataset.
+        timeout (float): Timeout for the Metaheuristic
+        start_solution (np.ndarray): Start-solution that should be improved.
+    """
+
     def __init__(
         self,
         algo_config: dict[str, Union[int, float, np.ndarray]],
@@ -41,15 +50,12 @@ class LNS:
         self.all_teams = range(1, self.n + 1)
 
     def run(self) -> np.ndarray:
-        """
-        Execute algorithm
-
-        Args:
-           None
+        """Execute the metaheuristic.
 
         Returns:
-            None
+            np.ndarray: The improved solution.
         """
+        # Set the start sol as best solution
         start_solution = self.sol.copy()
         best_solution = start_solution
         profit_best_solution = compute_profit(
@@ -67,14 +73,20 @@ class LNS:
             and (time.time() - t0) + avg_run_time + 1 < self.timeout
         ):
             t0_iteration = time.time()
+            # Destroy and repair the solution
             sol_destroyed, games, weeks_changed = self.destroy(sol=best_solution.copy())
             new_sol = self.repair(
-                sol=sol_destroyed, games=games, weeks_changed=weeks_changed, elapsed_time=elapsed_time
+                sol=sol_destroyed,
+                games=games,
+                weeks_changed=weeks_changed,
+                elapsed_time=elapsed_time,
             )
+            # Compute the profit of the new solution and solution
             profit_new_sol = compute_profit(
                 sol=new_sol, profit=np.array(object=self.p), weeks_between=self.r
             )
 
+            # Check if the new solution is better than the old solution
             if profit_new_sol > profit_best_solution:
                 best_solution = new_sol.copy()
                 profit_best_solution = profit_new_sol
@@ -91,6 +103,17 @@ class LNS:
         return best_solution
 
     def destroy(self, sol: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """Destroy the given solution.
+
+        The selection of the destroy parameter is random.
+
+        Args:
+            sol (np.ndarray): The solution that should be destroyed.
+
+        Returns:
+            tuple[np.ndarray, np.ndarray, np.ndarray]: Tuple containing the destroyed
+                solution, the games of the destroyed weeks and the week numbers.
+        """
         # Randomly choose a destroy parameter
         num_destroy_operators = 2
         destroy_operators = list(range(num_destroy_operators))
@@ -101,19 +124,17 @@ class LNS:
         weeks_changed = []
 
         if destroy_operator == 0:
+            # Destroy a random week
             weeks_changed, games = select_random_weeks(
                 sol=sol,
-                number_of_weeks=np.random.randint(
-                    low=2, high=10, size=1
-                )[0],
+                number_of_weeks=np.random.randint(low=2, high=10, size=1)[0],
             )
             sol[weeks_changed] = np.full(shape=games.shape, fill_value=np.nan)
         elif destroy_operator == 1:
+            # Destroy the n worst weeks
             worst_weeks, games = select_n_worst_weeks(
                 sol=sol,
-                n=np.random.randint(
-                    low=2, high=10, size=1
-                )[0],
+                n=np.random.randint(low=2, high=10, size=1)[0],
                 profits=self.p,
                 weeks_between=self.r,
             )
@@ -126,8 +147,24 @@ class LNS:
 
         return sol, games[np.argsort(weeks_changed)], np.sort(weeks_changed)
 
-    def repair(self, sol: np.ndarray, games: np.ndarray, weeks_changed: np.ndarray, elapsed_time: float):
-        # Randomly choose a repai parameter
+    def repair(
+        self,
+        sol: np.ndarray,
+        games: np.ndarray,
+        weeks_changed: np.ndarray,
+        elapsed_time: float,
+    ) -> np.ndarray:
+        """Repair the solution.
+
+        Args:
+            sol (np.ndarray): Solution that should be repaired.
+            games (np.ndarray): Games that correspond to the destroyed weeks.
+            weeks_changed (np.ndarray): Which weeks where destroyed?
+
+        Returns:
+            np.ndarray: The repaired solution.
+        """
+        # Randomly choose a repair parameter
         num_repair_operators = 4
         repair_operators = list(range(num_repair_operators))
         # Only allow the exact solution if there are not so many combinations
@@ -144,7 +181,7 @@ class LNS:
                 0 if i == 1 or i == 2 else 1 / (num_repair_operators - 2)
                 for i in range(num_repair_operators)
             ]
-        
+
         repair_operator = np.random.choice(a=repair_operators, size=1, p=p)[0]
         repair_operator = 2
 
@@ -205,13 +242,16 @@ class LNS:
 
         return sol
 
-    def check_solution(self):
-        """
-        not feasible returns none
-        is feasible returns np.array
+    def check_solution(self) -> bool:
+        """Check if the solutionis valued
+
+        Returns:
+            bool: True fi solution is valid, otherise an Assertion-Errror is raised.
         """
         validation = validate(sol=self.sol, num_teams=self.n)
-        assert validation == True
+        assert validation is True
+
+        return True
 
     def execute_cmd(self):
         # https://stackoverflow.com/a/61713634 28.05.2024
@@ -220,47 +260,3 @@ class LNS:
         runtime = timedelta(seconds=time.perf_counter() - start)
 
         print_solution(runtime, solution_set)
-
-
-# if __name__ == "__main__":
-
-
-#     sol_str = []
-#     for week in sol:
-#         week_new = []
-#         for day in week:
-#             day_new = []
-#             for game in day:
-#                 if False in np.isnan(game):
-#                     day_new.append("vs".join(game.astype(int).astype(str).tolist()))
-#                 else:
-#                     day_new.append("-")
-#             week_new.append(day_new)
-#         sol_str.append(week_new)
-
-#     headers = ["Mon", "Fri", "Sat"]
-#     print(tabulate(sol_str, tablefmt="grid", headers=headers))
-
-#     lns = ALNS(algo_config=algo_config, timeout=30, start_solution=sol)
-#     print(f"Original solution: {compute_profit(sol, lns.p, algo_config['r'])}")
-#     lns.check_solution()
-#     t0 = time.time()
-#     new_sol = lns.run()
-#     lns.check_solution()
-#     print(f"LNS solution {np.round(time.time() - t0, 5)}s: {compute_profit(new_sol, lns.p, algo_config['r'])}")
-
-#     sol_str = []
-#     for week in new_sol:
-#         week_new = []
-#         for day in week:
-#             day_new = []
-#             for game in day:
-#                 if False in np.isnan(game):
-#                     day_new.append("vs".join(game.astype(int).astype(str).tolist()))
-#                 else:
-#                     day_new.append("-")
-#             week_new.append(day_new)
-#         sol_str.append(week_new)
-
-#     headers = ["Mon", "Fri", "Sat"]
-#     print(tabulate(sol_str, tablefmt="grid", headers=headers))

@@ -24,7 +24,7 @@ class LNSSimAnnealing:
     """Class contains the implementation of a LNS-Simualted-Annealing combination.
 
     Args:
-        algo_config (dict[str, Union[int, float, np.ndarray]]): Dictionary containing 
+        algo_config (dict[str, Union[int, float, np.ndarray]]): Dictionary containing
             some information about the dataset.
         timeout (float): Timeout for the Metaheuristic
         start_solution (np.ndarray): Start-solution that should be improved.
@@ -123,7 +123,7 @@ class LNSSimAnnealing:
             sol (np.ndarray): The solution that should be destroyed.
 
         Returns:
-            tuple[np.ndarray, np.ndarray, np.ndarray]: Tuple containing the destroyed 
+            tuple[np.ndarray, np.ndarray, np.ndarray]: Tuple containing the destroyed
                 solution, the games of the destroyed weeks and the week numbers.
         """
         # Randomly choose a destroy parameter
@@ -159,7 +159,9 @@ class LNSSimAnnealing:
 
         return sol, games[np.argsort(weeks_changed)], np.sort(weeks_changed)
 
-    def repair(self, sol: np.ndarray, games: np.ndarray, weeks_changed: np.ndarray)->np.ndarray:
+    def repair(
+        self, sol: np.ndarray, games: np.ndarray, weeks_changed: np.ndarray
+    ) -> np.ndarray:
         """Repair the solution.
 
         Args:
@@ -241,14 +243,14 @@ class LNSSimAnnealing:
 
         return sol
 
-    def check_solution(self)->bool:
+    def check_solution(self) -> bool:
         """Check if the solutionis valued
 
         Returns:
             bool: True fi solution is valid, otherise an Assertion-Errror is raised.
         """
         validation = validate(sol=self.sol, num_teams=self.n)
-        assert validation == True
+        assert validation is True
 
         return True
 
