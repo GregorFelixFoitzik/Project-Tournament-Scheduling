@@ -26,7 +26,7 @@
   - [x] neighborhoods.py
   - [x] validation.py
   - [x] large_neighborhood_search_simulated_annealing.py
-  - [ ] large_neighborhood_search.py
+  - [x] large_neighborhood_search.py
   - [ ] lns_ts_simulated_annealing.py
   - [ ] lns_ts.py
   - [ ] metaheuristics_controller.py
@@ -35,3 +35,4 @@
 - [ ] Select time-consuming operations not at the end of iterations -> Change more
 - [ ] Combination of all
 - [ ] Search for papers: Round-robin-tournament
+- [ ] Remove print-statements
