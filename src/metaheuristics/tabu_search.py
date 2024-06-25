@@ -16,6 +16,16 @@ from src.helper import compute_profit, print_solution
 
 
 class TabuSearch:
+    """Class contains the implementation of a Tabu-Search algorithm.
+
+    Args:
+        algo_config (dict[str, Union[int, float, np.ndarray]]): Dictionary containing
+            some information about the dataset.
+        timeout (float): Timeout for the Metaheuristic
+        start_solution (np.ndarray): Start-solution that should be improved.
+        max_size_tabu_list (int): Max size of the Tabu-List.
+    """
+
     def __init__(
         self,
         algo_config: dict[str, Union[int, float, np.ndarray]],
@@ -43,6 +53,7 @@ class TabuSearch:
         Returns:
             np.ndarray: The improved solution.
         """
+        # Set the start sol as best solution
         start_solution = self.sol.copy()
         best_solution = start_solution
         profit_best_solution = compute_profit(
@@ -122,7 +133,6 @@ class TabuSearch:
         assert validation is True
 
         return True
-
 
     def execute_cmd(self):
         # https://stackoverflow.com/a/61713634 28.05.2024
