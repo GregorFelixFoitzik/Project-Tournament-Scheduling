@@ -19,6 +19,20 @@ from src.helper import (
 def select_random_weeks(
     sol: np.ndarray, number_of_weeks: int, tabu_list: list[int] = []
 ) -> tuple[np.ndarray, np.ndarray]:
+    """Select random weeks from the solution.
+
+    If a tabu-list is present, only use the weeks which are not in the tabu-list.
+
+    Args:
+        sol (np.ndarray): The complete solution, that should be used.
+        number_of_weeks (int): How many weeks should be selected?
+        tabu_list (list[int], optional): The tabu list, that can be empty. Defaults
+            to [].
+
+    Returns:
+        tuple[np.ndarray, np.ndarray]: Tuple containing the weeks that have been
+            selected and the corresponding games.
+    """
     # Destroy n weeks randomly
     if tabu_list:
         possible_weeks = np.setdiff1d(ar1=list(range(sol.shape[0])), ar2=tabu_list)
@@ -44,6 +58,20 @@ def insert_games_random_week(
     number_of_teams: int,
     t: float,
 ) -> np.ndarray:
+    """Insert games randomly in a destroyed week.
+
+    The constraint that every team plays on monday is still considered.
+
+    Args:
+        sol (np.ndarray): Solution, which should be updated.
+        games_week (np.ndarray): The different games that should be in this week.
+        week_changed (int): Number of the week that is changed
+        number_of_teams (int): How many teams take part in this tournament.
+        t (float): Fraction that sets the number of games on firday and saturday.
+
+    Returns:
+        np.ndarray: Thw week with a random assignment.
+    """
     # Get unique games for a given week
     games_week_reshape = games_week.reshape(
         (games_week.shape[0] * games_week.shape[1], 2)
@@ -126,6 +154,21 @@ def select_n_worst_weeks(
     weeks_between: int,
     tabu_list: list = [],
 ) -> tuple[np.ndarray, np.ndarray]:
+    """Select the $n$ worst weeks from the solution.
+
+    Args:
+        sol (np.ndarray): Solution as ndarray, that should be improved.
+        n (int): How many teams should be selected.
+        profits (np.ndarray): Profits for each day and game.
+        weeks_between (int): How many weeks should be between a game of two teams?
+            This parameter is used to compute the profits.
+        tabu_list (list, optional): Tabu-list for weeks that should not be used.
+            Defaults to [].
+
+    Returns:
+        tuple[np.ndarray, np.ndarray]: Tuple containing the games and the week-numbers
+            of the worst $n$ weeks.
+    """
     week_profits = get_profits_per_week(
         sol=sol, profits=profits, weeks_between=weeks_between
     )
@@ -152,6 +195,29 @@ def insert_games_max_profit_per_week(
     weeks_between: int,
     t: float,
 ) -> np.ndarray:
+    """Insert the games for a week, so the profit is maximized.
+
+    This function creates possible combinations of weeks and checks, which combination
+    maximizes the profit. Note that this function is only applied, when not many teams
+    take part in the tournament.
+
+    Args:
+        sol (np.ndarray): The solution that should be improved
+        games_old (np.ndarray): Games that were previously assigned to the changed 
+            weeks.
+        games_encoded (list[int]): Games encoded to numbers for faster computation.
+        num_repetitions (int): How often should a week be created.
+        games (np.ndarray): The games that should be inserted.
+        all_teams (list[int]): List containing all teams.
+        weeks_changed (np.ndarray): Which weeks were changed beofre this operation.
+        profits (np.ndarray): The profits for each day and game.
+        num_teams (int): How many teams take part in this tournament.
+        weeks_between (int): Number of weeks between a game of two teams.
+        t (float): Fraction that sets the number of games on friday and saturday.
+
+    Returns:
+        np.ndarray: A new solution, that maximizes the profit.
+    """
     # Get the possible combinations
     possible_combinations_tmp_idx = generate_possible_game_combinations_per_week(
         games_encoded=games_encoded,
@@ -208,7 +274,21 @@ def reorder_week_max_profit(
     t: float,
     current_week: int,
     weeks_between: int,
-):
+) -> np.ndarray:
+    """Reorder the given week, so the profit is maximized.
+
+    Args:
+        sol (np.ndarray): Solution which should be improved.
+        profits (np.ndarray): Profits for each week and game.
+        games (np.ndarray): The games that should be reorganized.
+        num_teams (int): How many teams take part in the tournament.
+        t (float): Fraction that sets the number of games on friday and saturday.
+        current_week (int): The week that should be improved.
+        weeks_between (int): Number of weeks between a game of two teams.
+
+    Returns:
+        np.ndarray: The updated week.
+    """
     # Get all games for the given week
     games_flatten = games.flatten()
     games_flatten_no_nan = np.logical_not(np.isnan(games.flatten()))
@@ -321,6 +401,16 @@ def reorder_week_max_profit(
 def random_reorder_weeks(
     sol: np.ndarray, games: np.ndarray, weeks_changed: np.ndarray
 ) -> np.ndarray:
+    """Randomly reorder the weeks.
+
+    Args:
+        sol (np.ndarray): Solution that should be improved.
+        games (np.ndarray): Games for each week
+        weeks_changed (np.ndarray): Indices of the weeks that were changed.
+
+    Returns:
+        np.ndarray: The updated solution.
+    """
     new_order = np.random.choice(
         a=list(range(games.shape[0])), size=games.shape[0], replace=False
     )
