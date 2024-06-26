@@ -30,7 +30,7 @@ METAHEURISTICS = {
     "tabu_search": TabuSearch,
     "tabu_search_lns": LNSTS,
     "lns_ts_simulated_annealing": LNSTSSimAnnealing,
-    "vns": VNS,
+    # "vns": VNS,
 }
 
 
@@ -123,8 +123,8 @@ def main_metaheuristics_controller(
 
     res_start_sol = ["Start sol", profit, 0]
 
-    if not os.path.exists("artifacts/evaluations.csv"):
-        os.mknod("artifacts/evaluations.csv")
+    if not os.path.exists("artifacts/evaluations_test.csv"):
+        os.mknod("artifacts/evaluations_test.csv")
 
     ### hier die csv
     row = [
@@ -136,7 +136,7 @@ def main_metaheuristics_controller(
         results[1],
         results[2],
     ]
-    with open("artifacts/evaluations.csv", "a") as f:
+    with open("artifacts/evaluations_test.csv", "a") as f:
         # [metaheuristic_name, profit, duration]
         """MetaName, AlgoConfig, Timeout, Parameters, StartSol_Profit, MH_Profti, MH_Time"""
         writer = csv.writer(f)
