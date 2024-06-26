@@ -1,0 +1,16 @@
+lns,"{'n': 100, 't': 0.666, 's': 4, 'r': 2, 'p': array([-1, 20, 39, ..., 47, 59, -1])}",30,{},388243,418144,29.96875
+lns,"{'n': 100, 't': 0.666, 's': 4, 'r': 2, 'p': array([-1, 27,  3, ..., 38, 21, -1])}",30,{},388783,388783,35.140625
+lns,"{'n': 100, 't': 0.666, 's': 4, 'r': 2, 'p': array([-1, 34, 17, ..., 61, 38, -1])}",30,{},388154,388154,40.3125
+simulated_annealing,"{'n': 100, 't': 0.666, 's': 4, 'r': 2, 'p': array([-1, 20, 39, ..., 47, 59, -1])}",30,"{'alpha': 0.8, 'epsilon': 0.001, 'neighborhood': 'select_worst_n_weeks', 'temperature': 5000}",388243,388243,45.484375
+simulated_annealing,"{'n': 100, 't': 0.666, 's': 4, 'r': 2, 'p': array([-1, 20, 39, ..., 47, 59, -1])}",30,"{'alpha': 0.8, 'epsilon': 0.001, 'neighborhood': 'random_swap_within_week', 'temperature': 15000}",388243,388243,50.625
+simulated_annealing,"{'n': 100, 't': 0.666, 's': 4, 'r': 2, 'p': array([-1, 20, 39, ..., 47, 59, -1])}",30,"{'alpha': 0.8, 'epsilon': 0.0001, 'neighborhood': 'select_worst_n_weeks', 'temperature': 15000}",388243,388243,55.765625
+simulated_annealing,"{'n': 100, 't': 0.666, 's': 4, 'r': 2, 'p': array([-1, 27,  3, ..., 38, 21, -1])}",30,"{'alpha': 0.8, 'epsilon': 0.001, 'neighborhood': 'select_worst_n_weeks', 'temperature': 5000}",388783,388783,61.046875
+simulated_annealing,"{'n': 100, 't': 0.666, 's': 4, 'r': 2, 'p': array([-1, 27,  3, ..., 38, 21, -1])}",30,"{'alpha': 0.8, 'epsilon': 0.001, 'neighborhood': 'random_swap_within_week', 'temperature': 15000}",388783,388783,66.25
+simulated_annealing,"{'n': 100, 't': 0.666, 's': 4, 'r': 2, 'p': array([-1, 27,  3, ..., 38, 21, -1])}",30,"{'alpha': 0.8, 'epsilon': 0.0001, 'neighborhood': 'select_worst_n_weeks', 'temperature': 15000}",388783,388783,71.4375
+simulated_annealing,"{'n': 100, 't': 0.666, 's': 4, 'r': 2, 'p': array([-1, 34, 17, ..., 61, 38, -1])}",30,"{'alpha': 0.8, 'epsilon': 0.001, 'neighborhood': 'select_worst_n_weeks', 'temperature': 5000}",388154,388154,76.671875
+simulated_annealing,"{'n': 100, 't': 0.666, 's': 4, 'r': 2, 'p': array([-1, 34, 17, ..., 61, 38, -1])}",30,"{'alpha': 0.8, 'epsilon': 0.001, 'neighborhood': 'random_swap_within_week', 'temperature': 15000}",388154,388154,81.90625
+simulated_annealing,"{'n': 100, 't': 0.666, 's': 4, 'r': 2, 'p': array([-1, 34, 17, ..., 61, 38, -1])}",30,"{'alpha': 0.8, 'epsilon': 0.0001, 'neighborhood': 'select_worst_n_weeks', 'temperature': 15000}",388154,388154,87.078125
+large_neighborhood_search_simulated_annealing,"{'n': 100, 't': 0.666, 's': 4, 'r': 2, 'p': array([-1, 20, 39, ..., 47, 59, -1])}",30,"{'alpha': 0.8, 'epsilon': 0.001, 'temperature': 5000}",388243,388243,92.28125
+large_neighborhood_search_simulated_annealing,"{'n': 100, 't': 0.666, 's': 4, 'r': 2, 'p': array([-1, 20, 39, ..., 47, 59, -1])}",30,"{'alpha': 0.85, 'epsilon': 0.0001, 'temperature': 5000}",388243,388243,97.484375
+large_neighborhood_search_simulated_annealing,"{'n': 100, 't': 0.666, 's': 4, 'r': 2, 'p': array([-1, 20, 39, ..., 47, 59, -1])}",30,"{'alpha': 0.85, 'epsilon': 0.001, 'temperature': 10000}",388243,388243,102.671875
+large_neighborhood_search_simulated_annealing,"{'n': 100, 't': 0.666, 's': 4, 'r': 2, 'p': array([-1, 27,  3, ..., 38, 21, -1])}",30,"{'alpha': 0.8, 'epsilon': 0.001, 'temperature': 5000}",388783,388783,107.890625

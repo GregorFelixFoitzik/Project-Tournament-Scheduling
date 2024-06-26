@@ -3,7 +3,7 @@ from itertools import product
 
 # Definiere die Parameterbereiche für jeden Algorithmus
 param_grid = {
-    'tabu_seach': {
+    'tabu_search': {
         'max_size_tabu_list': [ii for ii in range(3, 51, 3)],
     },
     'tabu_search_lns': {

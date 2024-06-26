@@ -1,5 +1,7 @@
 # Standard library
 import os
+os.environ["MKL_NUM_THREADS"] = "1"
+os.environ['OPENBLAS_NUM_THREADS'] = '1'
 import time
 
 from typing import Union
@@ -82,7 +84,7 @@ def apply_metaheuristic(
         algo_config=algo_config,
         timeout=timeout,
         start_solution=start_sol,
-        runtime_construction=rc
+        rc=rc,
         **parameters,
     )
     new_sol = metaheuristic.run()
@@ -106,13 +108,13 @@ timeout = 30
 instances = ['data/'+f for f in os.listdir('data/') if f.endswith('.in')]
 config_files = [f.split('.')[0] for f in os.listdir('configs/') if f.endswith('.yaml')]
 
-for mh in tqdm(METAHEURISTICS):
+for mh in tqdm(METAHEURISTICS, desc=f"Overall"):
     meta_config_files = [f for f in config_files if mh == f.split('---')[0]]
     
-    for instance in tqdm(instances):
+    for instance in tqdm(instances[:3], desc=f"MH {mh}"):
         algo_config = read_in_file(path_to_file=instance)
  
-        for config in meta_config_files:
+        for config in meta_config_files[:3]:
             parameters = get_yaml_config(
                 mh_config_file=config
             )
@@ -124,20 +126,22 @@ for mh in tqdm(METAHEURISTICS):
                 parameters=parameters
             )
 
-            # ### hier die csv
-            # if not os.path.exists("artifacts/evaluations_first_run.csv"):
-            #     os.mknod("artifacts/evaluations_first_run.csv")
-            # row = [
-            #     metaheuristic,
-            #     algo_config,
-            #     timeout,
-            #     parameters,
-            #     results[1],
-            #     results[2],
-            #     results[3],
-            # ]
-            # with open("artifacts/evaluations_first_run.csv", "a") as f:
-            #     # [metaheuristic_name, profit, duration]
-            #     """MetaName, AlgoConfig, Timeout, Parameters, StartSol_Profit, MH_Profti, MH_Time"""
-            #     writer = csv.writer(f)
-            #     writer.writerow(row)
+            ### hier die csv
+            if not os.path.exists("artifacts/evaluations_first_run.csv"):
+                # os.mknod("artifacts/evaluations_first_run.csv")
+                with open("artifacts/evaluations_first_run.csv", "w") as f:
+                    pass
+            row = [
+                mh,
+                algo_config,
+                timeout,
+                parameters,
+                results[1],
+                results[2],
+                results[3],
+            ]
+            with open("artifacts/evaluations_first_run.csv", "a") as f:
+                # [metaheuristic_name, profit, duration]
+                """MetaName, AlgoConfig, Timeout, Parameters, StartSol_Profit, MH_Proft, MH_Time"""
+                writer = csv.writer(f)
+                writer.writerow(row)
