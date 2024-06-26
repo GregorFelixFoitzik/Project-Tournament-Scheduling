@@ -1,5 +1,7 @@
 # Standard library
 import os
+os.environ["MKL_NUM_THREADS"] = "1"
+os.environ['OPENBLAS_NUM_THREADS'] = '1'
 import time
 
 from typing import Union

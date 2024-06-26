@@ -75,6 +75,7 @@ def apply_metaheuristic(
     Returns:
         list[Union[str, float]]: List containing the name, profit and duration.
     """
+    start_time = sum(os.times()[:2])
     start_sol, rc = generate_solution_round_robin_tournament(
         num_teams=int(algo_config["n"]),
         t=float(algo_config["t"]),
@@ -88,17 +89,17 @@ def apply_metaheuristic(
         **parameters,
     )
     new_sol = metaheuristic.run()
-    duration = sum(os.times()[:2])
+    duration = sum(os.times()[:2]) - start_time
 
     profit_start = compute_profit(
-        sol=start_sol,
-        profit=np.array(object=list(algo_config["p"])).reshape(
-            (3, algo_config["n"], algo_config["n"])
-        ),
+        sol=start_sol, 
+        profit=np.array(object=list(algo_config["p"])).reshape((3, algo_config["n"], algo_config["n"])),
         weeks_between=int(algo_config["r"]),
     )
     profit_meta = compute_profit(
-        sol=new_sol, profit=metaheuristic.p, weeks_between=int(algo_config["r"])
+        sol=new_sol, 
+        profit=metaheuristic.p, 
+        weeks_between=int(algo_config["r"])
     )
 
     return [metaheuristic_name, profit_start, profit_meta, duration]
@@ -111,10 +112,10 @@ config_files = [f.split('.')[0] for f in os.listdir('configs/') if f.endswith('.
 for mh in tqdm(METAHEURISTICS, desc=f"Overall"):
     meta_config_files = [f for f in config_files if mh == f.split('---')[0]]
     
-    for instance in tqdm(instances[:3], desc=f"MH {mh}"):
+    for instance in tqdm(instances[:], desc=f"MH {mh}"):
         algo_config = read_in_file(path_to_file=instance)
  
-        for config in meta_config_files[:3]:
+        for config in meta_config_files[:]:
             parameters = get_yaml_config(
                 mh_config_file=config
             )
@@ -133,6 +134,7 @@ for mh in tqdm(METAHEURISTICS, desc=f"Overall"):
                     pass
             row = [
                 mh,
+                instance,
                 algo_config,
                 timeout,
                 parameters,
