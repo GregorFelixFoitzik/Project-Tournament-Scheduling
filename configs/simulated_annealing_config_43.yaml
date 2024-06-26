@@ -1,0 +1,5 @@
+parameters:
+  alpha: 0.9
+  epsilon: 0.0001
+  neighborhood: select_worst_n_weeks
+  temperature: 15000

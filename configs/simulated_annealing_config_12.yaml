@@ -1,0 +1,5 @@
+parameters:
+  alpha: 0.8
+  epsilon: 0.0001
+  neighborhood: random_swap_within_week
+  temperature: 15000

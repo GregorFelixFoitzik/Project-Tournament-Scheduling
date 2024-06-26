@@ -1,30 +1,51 @@
 import yaml
+from itertools import product
 
-# for i, value in enumerate(max_size_values):
-#     # Create the data structure
-#     data = {
-#         'parameters': {
-#             'max_size_tabu_list': value
-#         }
-#     }
-#     # File path for each YAML file
-#     file_path = f'tabu_search_{i+1}.yaml'
-    
-#     # Writing the data to a YAML file
-#     with open(file_path, 'w') as file:
-#         yaml.dump(data, file, default_flow_style=False)
-
-
-def create_configs(metaheuristic: str, parameters: dict):
-    for ii, config in enumerate(parameters):
-        print(config)
-
-parameter = {
-    'parameter': {
-        'max_size_values' : [vv for vv in range(5, 51, 5)]
+# Definiere die Parameterbereiche für jeden Algorithmus
+param_grid = {
+    'tabu_seach': {
+        'max_size_tabu_list': [ii for ii in range(3, 51, 3)],
+    },
+    'tabu_search_lns': {
+        'max_size_tabu_list': [ii for ii in range(3, 51, 3)],
+    },
+    'simulated_annealing': {
+        'alpha': [0.8, 0.85, 0.9, 0.95],
+        'temperature': [5000, 10000, 15000, 20000],
+        'epsilon': [0.001, 0.0001],
+        'neighborhood': ["select_worst_n_weeks", 'random_swap_within_week']
+    },
+    'lns_ts_simulated_annealing': {
+        'alpha': [0.8, 0.85, 0.9, 0.95],
+        'temperature': [5000, 10000, 15000, 20000],
+        'epsilon': [0.001, 0.0001],
+        'max_size_tabu_list': [ii for ii in range(5, 51, 5)],
+    },
+    'large_neighborhood_search_simulated_annealing': {
+        'alpha': [0.8, 0.85, 0.9, 0.95],
+        'temperature': [5000, 10000, 15000, 20000],
+        'epsilon': [0.001, 0.0001],
     }
 }
 
-print(
-    create_configs('tabu_search', parameters=parameter)
-)
+# Hilfsfunktion, um alle Kombinationen von Parametern zu erzeugen
+def create_configs(param_dict):
+    keys = param_dict.keys()
+    values = param_dict.values()
+    for combination in product(*values):
+        yield dict(zip(keys, combination))
+
+# Erstelle YAML-Dateien für jede Kombination von Parametern
+for algorithm, params in param_grid.items():
+    for i, config in enumerate(create_configs(params), start=1):
+        data = {
+            'parameters': config
+        }
+        # Datei-Name für jede YAML-Datei
+        file_path = f'configs/{algorithm}_config_{i}.yaml'
+        
+        # Schreibe die Daten in eine YAML-Datei
+        with open(file_path, 'w') as file:
+            yaml.dump(data, file, default_flow_style=False)
+
+print("YAML files have been created successfully.")
