@@ -29,6 +29,7 @@ class LNS:
             some information about the dataset.
         timeout (float): Timeout for the Metaheuristic
         start_solution (np.ndarray): Start-solution that should be improved.
+        runtime_construction: Runtime of the Round Robin Scheduler
     """
 
     def __init__(
@@ -36,6 +37,7 @@ class LNS:
         algo_config: dict[str, Union[int, float, np.ndarray]],
         timeout: float,
         start_solution: np.ndarray,
+        rc: float,
     ) -> None:
         self.n = int(algo_config["n"])
         self.t = float(algo_config["t"])
@@ -47,6 +49,7 @@ class LNS:
         self.timeout = timeout
         self.sol = start_solution
         self.best_solution = start_solution
+        self.rc=rc
 
         self.all_teams = range(1, self.n + 1)
 
@@ -71,7 +74,7 @@ class LNS:
         avg_runtime = 0
         while (
             num_iterations_no_change <= 100
-            and sum(os.times()[:2]) + avg_runtime < self.timeout
+            and sum(os.times()[:2]) + avg_runtime + self.rc < self.timeout
         ):
             t0_iteration = time.time()
             # Destroy and repair the solution

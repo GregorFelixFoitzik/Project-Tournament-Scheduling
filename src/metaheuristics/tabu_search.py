@@ -24,6 +24,7 @@ class TabuSearch:
             some information about the dataset.
         timeout (float): Timeout for the Metaheuristic
         start_solution (np.ndarray): Start-solution that should be improved.
+        runtime_construction: Runtime of the Round Robin Scheduler
         max_size_tabu_list (int): Max size of the Tabu-List.
     """
 
@@ -32,6 +33,7 @@ class TabuSearch:
         algo_config: dict[str, Union[int, float, np.ndarray]],
         timeout: float,
         start_solution: np.ndarray,
+        rc: float, 
         max_size_tabu_list: int,
     ) -> None:
         self.n = int(algo_config["n"])
@@ -44,6 +46,7 @@ class TabuSearch:
         self.timeout = timeout
         self.sol = start_solution
         self.best_solution = start_solution
+        self.rc=rc 
 
         self.all_teams = range(1, self.n + 1)
         self.max_size_tabu_list = max_size_tabu_list
@@ -70,7 +73,7 @@ class TabuSearch:
         tabu_list = []
         while (
             num_iterations_no_change <= 100
-            and sum(os.times()[:2]) + avg_runtime < self.timeout
+            and sum(os.times()[:2]) + avg_runtime + self.rc < self.timeout
         ):
             t0_iteration = time.time()
             # Randomly select n weeks

@@ -28,6 +28,7 @@ class VNS:
             some information about the dataset.
         timeout (float): Timeout for the Metaheuristic
         start_solution (np.ndarray): Start-solution that should be improved.
+        runtime_construction: Runtime of the Round Robin Scheduler
     """
 
     def __init__(
@@ -35,6 +36,7 @@ class VNS:
         algo_config: dict[str, Union[int, float, np.ndarray]],
         timeout: float,
         start_solution: np.ndarray,
+        rc: float, 
         k_max_p: float
     ) -> None:
         self.n = int(algo_config["n"])
@@ -47,6 +49,7 @@ class VNS:
         self.timeout = timeout
         self.sol = start_solution
         self.best_solution = start_solution
+        self.rc=rc
 
         self.all_teams = range(1, self.n + 1)
         self.k_max = int(self.sol.shape[0] * k_max_p)
@@ -73,7 +76,7 @@ class VNS:
         avg_run_time = 0
         while (
             num_iterations_no_change <= 100
-            and (time.time() - t0) + avg_run_time + 1 < self.timeout
+            and (time.time() - t0) + avg_run_time + self.rc < self.timeout
         ):
             t0_iteration = time.time()
             k = 1

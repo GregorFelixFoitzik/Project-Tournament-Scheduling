@@ -42,7 +42,7 @@ for algorithm, params in param_grid.items():
             'parameters': config
         }
         # Datei-Name für jede YAML-Datei
-        file_path = f'configs/{algorithm}_config_{i}.yaml'
+        file_path = f'configs/{algorithm}---config_{i}.yaml'
         
         # Schreibe die Daten in eine YAML-Datei
         with open(file_path, 'w') as file:

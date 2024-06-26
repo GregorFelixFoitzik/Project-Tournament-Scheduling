@@ -29,6 +29,7 @@ class LNSSimAnnealing:
             some information about the dataset.
         timeout (float): Timeout for the Metaheuristic
         start_solution (np.ndarray): Start-solution that should be improved.
+        runtime_construction: Runtime of the Round Robin Scheduler
         temperature (float): Temeprature value for the simulated-annealing part.
         alpha (float): Alpha for the simulated-annealing part.
         epsilon (float): Epsilon for the simulated-annelaing part.
@@ -39,6 +40,7 @@ class LNSSimAnnealing:
         algo_config: dict[str, Union[int, float, np.ndarray]],
         timeout: float,
         start_solution: np.ndarray,
+        rc: float, 
         temperature: float,
         alpha: float,
         epsilon: float,
@@ -53,6 +55,7 @@ class LNSSimAnnealing:
         self.timeout = timeout
         self.sol = start_solution
         self.best_solution = start_solution
+        self.rc=rc
 
         self.all_teams = range(1, self.n + 1)
 
@@ -79,7 +82,7 @@ class LNSSimAnnealing:
         avg_runtime = 0
         while (
             self.temperature >= self.epsilon
-            and sum(os.times()[:2]) + avg_runtime < self.timeout
+            and sum(os.times()[:2]) + avg_runtime + self.rc < self.timeout
         ):
             t0_iteration = time.time()
             # Destroy and repair the solution
