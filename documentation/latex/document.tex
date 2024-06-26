@@ -82,17 +82,34 @@
 \begin{algorithm}
     \caption{Pseudocode for random-insertion}
     \begin{algorithmic}[1] 
-        \Function{RandomInsertion}{$s^*, games, week, n, t$}
+        \Function{RandomInsertion}{$s^*, \text{games}, \text{week}, n, t$}
             \State $n_{\text{mon}}\leftarrow \max(1, \frac{n}{2} - 2\cdot \lceil \frac{n}{2}\cdot t)\rceil$
-            \State $n_{\text{fri, sat}}\leftarrow \lceil \frac{n}{2}\cdot t\rceil$
+            \State $n_{\text{fri}}, n_{\text{sat}}}\leftarrow \lceil \frac{n}{2}\cdot t\rceil$
             \State $\text{team}_{\text{mon}}\leftarrow \text{Get teams to play on monday}$
             \State $\text{games}_{\text{added}} \leftarrow \emptyset$
+            \State $\text{mon}\leftarrow \emptyset$
+            \State $\text{fri}\leftarrow \emptyset$
+            \State $\text{sat}\leftarrow \emptyset$
             \If{$\text{team}_{\text{mon}}\neq \emptyset$}
                 \State $\text{games}_{\text{mon}}\leftarrow \text{Get games on monday based on } \text{team}_{\text{mon}}$
-                \State $n_{\text{mon}} \leftarrow \max(n_{\text{mon}}, |\text{games}_{\text{mon}}|)$
+                \State $n_{\text{mon,team}} \leftarrow \max(n_{\text{mon}}, |\text{games}_{\text{mon}}|)$
+                \State $s^*\leftarrow s^*\cup \text{games}_{\text{mon}}[:n_{\text{mon, team}}]$
+                \State $\text{games}_{\text{added}}\leftarrow \text{games}_{\text{added}}\cup \text{games}_{\text{mon}}[:n_{\text{mon}}]$
+                \State $n_{\text{mon}}\leftarrow n_{\text{mon}} - n_{\text{mon, team}}$
+                \State $\text{mon}\leftarrow \text{mon} \cup \text{games}_{\text{mon}}$
+            \EndIf
+            \If{$n_{\text{mon}>0$}} \Comment{If more games should be in the monday slot}
+                \State $\text{games}_{\text{mon}}\leftarrow \text{Randomly choose n_{\text{mon}}} \text{ games} \text{team}_{\text{mon}}$
                 \State $s^*\leftarrow s^*\cup \text{games}_{\text{mon}}[:n_{\text{mon}}]$
                 \State $\text{games}_{\text{added}}\leftarrow \text{games}_{\text{added}}\cup \text{games}_{\text{mon}}[:n_{\text{mon}}]$
             \EndIf
+            \For{$\text{game}\in \text{games}\text{games}_{added}$}
+                \State $d\leftarrow \text{Randomly choose Friday or Saturday}$
+                \If{$d=\text{fri}\wedge n_{\text{fri}} > 0$}
+                    \State $n_{\text{fri}}\leftarrow n_{\text{fri}} - 1$
+                    \State $\text{mon}\leftarrow \text{mon}\cup $
+                \EndIf
+            \EndFor
         \EndFunction
     \end{algorithmic}
 \end{algorithm}
