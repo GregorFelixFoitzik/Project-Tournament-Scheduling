@@ -78,7 +78,7 @@ class LNSSimAnnealing:
             sol=best_solution, profit=self.p, weeks_between=self.r
         )
 
-        t0 = time.time()
+        # t0 = time.time()
         elapsed_time = 0
         num_iterations = 0
         avg_runtime = 0

@@ -3,6 +3,7 @@
 # Standard library
 import re
 import os
+import time
 import ast
 import itertools
 
@@ -504,7 +505,7 @@ def generate_solution_round_robin_tournament(
             remaining_games = week[num_games_monday + num_games_friday :]
             solution[i][2][: remaining_games.shape[0]] = remaining_games
 
-    runtime_construction = sum(os.times()[:2])
+    runtime_construction = time.process_time() #sum(os.times()[:2])
 
     validate(sol=solution, num_teams=num_teams)
 
