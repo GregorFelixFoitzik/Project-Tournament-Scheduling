@@ -1,4 +1,4 @@
 parameters:
-  alpha: 0.8
+  alpha: 0.85
   epsilon: 0.001
-  temperature: 15000
+  temperature: 20000

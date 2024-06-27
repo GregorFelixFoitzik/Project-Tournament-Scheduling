@@ -1,5 +1,0 @@
-parameters:
-  alpha: 0.95
-  epsilon: 0.0001
-  max_size_tabu_list: 30
-  temperature: 5000

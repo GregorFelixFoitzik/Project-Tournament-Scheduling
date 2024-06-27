@@ -4,7 +4,7 @@
 
 ## Gregor
 - [ ] Check Jonas code
-- [ ] Grid-Search CSV in metaheuristics-controller
+- [x] Grid-Search CSV in metaheuristics-controller
 - [ ] VNS:
   - [ ] Reorder different number of weeks, so profit is maximized
 - [ ] Pseudocode

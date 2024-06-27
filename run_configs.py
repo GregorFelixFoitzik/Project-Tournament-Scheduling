@@ -13,11 +13,11 @@ config_files = [f.split('.')[0] for f in os.listdir('configs/') if f.endswith('.
 timeout = 30
 
 
-for mh in tqdm(metaheuristics_to_use[:1], desc=f"Overall"):
+for mh in tqdm(metaheuristics_to_use[:], desc=f"Overall"):
     meta_config_files = [f for f in config_files if mh == f.split('---')[0]]
     
-    for instance in tqdm(instances[:3], desc=f"MH {mh}"):
+    for instance in tqdm(instances[:], desc=f"MH {mh}"):
          
-        for config in tqdm(meta_config_files[:3], desc="Config"):
+        for config in tqdm(meta_config_files[:], desc="Config"):
             # print(mh,"\t",instance,"\t",config)
             os.system(command=f"python run_single_config.py {instance} {mh} {config} {timeout}")
