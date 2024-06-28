@@ -43,9 +43,9 @@
   - [x] `reorder_week_max_profit`
   - [x] `random_reorder_weeks`
   - [ ] Check for more
-- [ ] Create submission file with Simulated annealing or so.
+- [x] Create submission file with Simulated annealing or so.
+- [x] Combination of all
 - [ ] Reactive Tabu-Search
 - [ ] Select time-consuming operations not at the end of iterations -> Change more
-- [ ] Combination of all
-- [ ] Remove print-statements
 - [ ] Bug fixing of lns_ts_sa! (WhatsApp)
+- [ ] Remove print-statements
