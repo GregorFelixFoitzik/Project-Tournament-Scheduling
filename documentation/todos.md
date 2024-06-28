@@ -35,6 +35,15 @@
   - [x] Adapt weights for selection of method (starting with random -> later the other method(s))
 - [x] Disable Multithreading numpy
 - [x] Implemenet timeout with CPU-timeout (os.times)
+- [ ] Pseudocode
+  - [x] `select_random_weeks`
+  - [x] `insert_games_random_week`
+  - [x] `select_n_worst_weeks`
+  - [x] `insert_games_max_profit_per_week`
+  - [x] `reorder_week_max_profit`
+  - [x] `random_reorder_weeks`
+  - [ ] Check for more
+- [ ] Create submission file with Simulated annealing or so.
 - [ ] Reactive Tabu-Search
 - [ ] Select time-consuming operations not at the end of iterations -> Change more
 - [ ] Combination of all
