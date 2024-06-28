@@ -39,3 +39,4 @@
 - [ ] Select time-consuming operations not at the end of iterations -> Change more
 - [ ] Combination of all
 - [ ] Remove print-statements
+- [ ] Bug fixing of lns_ts_sa! (WhatsApp)

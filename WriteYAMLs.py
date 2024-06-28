@@ -10,20 +10,20 @@ param_grid = {
         'max_size_tabu_list': [ii for ii in range(3, 51, 3)],
     },
     'simulated_annealing': {
-        'alpha': [0.85, 0.9, 0.95],
-        'temperature': [10000, 15000, 20000],
+        'alpha': [0.85, 0.95],
+        'temperature': [10000, 20000],
         'epsilon': [0.001, 0.0001],
         'neighborhood': ["select_worst_n_weeks", 'random_swap_within_week']
     },
     'lns_ts_simulated_annealing': {
-        'alpha': [0.85, 0.9, 0.95],
-        'temperature': [10000, 15000, 20000],
+        'alpha': [0.85, 0.95],
+        'temperature': [10000, 20000],
         'epsilon': [0.001, 0.0001],
         'max_size_tabu_list': [ii for ii in range(10, 51, 10)],
     },
     'large_neighborhood_search_simulated_annealing': {
-        'alpha': [0.85, 0.9, 0.95],
-        'temperature': [10000, 15000, 20000],
+        'alpha': [0.85, 0.95],
+        'temperature': [10000, 20000],
         'epsilon': [0.001, 0.0001],
     }
 }
