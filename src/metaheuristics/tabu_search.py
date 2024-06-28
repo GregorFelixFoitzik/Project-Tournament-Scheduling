@@ -42,7 +42,6 @@ class TabuSearch:
         rc: float,
         max_size_tabu_list: int,
         neighborhood: str,
-        number_of_weeks_random: int,
     ) -> None:
         self.n = int(algo_config["n"])
         self.t = float(algo_config["t"])
@@ -63,7 +62,6 @@ class TabuSearch:
             "random_swap_within_week": self.random_swap_within_week,
             "select_worst_n_weeks": self.select_worst_n_weeks,
         }
-        self.number_of_weeks_random = number_of_weeks_random
 
     def run(self) -> np.ndarray:
         """Execute the metaheuristic.
@@ -132,7 +130,7 @@ class TabuSearch:
         """
         # Extract one random week
         random_weeks, games_week = select_random_weeks(
-            sol=sol, number_of_weeks=self.number_of_weeks_random
+            sol=sol, number_of_weeks=np.random.randint(low=1, high=10, size=1)[0]
         )
 
         new_sol = sol.copy()
