@@ -123,8 +123,8 @@ def main_metaheuristics_controller(
 
     res_start_sol = ["Start sol", profit, 0]
 
-    if not os.path.exists("artifacts/evaluations_first_run.csv"):
-        os.mknod("artifacts/evaluations_first_run.csv")
+    if not os.path.exists("artifacts/evaluations_reactive_tabu_search.csv"):
+        os.mknod("artifacts/evaluations_reactive_tabu_search.csv")
 
     ### hier die csv
     row = [
@@ -136,7 +136,7 @@ def main_metaheuristics_controller(
         results[1],
         results[2],
     ]
-    with open("artifacts/evaluations_first_run.csv", "a") as f:
+    with open("artifacts/evaluations_reactive_tabu_search.csv", "a") as f:
         # [metaheuristic_name, profit, duration]
         """MetaName, AlgoConfig, Timeout, Parameters, StartSol_Profit, MH_Profti, MH_Time"""
         writer = csv.writer(f)

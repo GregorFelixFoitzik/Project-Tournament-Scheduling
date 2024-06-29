@@ -4,7 +4,7 @@ import yaml
 
 from tqdm import tqdm
 
-with open(file="configs//templates/run_config.yaml", mode="r") as file:
+with open(file="configs/templates/run_config.yaml", mode="r") as file:
     run_config = yaml.safe_load(stream=file)
 
 metaheuristics_to_use = run_config["metaheuristics"]
@@ -21,3 +21,11 @@ for mh in tqdm(metaheuristics_to_use[:], desc=f"Overall", leave=False, colour='g
         for config in tqdm(meta_config_files[:], desc="Config", leave=False, colour='green', ncols=80):
             # print(mh,"\t",instance,"\t",config)
             os.system(command=f"python run_single_config.py {instance} {mh} {config} {timeout}")
+
+            print()
+            print()
+            print()
+            print()
+            print()
+            print()
+            print()

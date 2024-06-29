@@ -6,10 +6,11 @@ import csv
 import time
 import numpy as np
 from typing import Union
+from src.metaheuristics.reactive_tabu_search import ReactiveTabuSearch
 from src.helper import (
     compute_profit,
     generate_solution_round_robin_tournament,
-    read_in_file
+    read_in_file,
 )
 from src.metaheuristics.lns_ts import LNSTS
 from src.metaheuristics.tabu_search import TabuSearch
@@ -28,8 +29,10 @@ METAHEURISTICS = {
     "tabu_search": TabuSearch,
     "tabu_search_lns": LNSTS,
     "lns_ts_simulated_annealing": LNSTSSimAnnealing,
+    "reactive_tabu_search": ReactiveTabuSearch,
     # "vns": VNS,
 }
+
 
 def get_yaml_config(mh_config_file: str) -> dict[str, Union[int, float]]:
     """Load the yaml-config file for a given metaheuristic.
@@ -43,6 +46,7 @@ def get_yaml_config(mh_config_file: str) -> dict[str, Union[int, float]]:
     with open(file=mh_config_file, mode="r") as file:
         config = yaml.safe_load(stream=file)
     return config["parameters"]
+
 
 def apply_metaheuristic(
     metaheuristic_name: str,
@@ -91,29 +95,32 @@ def apply_metaheuristic(
 
     return [metaheuristic_name, profit_start, profit_meta, duration]
 
+
 def main():
     if len(sys.argv) != 5:
-        print("Usage: python main.py <path_to_instance> <metaheuristic_name> <path_to_config> <timeout>")
+        print(
+            "Usage: python main.py <path_to_instance> <metaheuristic_name> <path_to_config> <timeout>"
+        )
         sys.exit(1)
-    
+
     path_to_instance = sys.argv[1]
     metaheuristic_name = sys.argv[2]
     path_to_config = sys.argv[3]
     timeout = float(sys.argv[4])
 
     algo_config = read_in_file(path_to_file=path_to_instance)
-    parameters = get_yaml_config(mh_config_file=f"configs\{path_to_config}.yaml")
+    parameters = get_yaml_config(mh_config_file=f"configs/{path_to_config}.yaml")
 
     results = apply_metaheuristic(
         metaheuristic_name=metaheuristic_name,
         algo_config=algo_config,
         timeout=timeout,  # Assuming a default timeout of 30 seconds
-        parameters=parameters
+        parameters=parameters,
     )
 
     # Ensure the CSV file exists and append results
-    if not os.path.exists("artifacts/evaluations_first_run.csv"):
-        with open("artifacts/evaluations_first_run.csv", "w") as f:
+    if not os.path.exists("artifacts/evaluations_reactive_tabu_search.csv"):
+        with open("artifacts/evaluations_reactive_tabu_search.csv", "w") as f:
             pass
     row = [
         metaheuristic_name,
@@ -124,9 +131,10 @@ def main():
         results[2],  # profit_meta
         results[3],  # duration
     ]
-    with open("artifacts/evaluations_first_run.csv", "a") as f:
+    with open("artifacts/evaluations_reactive_tabu_search.csv", "a") as f:
         writer = csv.writer(f)
         writer.writerow(row)
+
 
 if __name__ == "__main__":
     main()

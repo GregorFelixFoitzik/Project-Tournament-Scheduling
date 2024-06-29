@@ -22,8 +22,8 @@ from src.neighborhoods import (
 from src.helper import compute_profit, print_solution
 
 
-class TabuSearch:
-    """Class contains the implementation of a Tabu-Search algorithm.
+class ReactiveTabuSearch:
+    """Class contains the implementation of a Reactive-Tabu-Search algorithm.
 
     Args:
         algo_config (dict[str, Union[int, float, np.ndarray]]): Dictionary containing
@@ -40,8 +40,12 @@ class TabuSearch:
         timeout: float,
         start_solution: np.ndarray,
         rc: float,
-        max_size_tabu_list: int,
+        rep: int,
+        chaos: int,
+        increase: float,
+        decrease: float,
         neighborhood: str,
+        cycle_max: int,
     ) -> None:
         self.n = int(algo_config["n"])
         self.t = float(algo_config["t"])
@@ -55,10 +59,16 @@ class TabuSearch:
         self.best_solution = start_solution
         self.rc = rc
 
-        self.tabu_list = []
+        # Parameters for the reactive Tabu-Search
+        self.rep = rep
+        self.cycle_max = cycle_max
+
+        self.chaos = chaos
+        self.increase = increase
+        self.decrease = decrease
+        # self.gap_max = gap_max
 
         self.all_teams = range(1, self.n + 1)
-        self.max_size_tabu_list = max_size_tabu_list
         self.neighborhood = neighborhood
         self.neighborhoods = {
             "random_swap_within_week": self.random_swap_within_week,
@@ -78,6 +88,14 @@ class TabuSearch:
             sol=best_solution, profit=self.p, weeks_between=self.r
         )
 
+        repetitions = 0
+        chaotic = 0
+        moving_avg = 0
+        list_size = 1
+        steps_since_last_size_change = 0
+        last_times = []
+        repetitions = []
+
         num_iterations_no_change = 0
 
         t0 = time.time()
@@ -94,25 +112,74 @@ class TabuSearch:
                 best_solution
             )
 
-            profit_new_sol = compute_profit(
-                sol=new_sol, profit=np.array(object=self.p), weeks_between=self.r
-            )
+            escape = False
+            if weeks_changed.tolist() in tabu_list:
+                location = -1
+                for i, content in enumerate(tabu_list):
+                    if content == weeks_changed.tolist():
+                        location = i
+                        break
+                length = num_iterations - last_times[location]
+                last_times[location] = num_iterations
+                repetitions[location] += 1
 
-            if profit_new_sol > profit_best_solution:
-                best_solution = new_sol.copy()
-                profit_best_solution = profit_new_sol
-                num_iterations_no_change = 0
+                if repetitions[location] > self.rep:
+                    chaotic += 1
+                    if chaotic > self.chaos:
+                        chaotic = 0
+                        escape = True
+                if length < self.cycle_max:
+                    moving_avg = 0.1 * length + 0.9 * moving_avg
+                    list_size = list_size * self.increase
+                    steps_since_last_size_change = 0
             else:
-                num_iterations_no_change += 1
+                tabu_list.append(weeks_changed.tolist())
+                last_times.append(num_iterations)
+                repetitions.append(0)
 
-            tabu_list += weeks_changed.tolist()
-            if len(tabu_list) > self.max_size_tabu_list:
-                for _ in range(
-                    len(tabu_list) - self.max_size_tabu_list,
-                ):
-                    tabu_list.pop(0)
-            # print(len(tabu_list))
-            self.tabu_list = tabu_list
+            if steps_since_last_size_change > moving_avg:
+                list_size = max(list_size * self.decrease, 1)
+                steps_since_last_size_change = 0
+
+            if not escape:
+                profit_new_sol = compute_profit(
+                    sol=new_sol, profit=np.array(object=self.p), weeks_between=self.r
+                )
+
+                if profit_new_sol > profit_best_solution:
+                    best_solution = new_sol.copy()
+                    profit_best_solution = profit_new_sol
+                    num_iterations_no_change = 0
+                else:
+                    num_iterations_no_change += 1
+            else:
+                steps = int(1 + (1 + np.random.uniform(0, 1)) * moving_avg / 2)
+                best_sol_escape = None
+                best_sol_escape_random_weeks = None
+                for i in range(steps):
+                    sol_tmp, random_weeks = self.random_swap_within_week(
+                        sol=best_solution
+                    )
+
+                    profit_new_sol = compute_profit(
+                        sol=sol_tmp,
+                        profit=np.array(object=self.p),
+                        weeks_between=self.r,
+                    )
+
+                    if profit_new_sol > profit_best_solution:
+                        best_sol_escape = new_sol.copy()
+                        best_sol_escape_random_weeks = random_weeks.tolist()
+
+                if best_sol_escape is not None:
+                    tabu_list.append(best_sol_escape_random_weeks)
+                    last_times.append(num_iterations)
+                    repetitions.append(0)
+
+            if len(tabu_list) > list_size:
+                tabu_list.pop(0)
+                last_times.pop(0)
+                repetitions.pop(0)
 
             elapsed_time += time.time() - t0_iteration
             num_iterations += 1
@@ -131,6 +198,7 @@ class TabuSearch:
         Returns:
             np.ndarray: Updated solution.
         """
+        # Extract one random week
         random_weeks, games_week = select_random_weeks(
             sol=sol, number_of_weeks=np.random.randint(low=1, high=10, size=1)[0]
         )
@@ -163,7 +231,6 @@ class TabuSearch:
             n=np.random.randint(low=2, high=10, size=1)[0],
             profits=self.p,
             weeks_between=self.r,
-            tabu_list=self.tabu_list,
         )
 
         sol[worst_weeks] = np.full(shape=games.shape, fill_value=np.nan)

@@ -1,0 +1,7 @@
+parameters:
+  chaos: 3
+  cycle_max: 10
+  decrease: 0.8
+  increase: 1.5
+  neighborhood: random_swap_within_week
+  rep: 3

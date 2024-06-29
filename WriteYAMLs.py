@@ -13,7 +13,6 @@ param_grid = {
         'alpha': [0.85, 0.95],
         'temperature': [10000, 20000],
         'epsilon': [0.001, 0.0001],
-        'neighborhood': ["select_worst_n_weeks", 'random_swap_within_week']
     },
     'lns_ts_simulated_annealing': {
         'alpha': [0.85, 0.95],
@@ -25,6 +24,14 @@ param_grid = {
         'alpha': [0.85, 0.95],
         'temperature': [10000, 20000],
         'epsilon': [0.001, 0.0001],
+    },
+    "reactive_tabu_search": {
+        "rep": [3, 6],
+        "chaos": [3, 6],
+        "increase": [1.1, 1.5],
+        "decrease": [0.8, 0.6],
+        'neighborhood': ["select_worst_n_weeks", 'random_swap_within_week'],
+        "cycle_max": [5, 10],
     }
 }
 

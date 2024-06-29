@@ -1,0 +1,7 @@
+parameters:
+  chaos: 3
+  cycle_max: 5
+  decrease: 0.6
+  increase: 1.5
+  neighborhood: select_worst_n_weeks
+  rep: 3
