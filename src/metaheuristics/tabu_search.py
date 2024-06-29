@@ -55,6 +55,8 @@ class TabuSearch:
         self.best_solution = start_solution
         self.rc = rc
 
+        self.tabu_list = []
+
         self.all_teams = range(1, self.n + 1)
         self.max_size_tabu_list = max_size_tabu_list
         self.neighborhood = neighborhood
@@ -110,6 +112,7 @@ class TabuSearch:
                 ):
                     tabu_list.pop(0)
             # print(len(tabu_list))
+            self.tabu_list = tabu_list
 
             elapsed_time += time.time() - t0_iteration
             num_iterations += 1
@@ -130,7 +133,9 @@ class TabuSearch:
         """
         # Extract one random week
         random_weeks, games_week = select_random_weeks(
-            sol=sol, number_of_weeks=np.random.randint(low=1, high=10, size=1)[0]
+            sol=sol,
+            number_of_weeks=np.random.randint(low=1, high=10, size=1)[0],
+            tabu_list=self.tabu_list,
         )
 
         new_sol = sol.copy()
@@ -161,6 +166,7 @@ class TabuSearch:
             n=np.random.randint(low=2, high=10, size=1)[0],
             profits=self.p,
             weeks_between=self.r,
+            tabu_list=self.tabu_list,
         )
 
         sol[worst_weeks] = np.full(shape=games.shape, fill_value=np.nan)

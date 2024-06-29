@@ -45,7 +45,8 @@
   - [ ] Check for more
 - [x] Create submission file with Simulated annealing or so.
 - [x] Combination of all
+- [x] Bug fixing of lns_ts_sa! (WhatsApp)
 - [ ] Reactive Tabu-Search
 - [ ] Select time-consuming operations not at the end of iterations -> Change more
-- [ ] Bug fixing of lns_ts_sa! (WhatsApp)
-- [ ] Remove print-statements
+- [ ] Create final submission
+  - [ ] Remove print-statements
