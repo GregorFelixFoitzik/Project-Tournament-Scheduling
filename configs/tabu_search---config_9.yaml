@@ -1,2 +1,3 @@
 parameters:
-  max_size_tabu_list: 27
+  max_size_tabu_list: 9
+  neighborhood: random_swap_within_week

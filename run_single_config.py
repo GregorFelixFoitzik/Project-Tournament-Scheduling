@@ -119,8 +119,8 @@ def main():
     )
 
     # Ensure the CSV file exists and append results
-    if not os.path.exists("artifacts/evaluations_reactive_tabu_search.csv"):
-        with open("artifacts/evaluations_reactive_tabu_search.csv", "w") as f:
+    if not os.path.exists("artifacts/evaluations_first_run.csv"):
+        with open("artifacts/evaluations_first_run.csv", "w") as f:
             pass
     row = [
         metaheuristic_name,
@@ -131,7 +131,7 @@ def main():
         results[2],  # profit_meta
         results[3],  # duration
     ]
-    with open("artifacts/evaluations_reactive_tabu_search.csv", "a") as f:
+    with open("artifacts/evaluations_first_run.csv", "a") as f:
         writer = csv.writer(f)
         writer.writerow(row)
 

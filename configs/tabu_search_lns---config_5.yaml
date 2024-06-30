@@ -1,2 +1,2 @@
 parameters:
-  max_size_tabu_list: 15
+  max_size_tabu_list: 9
