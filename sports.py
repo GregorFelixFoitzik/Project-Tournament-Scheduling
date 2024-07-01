@@ -9,6 +9,7 @@ import re
 import ast
 import time
 import argparse
+import itertools
 
 from math import inf
 from typing import Union
@@ -30,8 +31,8 @@ parser.add_argument(
 )
 
 
-class SimulatedAnnealing:
-    """Class contains the implementation of a Simualted-Annealing algorithm.
+class LNS:
+    """Class contains the implementation of a LNS.
 
     Args:
         algo_config (dict[str, Union[int, float, np.ndarray]]): Dictionary containing
@@ -39,10 +40,6 @@ class SimulatedAnnealing:
         timeout (float): Timeout for the Metaheuristic
         start_solution (np.ndarray): Start-solution that should be improved.
         runtime_construction: Runtime of the Round Robin Scheduler
-        temperature (float): Temeprature value for the simulated-annealing part.
-        alpha (float): Alpha for the simulated-annealing part.
-        epsilon (float): Epsilon for the simulated-annelaing part.
-        neighborhood (str): Which neighborhood should be used?
     """
 
     def __init__(
@@ -51,10 +48,6 @@ class SimulatedAnnealing:
         timeout: float,
         start_solution: np.ndarray,
         rc: float,
-        temperature: float,
-        alpha: float,
-        epsilon: float,
-        neighborhood: str,
     ) -> None:
         self.n = int(algo_config["n"])
         self.t = float(algo_config["t"])
@@ -69,14 +62,6 @@ class SimulatedAnnealing:
         self.rc = rc
 
         self.all_teams = range(1, self.n + 1)
-        self.neighborhood = neighborhood
-        self.temperature = temperature
-        self.alpha = alpha
-        self.epsilon = epsilon
-        self.neighborhoods = {
-            "random_swap_within_week": self.random_swap_within_week,
-            "select_worst_n_weeks": self.select_worst_n_weeks,
-        }
 
     def run(self) -> np.ndarray:
         """Execute the metaheuristic.
@@ -85,41 +70,42 @@ class SimulatedAnnealing:
             np.ndarray: The improved solution.
         """
         # Set the start sol as best solution
-        sol = self.sol.copy()
-        best_solution = sol.copy()
-
+        start_solution = self.sol.copy()
+        best_solution = start_solution
         profit_best_solution = compute_profit(
             sol=best_solution, profit=self.p, weeks_between=self.r
         )
+
+        num_iterations_no_change = 0
 
         elapsed_time = 0
         num_iterations = 0
         avg_runtime = 0
         while (
-            self.temperature >= self.epsilon
+            num_iterations_no_change <= 100
             and sum(os.times()[:2]) + avg_runtime + self.rc < self.timeout
         ):
             t0_iteration = time.time()
-            new_sol = self.neighborhoods[self.neighborhood](sol)
+            # Destroy and repair the solution
+            sol_destroyed, games, weeks_changed = self.destroy(sol=best_solution.copy())
+            new_sol = self.repair(
+                sol=sol_destroyed,
+                games=games,
+                weeks_changed=weeks_changed,
+                elapsed_time=elapsed_time,
+            )
+            # Compute the profit of the new solution and solution
             profit_new_sol = compute_profit(
                 sol=new_sol, profit=np.array(object=self.p), weeks_between=self.r
             )
-            profit_sol = compute_profit(
-                sol=sol, profit=np.array(object=self.p), weeks_between=self.r
-            )
-            if (
-                profit_new_sol > profit_sol
-                and np.exp(-(profit_new_sol - profit_sol) / self.temperature)
-                > np.random.uniform()
-            ):
-                sol = new_sol
 
             # Check if the new solution is better than the old solution
-            if profit_sol > profit_best_solution:
-                best_solution = sol.copy()
-                profit_best_solution = profit_sol
-
-            self.temperature *= self.alpha
+            if profit_new_sol > profit_best_solution:
+                best_solution = new_sol.copy()
+                profit_best_solution = profit_new_sol
+                num_iterations_no_change = 0
+            else:
+                num_iterations_no_change += 1
 
             elapsed_time += time.time() - t0_iteration
             num_iterations += 1
@@ -129,64 +115,143 @@ class SimulatedAnnealing:
 
         return best_solution
 
-    def random_swap_within_week(self, sol: np.ndarray) -> np.ndarray:
-        """Swap the games within a week randomly.
+    def destroy(self, sol: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """Destroy the given solution.
+
+        The selection of the destroy parameter is random.
 
         Args:
-            sol (np.ndarray): Solution that should be changed.
+            sol (np.ndarray): The solution that should be destroyed.
 
         Returns:
-            np.ndarray: Updated solution.
+            tuple[np.ndarray, np.ndarray, np.ndarray]: Tuple containing the destroyed
+                solution, the games of the destroyed weeks and the week numbers.
         """
-        # Extract one random week
-        random_week, games_week = select_random_weeks(sol=sol, number_of_weeks=1)
-        random_week = random_week[0]
-        games_week = games_week[0]
+        # Randomly choose a destroy parameter
+        num_destroy_operators = 2
+        destroy_operators = list(range(num_destroy_operators))
+        # All destroy parameters are equally distributed
+        p = [1 / num_destroy_operators for _ in range(num_destroy_operators)]
+        destroy_operator = np.random.choice(a=destroy_operators, size=1, p=p)[0]
 
-        week_new = insert_games_random_week(
-            sol=sol,
-            games_week=games_week,
-            week_changed=random_week,
-            number_of_teams=self.n,
-            t=self.t,
-        )
+        weeks_changed = []
 
-        new_sol = sol.copy()
-        new_sol[random_week] = week_new
-
-        return new_sol
-
-    def select_worst_n_weeks(self, sol: np.ndarray) -> np.ndarray:
-        """Select the $n$-worst weeks and reorder the weeks, so profit is maximized.
-
-        Args:
-            sol (np.ndarray): Solution that should be changed.
-
-        Returns:
-            np.ndarray: Updated solution.
-        """
-        # Extract the two worst weeks
-        worst_weeks, games = select_n_worst_weeks(
-            sol=sol,
-            n=np.random.randint(low=2, high=10, size=1)[0],
-            profits=self.p,
-            weeks_between=self.r,
-        )
-
-        sol[worst_weeks] = np.full(shape=games.shape, fill_value=np.nan)
-
-        for i, week_changed in enumerate(iterable=worst_weeks):
-            week_updated = reorder_week_max_profit(
+        if destroy_operator == 0:
+            # Destroy a random week
+            weeks_changed, games = select_random_weeks(
                 sol=sol,
+                number_of_weeks=np.random.randint(low=2, high=10, size=1)[0],
+            )
+            sol[weeks_changed] = np.full(shape=games.shape, fill_value=np.nan)
+        elif destroy_operator == 1:
+            # Destroy the n worst weeks
+            worst_weeks, games = select_n_worst_weeks(
+                sol=sol,
+                n=np.random.randint(low=2, high=10, size=1)[0],
                 profits=self.p,
-                games=games[i],
-                num_teams=self.n,
-                t=self.t,
-                current_week=week_changed,
                 weeks_between=self.r,
             )
 
-            sol[week_changed] = week_updated
+            sol[worst_weeks] = np.full(shape=games.shape, fill_value=np.nan)
+            weeks_changed = worst_weeks
+        else:
+            games = np.array(object=[])
+            weeks_changed = np.array(object=[])
+
+        return sol, games[np.argsort(weeks_changed)], np.sort(weeks_changed)
+
+    def repair(
+        self,
+        sol: np.ndarray,
+        games: np.ndarray,
+        weeks_changed: np.ndarray,
+        elapsed_time: float,
+    ) -> np.ndarray:
+        """Repair the solution.
+
+        Args:
+            sol (np.ndarray): Solution that should be repaired.
+            games (np.ndarray): Games that correspond to the destroyed weeks.
+            weeks_changed (np.ndarray): Which weeks where destroyed?
+
+        Returns:
+            np.ndarray: The repaired solution.
+        """
+        # Randomly choose a repair parameter
+        num_repair_operators = 4
+        repair_operators = list(range(num_repair_operators))
+        # Only allow the exact solution if there are not so many combinations
+        if self.n > 6 or weeks_changed.size > 2:
+            p = [
+                0 if i == 1 else 1 / (num_repair_operators - 1)
+                for i in range(num_repair_operators)
+            ]
+        else:
+            # All destroy parameters are equally distributed
+            p = [1 / num_repair_operators for _ in range(num_repair_operators)]
+        if elapsed_time > 25:
+            p = [
+                0 if i == 1 or i == 2 else 1 / (num_repair_operators - 2)
+                for i in range(num_repair_operators)
+            ]
+
+        repair_operator = np.random.choice(a=repair_operators, size=1, p=p)[0]
+        repair_operator = 2
+
+        if repair_operator == 0:
+            # Random fill
+            for i, week_changed in enumerate(iterable=weeks_changed):
+                week_new = insert_games_random_week(
+                    sol=sol,
+                    games_week=games[i],
+                    week_changed=week_changed,
+                    number_of_teams=self.n,
+                    t=self.t,
+                )
+                sol[week_changed] = week_new
+        elif repair_operator == 1:
+            games_old = games.copy()
+            # Extract all games
+            games = games[np.logical_not(np.isnan(games))]
+            games = games.reshape(int(games.shape[0] / 2), 2).astype(dtype=int)
+
+            games_encoded = [i for i in range(games.shape[0])]
+
+            # Iterate over the possible combinations extract those, where each
+            #   team is present
+            for num_repetitions in range(int(self.n / 2), int(self.n * self.t)):
+                max_sol = insert_games_max_profit_per_week(
+                    sol=sol,
+                    games_old=games_old,
+                    games_encoded=games_encoded,
+                    num_repetitions=num_repetitions,
+                    games=games,
+                    all_teams=list(self.all_teams),
+                    weeks_changed=weeks_changed,
+                    profits=self.p,
+                    num_teams=self.n,
+                    weeks_between=self.r,
+                    t=self.t,
+                )
+                sol = max_sol.copy()
+        elif repair_operator == 2:
+            for i, week_changed in enumerate(iterable=weeks_changed):
+                week_updated = reorder_week_max_profit(
+                    sol=sol,
+                    profits=self.p,
+                    games=games[i],
+                    num_teams=self.n,
+                    t=self.t,
+                    current_week=week_changed,
+                    weeks_between=self.r,
+                )
+
+                sol[week_changed] = week_updated
+        elif repair_operator == 3:
+            # Random re-ordering of destroyed weeks
+            sol = random_reorder_weeks(
+                sol=sol, games=games, weeks_changed=weeks_changed
+            )
 
         return sol
 
@@ -233,9 +298,6 @@ def select_random_weeks(
             a=list(range(sol.shape[0])), size=number_of_weeks, replace=False
         )
     games = sol[weeks_changed].copy()
-
-    if weeks_changed.size == 0:
-        print("select_random_weeks")
 
     return weeks_changed, games
 
@@ -331,9 +393,6 @@ def insert_games_random_week(
         int(week_new[np.logical_not(np.isnan(week_new))].shape[0] / 2), 2
     )
 
-    if a.shape[0] != int(number_of_teams / 2):
-        print("insert_games_random_week")
-
     return week_new
 
 
@@ -368,9 +427,6 @@ def select_n_worst_weeks(
         worst_weeks = np.argsort(week_profits)[:n]
 
     games = sol[worst_weeks].copy()
-
-    if worst_weeks.size == 0:
-        print("select_n_worst_weeks")
 
     return worst_weeks, games
 
@@ -501,11 +557,193 @@ def reorder_week_max_profit(
                 possible_game
             ]  #
             num_games_per_fri_sat[0] += 1
-        else:
-            print("BIIIIIIG problem")
-            raise Exception
 
     return sol[current_week]
+
+
+def insert_games_max_profit_per_week(
+    sol: np.ndarray,
+    games_old: np.ndarray,
+    games_encoded: list[int],
+    num_repetitions: int,
+    games: np.ndarray,
+    all_teams: list[int],
+    weeks_changed: np.ndarray,
+    profits: np.ndarray,
+    num_teams: int,
+    weeks_between: int,
+    t: float,
+) -> np.ndarray:
+    """Insert the games for a week, so the profit is maximized.
+
+    This function creates possible combinations of weeks and checks, which combination
+    maximizes the profit. Note that this function is only applied, when not many teams
+    take part in the tournament.
+
+    Args:
+        sol (np.ndarray): The solution that should be improved
+        games_old (np.ndarray): Games that were previously assigned to the changed
+            weeks.
+        games_encoded (list[int]): Games encoded to numbers for faster computation.
+        num_repetitions (int): How often should a week be created.
+        games (np.ndarray): The games that should be inserted.
+        all_teams (list[int]): List containing all teams.
+        weeks_changed (np.ndarray): Which weeks were changed beofre this operation.
+        profits (np.ndarray): The profits for each day and game.
+        num_teams (int): How many teams take part in this tournament.
+        weeks_between (int): Number of weeks between a game of two teams.
+        t (float): Fraction that sets the number of games on friday and saturday.
+
+    Returns:
+        np.ndarray: A new solution, that maximizes the profit.
+    """
+    # Get the possible combinations
+    possible_combinations_tmp_idx = generate_possible_game_combinations_per_week(
+        games_encoded=games_encoded,
+        num_repetitions=num_repetitions,
+        games=games,
+        all_teams=all_teams,
+    )
+
+    possible_weekly_combinations = generate_possible_weekly_combinations(
+        possible_combinations_tmp_idx=possible_combinations_tmp_idx,
+        weeks_changed=weeks_changed,
+        games=games,
+    )
+
+    # Get max profit when inserted in solution for each combination
+    max_profit = 0
+    max_sol = sol.copy()
+    for weekly_combination in possible_weekly_combinations:
+        sol_new = sol.copy()
+        # Insert each weekly-combination into the solution
+        for i, week in enumerate(iterable=weekly_combination):
+            week_new = np.full(shape=games_old[0].shape, fill_value=np.nan)
+            num_games_monday = week.shape[0] - int(week.shape[0] * t)
+            week_new[0][:num_games_monday] = week[:num_games_monday]
+            for game in week[num_games_monday:]:
+                games_position = np.argmax(a=profits[1:, game[0] - 1, game[1] - 1]) + 1
+                week_new[games_position][
+                    np.where(np.isnan(week_new[games_position]))[0][0]
+                ] = game
+            sol_new[weeks_changed[i]] = week_new
+
+        # Check if the solution is valid or not (if yes, continue)
+        try:
+            validate(sol=sol_new, num_teams=num_teams)
+        except AssertionError:
+            continue
+
+        profit_new_sol = compute_profit(
+            sol=sol_new, profit=profits, weeks_between=weeks_between
+        )
+
+        # If the solution is valid: Does the solution give a higher profit?
+        if profit_new_sol > max_profit:
+            max_profit = profit_new_sol
+            max_sol = sol_new.copy()
+    return max_sol.copy()
+
+
+def generate_possible_game_combinations_per_week(
+    games_encoded: list[int],
+    num_repetitions: int,
+    games: np.ndarray,
+    all_teams: list[int],
+) -> list[int]:
+    """Generate possible game-combinations for each week.
+
+    This function is only used if there are not that many teams.
+
+    Args:
+        games_encoded (list[int]): List contains the encoding of the games.
+        num_repetitions (int): How long should be a combinations?
+        games (np.ndarray): All games for the tournament.
+        all_teams (list[int]): List containing each team.
+
+    Returns:
+        list[int]: List containing the different game indices for each combination.
+    """
+    # Source: https://stackoverflow.com/a/5898031, accessed 11th June
+    combinations = itertools.permutations(iterable=games_encoded, r=num_repetitions)
+    possible_combinations_tmp_idx = []
+    # Iterate over each game combination and check some of the constraints
+    for combination_idx in combinations:
+        combination = games[list(combination_idx)]
+        # Check if all teams play during that week
+        if np.unique(ar=combination).size != len(all_teams):
+            continue
+        if np.all(np.unique(combination) != all_teams):
+            continue
+
+        # possible_combinations_tmp.append(np.array(combination))
+        possible_combinations_tmp_idx.append(combination_idx)
+
+    return possible_combinations_tmp_idx
+
+
+def generate_possible_weekly_combinations(
+    possible_combinations_tmp_idx: list[int],
+    weeks_changed: np.ndarray,
+    games: np.ndarray,
+) -> list[np.ndarray]:
+    """Generate possible weekly combinations.
+
+    This function considers all hard side-constraints.
+
+    Args:
+        possible_combinations_tmp_idx (list[int]): List containing the different game
+            indices for each combination.
+        weeks_changed (np.ndarray): Which weeks were changed due to the Metaheuristic.
+        games (np.ndarray): All games that play during that week.
+
+    Returns:
+        list[np.ndarray]: The possible weekly-combinations.
+    """
+    possible_weekly_combinations = []
+    # Create all possible weekly combinations
+    weekly_combinations = np.array(
+        object=list(
+            itertools.permutations(
+                iterable=possible_combinations_tmp_idx, r=weeks_changed.size
+            )
+        )
+    )
+    # Go over the weekly-combinations and drop all duplicate games
+    for weekly_combination_idx in weekly_combinations:
+        weekly_combination = games[weekly_combination_idx]
+        weekly_combination_games = weekly_combination.reshape(
+            int(weekly_combination.size / 2), 2
+        )
+        # Drop all duplicate games
+        if (
+            weekly_combination_games.shape
+            != np.unique(ar=weekly_combination_games, axis=0).shape
+        ):
+            continue
+        possible_weekly_combinations.append(weekly_combination)
+
+    return possible_weekly_combinations
+
+
+def random_reorder_weeks(
+    sol: np.ndarray, games: np.ndarray, weeks_changed: np.ndarray
+) -> np.ndarray:
+    """Randomly reorder the weeks.
+
+    Args:
+        sol (np.ndarray): Solution that should be improved.
+        games (np.ndarray): Games for each week
+        weeks_changed (np.ndarray): Indices of the weeks that were changed.
+
+    Returns:
+        np.ndarray: The updated solution.
+    """
+    new_order = np.random.choice(
+        a=list(range(games.shape[0])), size=games.shape[0], replace=False
+    )
+    sol[weeks_changed] = games[new_order]
+    return sol
 
 
 def compute_profit(sol: np.ndarray, profit: np.ndarray, weeks_between: int) -> float:
@@ -644,8 +882,6 @@ def get_profits_per_week(
 
         week_profits.append(sum_week)
 
-    # print(time.time() - t0)
-
     return week_profits
 
 
@@ -732,8 +968,6 @@ def check_games(sol: np.ndarray, num_teams: int) -> bool:
     for game in games_required:
         if game in sol:
             games_in_sol += 1
-
-    # print(f"XvsY and YvsX: {games_required.shape[0] == games_in_sol}")
 
     assert games_required.shape[0] == games_in_sol, "XvsY and YvsX"
 
@@ -950,26 +1184,17 @@ if __name__ == "__main__":
 
     algo_config = read_in_file(path_to_file=path_to_file)
 
-    alpha = 0.95
-    temperature = 10000
-    epsilon = 0.001
-    neighborhood = "select_worst_n_weeks"
-
     start_time = time.process_time()  # Start time measurement
     start_sol, rc = generate_solution_round_robin_tournament(
         num_teams=int(algo_config["n"]),
         t=float(algo_config["t"]),
         random_team_order=False,
     )
-    metaheuristic = SimulatedAnnealing(
+    metaheuristic = LNS(
         algo_config=algo_config,
         timeout=timeout,
         start_solution=start_sol,
         rc=rc,
-        alpha=alpha,
-        temperature=temperature,
-        epsilon=epsilon,
-        neighborhood=neighborhood,
     )
     new_sol = metaheuristic.run()
     end_time = time.process_time()  # End time measurement
