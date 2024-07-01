@@ -458,4 +458,4 @@ output.txt
 ./data/*
 ./artifacts/*
 ./configs/*
-./documentation/*
+./evaluation_plots/*
