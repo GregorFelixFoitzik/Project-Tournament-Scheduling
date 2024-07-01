@@ -455,7 +455,7 @@ TSWLatexianTemp*
 
 .vscode/
 output.txt
-./data/*
-./artifacts/*
-./configs/*
-./evaluation_plots/*
+data/
+artifacts/
+configs/
+evaluation_plots/
