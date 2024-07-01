@@ -1170,7 +1170,7 @@ def print_feasible_solution(sol: np.ndarray, runtime: float, profit: float) -> N
                 if not np.isnan(np.unique(game)).any():
                     print(
                         f"### Game {week_num+1}-{weekdays[weekday_num]}: "
-                        f"{game[0]} {game[1]}"
+                        f"{int(game[0])} {int(game[1])}"
                     )
 
     print(f"### CPU-TIME : {np.round(a=runtime, decimals=2)}")

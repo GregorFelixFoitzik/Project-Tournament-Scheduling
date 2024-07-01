@@ -454,3 +454,8 @@ TSWLatexianTemp*
 #*Notes.bib
 
 .vscode/
+output.txt
+./data/*
+./artifacts/*
+./configs/*
+./documentation/*
