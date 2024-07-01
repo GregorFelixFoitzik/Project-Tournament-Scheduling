@@ -48,5 +48,5 @@
 - [x] Bug fixing of lns_ts_sa! (WhatsApp)
 - [x] Reactive Tabu-Search
 - [x] Select time-consuming operations not at the end of iterations -> Change more
-- [ ] Create final submission
-  - [ ] Remove print-statements
+- [x] Create final submission
+  - [x] Remove print-statements
