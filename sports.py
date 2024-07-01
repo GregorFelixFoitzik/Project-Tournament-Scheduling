@@ -490,7 +490,7 @@ def reorder_week_max_profit(
 
     # Check which games should be played on monday
     start_index_monday = 0
-    num_teams_monday = max(1, int(num_teams / 2) - 2 * np.ceil(num_teams / 2 * t))
+    num_teams_monday = max(1, int(int(num_teams / 2) - 2 * np.ceil(num_teams / 2 * t)))
     num_games_fri_sat = np.ceil(num_teams / 2 * t)
     teams_on_monday = np.setdiff1d(
         ar1=list(range(1, num_teams + 1)), ar2=np.unique(ar=sol[:, 0])[:-1]
