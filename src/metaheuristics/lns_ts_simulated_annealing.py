@@ -117,6 +117,8 @@ class LNSTSSimAnnealing:
                 best_solution = sol.copy()
                 profit_best_solution = profit_sol
 
+            self.temperature *= self.alpha
+
             self.tabu_list += weeks_changed.tolist()
             if len(self.tabu_list) > self.max_size_tabu_list:
                 for _ in range(

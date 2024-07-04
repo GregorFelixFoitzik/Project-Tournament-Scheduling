@@ -112,6 +112,8 @@ class LNSSimAnnealing:
                 best_solution = sol.copy()
                 profit_best_solution = profit_sol
 
+            self.temperature *= self.alpha
+
             elapsed_time += time.time() - t0_iteration
             num_iterations += 1
             avg_runtime = elapsed_time / num_iterations
