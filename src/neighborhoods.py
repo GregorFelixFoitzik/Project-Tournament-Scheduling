@@ -85,9 +85,10 @@ def insert_games_random_week(
     sol_without_week = sol.copy()
     sol_without_week[week_changed] = np.full(shape=games_week.shape, fill_value=np.nan)
 
-    num_games_monday = max(
+    num_games_monday = int(max(
         1, int(number_of_teams / 2) - 2 * np.ceil(number_of_teams / 2 * t)
-    )
+    ))
+
     num_games_fri_sat = np.ceil(number_of_teams / 2 * t)
 
     # Which teams have to play on monday and how does the new week look like?
@@ -112,7 +113,7 @@ def insert_games_random_week(
         pos_games = min(sol.shape[2], monday_games_idx.shape[0])
         week_new[0][: pos_games] = games_unique[monday_games_idx[:pos_games]]
 
-        num_games_monday -= pos_games
+        num_games_monday = int(num_games_monday - pos_games)
         start_index_monday += pos_games
 
         games_added += monday_games_idx[:pos_games].tolist()
@@ -332,7 +333,8 @@ def reorder_week_max_profit(
 
     # Check which games should be played on monday
     start_index_monday = 0
-    num_teams_monday = max(1, int(num_teams / 2) - 2 * np.ceil(num_teams / 2 * t))
+    num_teams_monday = int(max(1, int(num_teams / 2) - 2 * np.ceil(num_teams / 2 * t)))
+
     num_games_fri_sat = np.ceil(num_teams / 2 * t)
     teams_on_monday = np.setdiff1d(
         ar1=list(range(1, num_teams + 1)), ar2=np.unique(ar=sol[:, 0])[:-1]
@@ -348,7 +350,7 @@ def reorder_week_max_profit(
             games_forced_monday_idx[:pos_games]
         ]
         start_index_monday += pos_games
-        num_teams_monday -= pos_games
+        num_teams_monday = int(num_teams_monday - pos_games)
         games_added += games_forced_monday_idx[:pos_games].tolist()
 
     # If the monday slot is not full: Add more games but with the highest profit

@@ -4,11 +4,13 @@ import yaml
 
 from tqdm import tqdm
 
+data_path = 'C:/DatenMeta/data/' # 'data/'
+
 with open(file="configs/templates/run_config.yaml", mode="r") as file:
     run_config = yaml.safe_load(stream=file)
 
 metaheuristics_to_use = run_config["metaheuristics"]
-instances = ['data/'+f for f in os.listdir('data/') if f.endswith('.in')]
+instances = [data_path+f for f in os.listdir(data_path) if f.endswith('.in')]
 config_files = [f.split('.')[0] for f in os.listdir('configs/') if f.endswith('.yaml')]
 timeout = 30
 

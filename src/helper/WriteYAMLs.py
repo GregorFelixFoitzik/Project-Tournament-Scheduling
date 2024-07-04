@@ -3,24 +3,25 @@ from itertools import product
 
 # Definiere die Parameterbereiche für jeden Algorithmus
 param_grid = {
-    'tabu_search': {
-        'max_size_tabu_list': [ii for ii in range(1, 11, 2)],
-        'neighborhood': ["random_swap_within_week", "select_worst_n_weeks"],
-    },
-    'tabu_search_lns': {
-        'max_size_tabu_list': [ii for ii in range(1, 11, 2)],
-    },
-    # 'simulated_annealing': {
-    #     'alpha': [0.85, 0.95],
-    #     'temperature': [10000, 20000],
-    #     'epsilon': [0.001, 0.0001],
+    # 'tabu_search': {
+    #     'max_size_tabu_list': [ii for ii in range(1, 11, 2)],
+    #     'neighborhood': ["random_swap_within_week", "select_worst_n_weeks"],
     # },
-    'lns_ts_simulated_annealing': {
+    # 'tabu_search_lns': {
+    #     'max_size_tabu_list': [ii for ii in range(1, 11, 2)],
+    # },
+    'simulated_annealing': {
         'alpha': [0.85, 0.95],
         'temperature': [10000, 20000],
         'epsilon': [0.001, 0.0001],
-        'max_size_tabu_list': [ii for ii in range(1, 11, 2)],
+        'neighborhood': ["random_swap_within_week", "select_worst_n_weeks"]
     },
+    # 'lns_ts_simulated_annealing': {
+    #     'alpha': [0.85, 0.95],
+    #     'temperature': [10000, 20000],
+    #     'epsilon': [0.001, 0.0001],
+    #     'max_size_tabu_list': [ii for ii in range(1, 11, 2)],
+    # },
     # 'large_neighborhood_search_simulated_annealing': {
     #     'alpha': [0.85, 0.95],
     #     'temperature': [10000, 20000],
