@@ -3,12 +3,15 @@
 - [ ] Swap 1,5 and 5,1
 
 ## Gregor
-- [ ] Check Jonas code
-- [x] Grid-Search CSV in metaheuristics-controller
-- [ ] VNS:
-  - [ ] Reorder different number of weeks, so profit is maximized
-- [ ] Pseudocode
-- [ ] Search for papers: Round-robin-tournament (https://en.wikipedia.org/wiki/Round-robin_tournament)
+- [x] Check Jonas code
+- [x] VNS:
+  - [x] Reorder different number of weeks, so profit is maximized
+- [x] Search for papers: Round-robin-tournament (https://en.wikipedia.org/wiki/Round-robin_tournament)
+- [x] Analysis
+  - [x] for each parameter at least 2 values
+  - [x] boxplots grouped by instances (improvement and runtime)
+  - [x] performance profiles (method vs. method)
+
 
 ## Jonas 
 - [x] Create final file(s)
